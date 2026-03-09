@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import ServiceCard from "./ServiceCard";
 import { Button } from "@/components/ui/button";
+import SectionHeader from "@/components/ui/SectionHeader";
 
 const ServiceOverview = () => {
   const commercialServices = [
@@ -59,14 +60,15 @@ const ServiceOverview = () => {
     <section className="py-24 bg-white overflow-hidden">
       <div className="container">
         {/* Main Header */}
-        <div className="text-center mb-24">
-          <span className="inline-block px-4 py-1.5 bg-[#f0f4f8] text-[#4a607d] text-[0.7rem] font-bold uppercase tracking-widest rounded-none mb-6">
-            Our Service
-          </span>
-          <h2 className="text-4xl md:text-[3.5rem] font-bold text-[#0c243c] tracking-tight leading-[1.1] max-w-4xl mx-auto">
-            Flexible Dumpster Services, <br /> Anytime You Need
-          </h2>
-        </div>
+        <SectionHeader
+          badge="Our Service"
+          title={
+            <>
+              Flexible Dumpster Services, <br /> Anytime You Need
+            </>
+          }
+          className="mb-24"
+        />
 
         {/* Subsection 1: Commercial Services (Text Left, Image Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start mb-32">
@@ -84,9 +86,7 @@ const ServiceOverview = () => {
                 />
               ))}
             </div>
-            <Button variant={"primary"}>
-              Book Now
-            </Button>
+            <Button variant={"primary"}>Book Now</Button>
           </div>
           <div className="lg:col-span-6 relative h-[450px] md:h-[650px] order-1 lg:order-2">
             <Image
@@ -123,9 +123,7 @@ const ServiceOverview = () => {
               ))}
             </div>
             <div className="flex justify-end">
-              <Button variant={"primary"}>
-                Book Now
-              </Button>
+              <Button variant={"primary"}>Book Now</Button>
             </div>
           </div>
         </div>
