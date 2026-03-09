@@ -232,12 +232,12 @@ export default function SignupForm() {
           className=""
         />
         {/* Overlay Text */}
-        <div className="absolute bottom-10 left-10 right-10 bg-black/40 backdrop-blur-md p-8 text-white border border-white/10">
+        {/* <div className="absolute bottom-10 left-10 right-10 bg-black/40 backdrop-blur-md p-8 text-white border border-white/10">
           <h2 className="text-2xl font-bold mb-2">Manage Your Waste Services with Ease</h2>
           <p className="text-sm text-gray-200 leading-relaxed max-w-md">
             Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -29,34 +29,25 @@ export default function ForgetPasswordPage() {
   return (
     <div className="flex h-screen w-full overflow-hidden font-sans">
       {/* Left: Full bleed image */}
-      <div className="hidden md:block relative w-1/2 h-full flex-shrink-0">
-        <Image
-          src="/auth-iamge.png"
-          alt="Forgot password illustration"
-          fill
-          priority
-          className="object-cover"
-        />
-      </div>
 
-      {/* Right: Form Panel */}
+
+
       <div className="flex-1 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
-        <div className="w-full max-w-xl bg-white border border-blue-300 rounded-2xl px-10 py-12 flex flex-col items-center">
+        <div className="w-full max-w-xl bg-white rounded-2xl px-10 py-12 flex flex-col items-center">
           <Image
-            src="/login-logo.png"
-            alt="Login illustration"
+            src="/logoHome.png"
+            alt="Logo"
             width={64}
             height={56}
             className="object-cover mb-6"
           />
 
           {/* Heading */}
-          <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight text-center">
             Forget Password
-          </h2>
-          <p className="text-sm text-gray-400 mb-8 text-center leading-relaxed">
-            Please enter the email address that you used when
-            <br className="hidden sm:block" /> creating your account
+          </h1>
+          <p className="text-sm text-gray-500 mb-8 text-center max-w-xs leading-relaxed">
+            Please enter the email address that you used when creating your account
           </p>
 
           <form onSubmit={handleSubmit} className="w-full space-y-5">
@@ -73,9 +64,9 @@ export default function ForgetPasswordPage() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="xyz@gmail.com"
+                placeholder="Please enter email address"
                 required
-                className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm placeholder-gray-300"
+                className="w-full px-4 py-3 text-gray-700 bg-gray-100 border-none focus:ring-2 focus:ring-blue-500 outline-none transition text-sm placeholder-gray-400"
               />
             </div>
 
@@ -83,9 +74,9 @@ export default function ForgetPasswordPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full text-white font-semibold py-3.5 px-4 rounded-xl cursor-pointer transition disabled:opacity-70 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
+              className="w-full text-white font-semibold py-3.5 px-4 cursor-pointer transition disabled:opacity-70 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
               style={{
-                background: "#2563eb",
+                background: "#0061AA",
                 boxShadow: "0 4px 14px 0 rgba(37,99,235,0.35)",
               }}
             >
@@ -119,14 +110,32 @@ export default function ForgetPasswordPage() {
           <div className="w-full h-px bg-gray-100 my-6" />
 
           {/* Back to Login */}
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-500">
             Remember your password?{" "}
             <a
               href="/login"
-              className="text-blue-600 font-semibold hover:text-blue-700 transition"
+              className="text-blue-700 font-semibold hover:text-blue-700 transition"
             >
               Back to Login
             </a>
+          </p>
+        </div>
+      </div>
+
+      {/* Right: Illustration with Overlay */}
+      <div className="hidden md:block relative w-1/2 flex-shrink-0">
+        <Image
+          src="/login-image.png"
+          alt="Login illustration"
+          fill
+          priority
+          className="object-cover"
+        />
+        {/* Dark Branded Overlay */}
+        <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
+          <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
+          <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
+            Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
           </p>
         </div>
       </div>

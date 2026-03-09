@@ -1,4 +1,6 @@
+import ResetPasswordPage from "@/components/ui/AuthenticationAllPage/resetPassword";
+
 export default function ForgotPasswordPage() {
   return (
-    <div>forgot password page </div>
+    <div><ResetPasswordPage /></div>
     );  }

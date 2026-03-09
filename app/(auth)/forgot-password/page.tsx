@@ -1,4 +1,6 @@
+import ForgetPasswordPage from "@/components/ui/AuthenticationAllPage/forgotPassword";
+
 export default function ForgotPasswordPage() {
   return (
-    <div>forgot password page </div>
+    <div><ForgetPasswordPage /> </div>
     );  }
