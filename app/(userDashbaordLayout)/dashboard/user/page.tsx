@@ -5,10 +5,10 @@ import PaymentHistory from "@/components/sections/dashboard/PaymentHistory";
 
 export default function ProfilePage() {
     return (
-        <main className="bg-gray-50/50 min-h-screen py-16 md:py-24">
+        <main className="bg-gray-50/50 min-h-screen">
             <div className="container px-4 flex flex-col lg:flex-row gap-8">
                 {/* Sidebar - Profile & Navigation */}
-                <UserSidebar />
+             
 
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col gap-8">
