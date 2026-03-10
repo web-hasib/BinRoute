@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F6F6F6]`}
       >
         <ReduxProvider>{children}</ReduxProvider>
         <Toaster position="top-right" richColors />
