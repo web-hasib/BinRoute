@@ -14,7 +14,7 @@ const Navbar = () => {
     {
       name: "Services",
       href: "/services",
-      dropdown: ["Commercial", "Residential", "Dumpster Sizes"],
+      dropdown: ["Service Areas"],
     },
     { name: "About us", href: "/about" },
     { name: "Faq", href: "/faq" },
