@@ -57,7 +57,7 @@ const ServiceOverview = () => {
   ];
 
   return (
-    <section className="py-24 bg-white overflow-hidden">
+    <section id="services" className="py-24 bg-white overflow-hidden">
       <div className="container">
         {/* Main Header */}
         <SectionHeader

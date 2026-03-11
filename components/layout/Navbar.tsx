@@ -13,8 +13,13 @@ const Navbar = () => {
     { name: "Home", href: "/" },
     {
       name: "Services",
-      href: "/services",
-      dropdown: ["Service Areas"],
+      href: "#services",
+      dropdown: [
+        {
+          name: "Service Areas",
+          href: "/services/service-areas",
+        },
+      ],
     },
     { name: "About us", href: "/about" },
     { name: "Faq", href: "/faq" },
@@ -28,7 +33,13 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-20">
           {/* Logo Area */}
           <div className="flex items-center gap-2">
-            <Image src="/LogoHome.png" alt="Logo" width={100} height={100} className="" />
+            <Image
+              src="/LogoHome.png"
+              alt="Logo"
+              width={100}
+              height={100}
+              className=""
+            />
           </div>
 
           {/* Desktop Navigation */}
@@ -50,11 +61,11 @@ const Navbar = () => {
                   <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                     {link.dropdown.map((subItem) => (
                       <Link
-                        key={subItem}
-                        href="#"
+                        key={subItem.name}
+                        href={subItem.href}
                         className="block px-4 py-2 text-sm text-[#4A4A4A] hover:bg-gray-50 hover:text-[#0056B3]"
                       >
-                        {subItem}
+                        {subItem.name}
                       </Link>
                     ))}
                   </div>
@@ -65,15 +76,19 @@ const Navbar = () => {
 
           {/* Auth Buttons */}
           <div className="hidden lg:flex items-center gap-4">
-            <Button
-              variant="ghost"
-              className="text-[#4A4A4A] bg-[#F1F1F1] hover:bg-gray-200 px-8"
-            >
-              Log in
-            </Button>
-            <Button className="bg-[#0056B3] hover:bg-blue-700 text-white px-8">
-              Sign up
-            </Button>
+            <Link href="/login">
+              <Button
+                variant="ghost"
+                className="text-[#4A4A4A] bg-[#F1F1F1] hover:bg-gray-200 px-8"
+              >
+                Log in
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button className="bg-[#0056B3] hover:bg-blue-700 px-8">
+                Sign up
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -105,15 +120,14 @@ const Navbar = () => {
                     {link.name}
                   </Link>
                   {link.dropdown && (
-                    <div className="pl-4 mt-2 flex flex-col gap-2">
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                       {link.dropdown.map((subItem) => (
                         <Link
-                          key={subItem}
-                          href="#"
-                          className="text-sm text-[#4A4A4A] hover:text-[#0056B3]"
-                          onClick={() => setIsOpen(false)}
+                          key={subItem.name}
+                          href={subItem.href}
+                          className="block px-4 py-2 text-sm text-[#4A4A4A] hover:bg-gray-50 hover:text-[#0056B3]"
                         >
-                          {subItem}
+                          {subItem.name}
                         </Link>
                       ))}
                     </div>
@@ -121,12 +135,16 @@ const Navbar = () => {
                 </div>
               ))}
               <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
-                <Button variant="secondary" className="w-full">
-                  Log in
-                </Button>
-                <Button className="w-full bg-[#0056B3] hover:bg-blue-700">
-                  Sign up
-                </Button>
+                <Link href="/login">
+                  <Button variant="secondary" className="w-full">
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="w-full bg-[#0056B3] hover:bg-blue-700">
+                    Sign up
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
