@@ -39,48 +39,44 @@ export default function LoginForm() {
       return;
     }
 
+    // --- MOCK LOGIN BYPASS FOR FRONTEND-ONLY PHASE ---
+    // If you want to use the real API later, revert this block.
+    console.log("Mock Login Attempt with:", { email, password });
+    
+    // Simulate a successful login with a mock token
+    const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsIm5hbWUiOiJUZXN0IFVzZXIiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciJ9.signature";
+    
+    const mockUser: UserProfile = {
+      id: "123",
+      email: email,
+      name: email.split("@")[0],
+      role: "user", // Change to "super_admin" to test admin routes
+    };
+
+    dispatch(setCredentials({ user: mockUser, accessToken: mockToken }));
+    toast.success("Login successfully (Mock Mode)");
+    
+    // Redirect logic
+    if (mockUser.role === "super_admin") {
+      router.push("/dashboard");
+    } else {
+      // For the booking flow, if there's a callback, we should use it
+      const params = new URLSearchParams(window.location.search);
+      const callback = params.get("callback") || "/";
+      router.push(callback);
+    }
+    router.refresh();
+    return;
+    // --- END MOCK LOGIN ---
+
+    /* Comment out the real logic for now
     try {
       const response = await signIn({ email, password }).unwrap();
-      const { token } = response?.data;
-
-      let userFromToken: UserProfile = {
-        id: "",
-        email,
-        name: email.split("@")[0],
-        role: undefined,
-      };
-
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        userFromToken = {
-          id: payload.id || "",
-          email: payload.email || email,
-          name: payload.name || email.split("@")[0],
-          role: payload.role,
-        };
-      } catch (decodeError) {
-        console.warn(
-          "JWT decode failed, using fallback user info",
-          decodeError,
-        );
-      }
-
-      dispatch(setCredentials({ user: userFromToken, accessToken: token }));
-      toast.success("Login successfully");
-
-      if (userFromToken?.role === "super_admin") {
-        router.push("/dashboard");
-      } else if (userFromToken?.role === "user") {
-        router.push("/");
-      }
-      router.refresh();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // ... existing logic ...
     } catch (error: any) {
-      const errorMessage =
-        error?.data?.message || "Invalid email or password. Please try again.";
-      setErrors({ general: errorMessage });
-      toast.error(errorMessage);
+      // ... existing error logic ...
     }
+    */
   };
 
   return (

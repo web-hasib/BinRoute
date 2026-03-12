@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ShoppingCart,
   Clock,
@@ -12,8 +13,15 @@ import {
 import ServiceCard from "./ServiceCard";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/ui/SectionHeader";
+import { useDispatch } from "react-redux";
+import { setServiceType } from "@/feature/user/bookingSlice";
 
 const ServiceOverview = () => {
+  const dispatch = useDispatch();
+
+  const handleBookNow = (type: "roll-off" | "commercial") => {
+    dispatch(setServiceType(type));
+  };
   const commercialServices = [
     {
       icon: ShoppingCart,
@@ -86,7 +94,14 @@ const ServiceOverview = () => {
                 />
               ))}
             </div>
-            <Button variant={"primary"}>Book Now</Button>
+            <Link href="/services/booking">
+              <Button 
+                variant={"primary"}
+                onClick={() => handleBookNow("commercial")}
+              >
+                Book Now
+              </Button>
+            </Link>
           </div>
           <div className="lg:col-span-6 relative h-[450px] md:h-[650px] order-1 lg:order-2">
             <Image
@@ -123,7 +138,14 @@ const ServiceOverview = () => {
               ))}
             </div>
             <div className="flex justify-end">
-              <Button variant={"primary"}>Book Now</Button>
+              <Link href="/services/booking">
+                <Button 
+                  variant={"primary"}
+                  onClick={() => handleBookNow("roll-off")}
+                >
+                  Book Now
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
