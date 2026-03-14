@@ -1,9 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { Download, RefreshCw, Calendar, AlertCircle, FileText, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AlertCircle, Calendar, ChevronDown, Download, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import ChangeFrequencyModal from "@/components/sections/dashboard/service-requests/ChangeFrequencyModal";
+import ReschedulePickupModal from "@/components/sections/dashboard/service-requests/ReschedulePickupModal";
+import ReportDamageModal from "@/components/sections/dashboard/service-requests/ReportDamageModal";
+import MissingScheduleModal from "@/components/sections/dashboard/service-requests/MissingScheduleModal";
+import ServiceSuccessModal from "@/components/ui/ServiceSuccessModal";
 
 const allRequests = Array.from({ length: 15 }, (_, i) => ({
   id: `#INV-${88321 + i}`,
@@ -13,8 +18,34 @@ const allRequests = Array.from({ length: 15 }, (_, i) => ({
   date: "Aug 01, 2024",
 }));
 
+interface SuccessConfig {
+  title: string;
+  confirmationId: string;
+  message: string;
+}
+
 const ServiceRequestsPage = () => {
   const [sortBy, setSortBy] = useState("All");
+  
+  // Modal states
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [successData, setSuccessData] = useState<SuccessConfig | null>(null);
+
+  const handleOpenModal = (modalName: string) => setActiveModal(modalName);
+  const handleCloseModal = () => setActiveModal(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleFormSubmitSuccess = (type: string, data?: any) => {
+    if (data) console.log(`Form submitted for ${type}:`, data);
+    handleCloseModal();
+    const config: Record<string, SuccessConfig> = {
+      "frequency": { title: "Change Frequency Submitted Successfully", confirmationId: "CF-882941", message: "Your frequency update request has been received." },
+      "reschedule": { title: "Reschedule Request Submitted Successfully", confirmationId: "RS-882942", message: "Your pickup reschedule request has been received." },
+      "damage": { title: "Damage Report Submitted Successfully", confirmationId: "DR-882943", message: "Your premium waste management solution has been successfully provisioned and is ready for operation." },
+      "missing": { title: "Missing Schedule Report Submitted", confirmationId: "MS-882944", message: "Your missing schedule report has been submitted for review." },
+    };
+    setSuccessData(config[type] || config.damage);
+  };
 
   return (
     <div className="space-y-8 pb-12">
@@ -26,7 +57,11 @@ const ServiceRequestsPage = () => {
             Manage and track your dumpster rental service operations.
           </p>
         </div>
-        <Button variant="outline" className="text-[#0061AA] border-[#0061AA]/20 bg-[#E6F4FC] hover:bg-blue-100 rounded-none h-11 px-6 font-semibold">
+        <Button 
+          variant="outline" 
+          onClick={() => handleOpenModal("missing")}
+          className="text-[#0061AA] border-[#0061AA]/20 bg-[#E6F4FC] hover:bg-blue-100 rounded-none h-11 px-6 font-semibold"
+        >
           Missing schedule report
         </Button>
       </div>
@@ -34,9 +69,9 @@ const ServiceRequestsPage = () => {
       {/* Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { title: "Change Frequency", icon: RefreshCw, desc: "Update weekly or bi-weekly cycles" },
-          { title: "Reschedule Pickup", icon: Calendar, desc: "Modify your existing pickup time" },
-          { title: "Report Damage", icon: AlertCircle, desc: "Container repair or replacement request" },
+          { id: "frequency", title: "Change Frequency", icon: RefreshCw, desc: "Update weekly or bi-weekly cycles" },
+          { id: "reschedule", title: "Reschedule Pickup", icon: Calendar, desc: "Modify your existing pickup time" },
+          { id: "damage", title: "Report Damage", icon: AlertCircle, desc: "Container repair or replacement request" },
         ].map((action, idx) => (
           <div key={idx} className="bg-white p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
             <div className="p-4 bg-gray-50 mb-4 border border-gray-50">
@@ -44,12 +79,50 @@ const ServiceRequestsPage = () => {
             </div>
             <h3 className="font-bold text-[#172C41] mb-1">{action.title}</h3>
             <p className="text-gray-400 text-xs mb-6 px-4">{action.desc}</p>
-            <Button className="w-full bg-[#E6F0F9] hover:bg-blue-100 text-[#0061AA] py-6 rounded-none font-bold border-none shadow-none">
+            <Button 
+              onClick={() => handleOpenModal(action.id)}
+              className="w-full bg-[#E6F0F9] hover:bg-blue-100 text-[#0061AA] py-6 rounded-none font-bold border-none shadow-none"
+            >
               Request now
             </Button>
           </div>
         ))}
       </div>
+
+      {/* Modals */}
+      <ChangeFrequencyModal 
+        isOpen={activeModal === "frequency"} 
+        onClose={handleCloseModal}
+        onSubmitSuccess={(data) => handleFormSubmitSuccess("frequency", data)}
+      />
+      
+      <ReschedulePickupModal 
+        isOpen={activeModal === "reschedule"} 
+        onClose={handleCloseModal}
+        onSubmitSuccess={(data) => handleFormSubmitSuccess("reschedule", data)}
+      />
+
+      <ReportDamageModal 
+        isOpen={activeModal === "damage"} 
+        onClose={handleCloseModal}
+        onSubmitSuccess={(data) => handleFormSubmitSuccess("damage", data)}
+      />
+
+      <MissingScheduleModal 
+        isOpen={activeModal === "missing"} 
+        onClose={handleCloseModal}
+        onSubmitSuccess={(data) => handleFormSubmitSuccess("missing", data)}
+      />
+
+      {successData && (
+        <ServiceSuccessModal 
+          isOpen={!!successData}
+          onClose={() => setSuccessData(null)}
+          title={successData.title}
+          confirmationId={successData.confirmationId}
+          message={successData.message}
+        />
+      )}
 
       {/* Request History Table */}
       <div className="bg-white p-8 rounded-none shadow-sm">
