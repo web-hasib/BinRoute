@@ -2,13 +2,8 @@
 
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
-import { DashboardHeader } from "@/components/ui/dashboard/DashboardHeader";
 import { UserDashboardSidebar } from "@/components/ui/dashboard/userDashboardSidebar";
-import { useGetMe } from "@/hooks/useGetMe";
-import { Loader } from "lucide-react";
-import { useRouter } from "next/navigation";
 import type React from "react";
-import { useEffect } from "react";
 
 export default function DashboardLayout({
   children,
@@ -41,12 +36,12 @@ export default function DashboardLayout({
   // }
 
   return (
-    <div>
+    <div className="">
       <Navbar />
-      <div className="flex container mt-16 mx-auto px-4 items-start">
+      <div className="flex container mt-16 mx-auto px-4 gap-4 items-start">
         <UserDashboardSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <main className="flex-1 overflow-y-auto ">
+          <main className="flex-1 overflow-y-auto">
             {children}
           </main>
         </div>
