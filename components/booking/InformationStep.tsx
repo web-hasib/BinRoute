@@ -4,7 +4,6 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { MapPin, Calendar, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { updateBookingData, updateContactInfo } from "@/feature/user/bookingSlice";
 import PricingSidebar from "./PricingSidebar";
 

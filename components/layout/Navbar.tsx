@@ -13,8 +13,8 @@ const Navbar = () => {
     { name: "Home", href: "/" },
     {
       name: "Services",
-      href: "/services",
-      dropdown: ["Service Areas"],
+      href: "/#services",
+      dropdown: [{name: "Service Areas", href: "/services/service-areas"}],
     },
     { name: "About us", href: "/about" },
     { name: "Faq", href: "/faq" },
@@ -50,11 +50,11 @@ const Navbar = () => {
                   <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                     {link.dropdown.map((subItem) => (
                       <Link
-                        key={subItem}
-                        href="#"
+                        key={subItem.name}
+                        href={subItem.href}
                         className="block px-4 py-2 text-sm text-[#4A4A4A] hover:bg-gray-50 hover:text-[#0056B3]"
                       >
-                        {subItem}
+                        {subItem.name}
                       </Link>
                     ))}
                   </div>
@@ -108,12 +108,12 @@ const Navbar = () => {
                     <div className="pl-4 mt-2 flex flex-col gap-2">
                       {link.dropdown.map((subItem) => (
                         <Link
-                          key={subItem}
-                          href="#"
+                          key={subItem.name}
+                          href={subItem.href}
                           className="text-sm text-[#4A4A4A] hover:text-[#0056B3]"
                           onClick={() => setIsOpen(false)}
                         >
-                          {subItem}
+                          {subItem.name}
                         </Link>
                       ))}
                     </div>

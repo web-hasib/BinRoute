@@ -61,7 +61,7 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
           />
           <DetailRow
             label="Dumpster Size"
-            value={dumpsterSize?.replace("-", " ") + " Roll Off"}
+            value={(dumpsterSize || "").replace("-", " ") + " Roll Off"}
             isUpper
           />
           <DetailRow
@@ -148,8 +148,8 @@ const DetailRow = ({
   </div>
 );
 
-// Helper function locally since we can't import cn easily in this specific multi-file edit context if not careful
-function cn(...classes: (string | boolean | undefined)[]) {
+// Helper function locally
+function cn(...classes: (string | boolean | undefined | null)[]) {
   return classes.filter(Boolean).join(" ");
 }
 

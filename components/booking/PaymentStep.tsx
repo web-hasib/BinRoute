@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
 import { Calendar, CreditCard } from "lucide-react";
 import PricingSidebar from "./PricingSidebar";
 
