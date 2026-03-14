@@ -1,11 +1,29 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { CreditCard, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PaymentHistory from "@/components/sections/dashboard/PaymentHistory";
+import QuickPayModal from "@/components/sections/dashboard/billing/QuickPayModal";
+import EditPaymentMethodModal, { EditPaymentFormValues } from "@/components/sections/dashboard/billing/EditPaymentMethodModal";
+import BillingSuccessModal from "@/components/sections/dashboard/billing/BillingSuccessModal";
 
 const BillingPaymentPage = () => {
+  const [showQuickPay, setShowQuickPay] = useState(false);
+  const [showEditCard, setShowEditCard] = useState(false);
+  const [successType, setSuccessType] = useState<"payment" | "update" | null>(null);
+
+  const handlePaymentSuccess = () => {
+    setShowQuickPay(false);
+    setSuccessType("payment");
+  };
+
+  const handleUpdateSuccess = (data: EditPaymentFormValues) => {
+    if (data) console.log("Updating card:", data);
+    setShowEditCard(false);
+    setSuccessType("update");
+  };
+
   return (
     <div className="space-y-8 pb-12">
       {/* Header */}
@@ -31,7 +49,10 @@ const BillingPaymentPage = () => {
                <div className="absolute top-0 right-0 size-2 bg-red-500 rounded-full border-2 border-white" />
             </div>
           </div>
-          <Button className="w-full bg-[#0061AA] hover:bg-[#004e89] text-white py-6 rounded-none font-bold flex items-center justify-center gap-2 mt-4">
+          <Button 
+            onClick={() => setShowQuickPay(true)}
+            className="w-full bg-[#0061AA] hover:bg-[#004e89] text-white py-6 rounded-none font-bold flex items-center justify-center gap-2 mt-4"
+          >
             Pay now <ArrowRight className="size-4" />
           </Button>
         </div>
@@ -50,11 +71,39 @@ const BillingPaymentPage = () => {
               <CreditCard className="size-6 text-[#172C41]" />
             </div>
           </div>
-          <Button variant="outline" className="w-full border-gray-200 text-[#0061AA] py-6 rounded-none font-bold bg-[#E6F0F9] hover:bg-blue-100 mt-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowEditCard(true)}
+            className="w-full border-gray-200 text-[#0061AA] py-6 rounded-none font-bold bg-[#E6F0F9] hover:bg-blue-100 mt-4"
+          >
             Edit Details
           </Button>
         </div>
       </div>
+
+      {/* Modals */}
+      <QuickPayModal 
+        isOpen={showQuickPay}
+        onClose={() => setShowQuickPay(false)}
+        onConfirm={handlePaymentSuccess}
+        amount="$563.63"
+        nextPaymentDate="May, 2025"
+      />
+
+      <EditPaymentMethodModal 
+        isOpen={showEditCard}
+        onClose={() => setShowEditCard(false)}
+        onSubmitSuccess={handleUpdateSuccess}
+      />
+
+      {successType && (
+        <BillingSuccessModal 
+          isOpen={!!successType}
+          onClose={() => setSuccessType(null)}
+          type={successType}
+        />
+      )}
+
 
       {/* Payment History Component */}
       <PaymentHistory title="All Payment History" />

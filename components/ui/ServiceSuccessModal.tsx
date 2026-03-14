@@ -26,7 +26,7 @@ const ServiceSuccessModal = ({
       isOpen={isOpen} 
       onClose={onClose} 
       showCloseButton={false}
-      className="max-w-3xl p-0"
+      className="max-w-2xl p-0"
     >
       <div className="flex flex-col items-center text-center p-8 py-12">
         {/* Success Icon */}
