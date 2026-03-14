@@ -71,7 +71,7 @@ const ContactSection = () => {
                     <div className="space-y-12 py-4">
                         <div className="space-y-8">
                             <h2 className="text-3xl md:text-4xl font-bold text-[#0A2540]">
-                                Don't hesitate to contact us
+                                Don&apos;t hesitate to contact us
                             </h2>
                             <p className="text-gray-600 md:text-lg">
                                 If you need a dumpster for your home, job site, or business, we
@@ -98,6 +98,11 @@ const ContactSection = () => {
 
                         {/* Map Placeholder */}
                         <div className="relative aspect-video w-full overflow-hidden shadow-lg">
+                            <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                                <p className="transform -rotate-30 text-2xl font-bold text-black/50 text-center px-4 drop-shadow-md">
+                                    here will be Dynamic map later
+                                </p>
+                            </div>
                             <Image
                                 src="/contact/map.png"
                                 alt="Worcester Map"

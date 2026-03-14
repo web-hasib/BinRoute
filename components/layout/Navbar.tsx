@@ -13,13 +13,8 @@ const Navbar = () => {
     { name: "Home", href: "/" },
     {
       name: "Services",
-      href: "#services",
-      dropdown: [
-        {
-          name: "Service Areas",
-          href: "/services/service-areas",
-        },
-      ],
+      href: "/#services",
+      dropdown: [{name: "Service Areas", href: "/services/service-areas"}],
     },
     { name: "About us", href: "/about" },
     { name: "Faq", href: "/faq" },
@@ -125,7 +120,8 @@ const Navbar = () => {
                         <Link
                           key={subItem.name}
                           href={subItem.href}
-                          className="block px-4 py-2 text-sm text-[#4A4A4A] hover:bg-gray-50 hover:text-[#0056B3]"
+                          className="text-sm text-[#4A4A4A] hover:text-[#0056B3]"
+                          onClick={() => setIsOpen(false)}
                         >
                           {subItem.name}
                         </Link>

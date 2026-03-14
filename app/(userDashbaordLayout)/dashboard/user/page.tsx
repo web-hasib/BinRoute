@@ -5,7 +5,7 @@ import PaymentHistory from "@/components/sections/dashboard/PaymentHistory";
 
 export default function ProfilePage() {
     return (
-        <main className="bg-gray-50/50 min-h-screen">
+        <main className="bg-gray-50/50 h-full">
             <div className="container px-4 flex flex-col lg:flex-row gap-8">
                 {/* Sidebar - Profile & Navigation */}
              

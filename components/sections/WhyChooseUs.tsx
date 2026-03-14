@@ -12,11 +12,15 @@ interface FeatureCardProps {
 }
 
 const WhyChooseUsCard = ({ icon, title, description }: FeatureCardProps) => (
-  <div className="bg-[#F9FAFB] p-8 border border-[#E5E9EB]">
-    <div className="size-10 bg-white shadow-xs border border-gray-100 flex items-center justify-center mb-6">
-      {icon}
+  <div className="bg-[#F9FAFB] p-8 border border-[#E5E9EB] hover:border-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-default">
+    <div className="size-10 bg-white shadow-xs border border-gray-100 flex items-center justify-center mb-6  transition-colors duration-300">
+      <div className="group-hover:text-white transition-colors duration-300">
+        {icon}
+      </div>
     </div>
-    <h3 className="text-xl font-bold text-[#0c243c] mb-3">{title}</h3>
+    <h3 className="text-xl font-bold text-[#0c243c] mb-3 group-hover:text-blue-600 transition-colors duration-300">
+      {title}
+    </h3>
     <p className="text-[#5a6b7d] text-[0.85rem] leading-relaxed">
       {description}
     </p>

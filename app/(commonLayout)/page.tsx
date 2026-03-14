@@ -2,6 +2,8 @@ import Hero from "@/components/sections/Hero";
 import ServiceOverview from "@/components/sections/ServiceOverview";
 import HowItWorks from "@/components/sections/HowItWorks";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
+import Testimonials from "@/components/sections/Testimonials";
+import LatestArticles from "@/components/sections/LatestArticles";
 
 export default function Home() {
   return (
@@ -10,6 +12,8 @@ export default function Home() {
       <ServiceOverview />
       <HowItWorks />
       <WhyChooseUs />
+      <Testimonials />
+      <LatestArticles />
     </main>
   );
 }
