@@ -26,6 +26,11 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
       {/* Map/Distance Card */}
       <div className="bg-white border border-gray-100 p-1 space-y-4">
         <div className="relative h-48 bg-gray-100 overflow-hidden">
+           <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+             <p className="transform -rotate-30 text-xl font-bold text-red-400 text-center px-4 drop-shadow-md">
+               here will be the map later
+             </p>
+           </div>
            {/* Mock Map Image */}
            <Image src="/dummy.png" alt="Map" fill className="object-cover" />
            <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-full shadow-sm flex items-center gap-2 text-[10px] font-bold">
