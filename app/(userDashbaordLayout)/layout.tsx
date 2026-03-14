@@ -43,7 +43,7 @@ export default function DashboardLayout({
   return (
     <div>
       <Navbar />
-      <div className="flex h-screen container mt-16 mx-auto px-4  overflow-hidden">
+      <div className="flex container mt-16 mx-auto px-4 items-start">
         <UserDashboardSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <main className="flex-1 overflow-y-auto ">
