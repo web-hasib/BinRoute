@@ -93,22 +93,22 @@ const PaymentHistory = ({ title = "All Payment History" }) => {
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-gray-50/50 border-y border-gray-100">
-                            <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Invoice ID</th>
-                            <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Service Type</th>
-                            <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Amount</th>
-                            <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Date</th>
-                            <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider text-right">Action</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Invoice ID</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Service Type</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Amount</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {currentPayments.map((payment, index) => (
                             <tr key={payment.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="px-6 py-6 text-[#172C41] font-bold text-sm">{payment.id}</td>
-                                <td className="px-6 py-6 text-gray-500 font-medium text-sm">{payment.serviceType}</td>
-                                <td className="px-6 py-6 text-[#172C41] font-bold text-sm">{payment.amount}</td>
-                                <td className="px-6 py-6 text-gray-500 font-medium text-sm">{payment.date}</td>
-                                <td className="px-6 py-6">
+                                <td className="px-6 py-6 whitespace-nowrap text-[#172C41] font-bold text-sm">{payment.id}</td>
+                                <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{payment.serviceType}</td>
+                                <td className="px-6 py-6 whitespace-nowrap text-[#172C41] font-bold text-sm">{payment.amount}</td>
+                                <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{payment.date}</td>
+                                <td className="px-6 py-6 whitespace-nowrap">
                                     <span className={cn(
                                         "inline-block px-4 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-wider",
                                         payment.status === "Paid" ? "bg-green-50 text-green-500" : "bg-amber-50 text-amber-500"
@@ -116,7 +116,7 @@ const PaymentHistory = ({ title = "All Payment History" }) => {
                                         {payment.status}
                                     </span>
                                 </td>
-                                <td className="px-6 py-6 text-right">
+                                <td className="px-6 py-6 whitespace-nowrap text-right">
                                     <button
                                         onClick={() => handleDownload(payment.id)}
                                         className="p-2 text-gray-400 hover:text-[#006CF9] transition-colors cursor-pointer"

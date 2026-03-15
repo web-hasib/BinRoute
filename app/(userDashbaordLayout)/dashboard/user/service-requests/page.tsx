@@ -74,11 +74,15 @@ const ServiceRequestsPage = () => {
           { id: "damage", title: "Report Damage", icon: AlertCircle, desc: "Container repair or replacement request" },
         ].map((action, idx) => (
           <div key={idx} className="bg-white p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
+            <div className="flex gap-2">
             <div className="p-4 bg-gray-50 mb-4 border border-gray-50">
-              <action.icon className="size-6 text-[#172C41]" />
+              <action.icon className="size-5 md:size-4 lg:size-6 text-[#172C41]" />
             </div>
-            <h3 className="font-bold text-[#172C41] mb-1">{action.title}</h3>
-            <p className="text-gray-400 text-xs mb-6 px-4">{action.desc}</p>
+            <div className="flex flex-col">
+              <h3 className=" md:text-[12px] lg:text-base font-bold text-[#172C41] mb-1">{action.title}</h3>
+              <p className="text-gray-400 md:text-[8px] lg:text-xs mb-6 px-4">{action.desc}</p>
+            </div>
+            </div>
             <Button 
               onClick={() => handleOpenModal(action.id)}
               className="w-full bg-[#E6F0F9] hover:bg-blue-100 text-[#0061AA] py-6 rounded-none font-bold border-none shadow-none"
@@ -143,21 +147,21 @@ const ServiceRequestsPage = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50 border-y border-gray-100">
-                <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Invoice</th>
-                <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Requests type</th>
-                <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-gray-400 font-bold text-xs uppercase tracking-wider text-right">Action</th>
+                <th className="px-6 py-4 text-center whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Invoice</th>
+                <th className="px-6 py-4 text-center whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Requests type</th>
+                <th className="px-6 py-4 text-center whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-4 text-center whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-center whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {allRequests.map((req, index) => (
                 <tr key={index} className="hover:bg-gray-50/50 transition-colors group">
-                  <td className="px-6 py-6 text-[#172C41] font-bold text-sm">{req.id}</td>
-                  <td className="px-6 py-6 text-gray-500 font-medium text-sm">{req.type}</td>
-                  <td className="px-6 py-6 text-[#172C41] font-bold text-sm">{req.amount}</td>
-                  <td className="px-6 py-6">
+                  <td className="px-6 py-6 whitespace-nowrap text-[#172C41] font-bold text-sm">{req.id}</td>
+                  <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{req.type}</td>
+                  <td className="px-6 py-6 whitespace-nowrap text-[#172C41] font-bold text-sm">{req.amount}</td>
+                  <td className="px-6 py-6 whitespace-nowrap">
                     <span className={cn(
                       "inline-block px-4 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-wider",
                       req.status === "Complete" ? "bg-green-50 text-green-500" : "bg-orange-50 text-orange-400"
@@ -165,8 +169,8 @@ const ServiceRequestsPage = () => {
                       {req.status}
                     </span>
                   </td>
-                  <td className="px-6 py-6 text-gray-500 font-medium text-sm">{req.date}</td>
-                  <td className="px-6 py-6 text-right">
+                  <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{req.date}</td>
+                  <td className="px-6 py-6 whitespace-nowrap text-right">
                     <button className="p-2 text-gray-400 hover:text-[#006CF9] transition-colors cursor-pointer">
                       <Download className="size-5" />
                     </button>
