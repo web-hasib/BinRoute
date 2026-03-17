@@ -13,7 +13,7 @@ export function DashboardHeader() {
   });
 
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-gray-200 bg-[#F6F6F6] backdrop-blur-md">
       <div className="px-4 sm:px-6 lg:px-8 py-3.5">
         <div className="flex items-center justify-between gap-4">
           {/* Left side - Can add breadcrumbs or title here */}
