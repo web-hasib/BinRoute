@@ -39,7 +39,7 @@ export default function DashboardLayout({
       <DashboardSidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <DashboardHeader />
-        <main className="flex-1 p-8 overflow-y-auto bg-[#F6F6F6]">{children}</main>
+        <main className="flex-1">{children}</main>
       </div>
     </div>
   );
