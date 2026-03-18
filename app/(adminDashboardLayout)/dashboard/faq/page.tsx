@@ -124,7 +124,7 @@ const FAQPage = () => {
     <Container >
       <h1 className="text-2xl font-bold text-[#0A2540] mb-6 font-primary">FAQ List</h1>
       
-      <div className="bg-white p-5 shadow-sm ">
+      <div className="bg-white p-5 shadow-sm mb-0 border-b border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
@@ -247,7 +247,7 @@ const FAQForm = ({
   };
 
   return (
-    <div className="bg-white p-8 md:p-12 shadow-sm border border-gray-100">
+    <div className="bg-white p-8 md:p-12  shadow-sm border border-gray-100">
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
           <label className="block text-lg font-bold text-[#0A2540] mb-4">
