@@ -36,7 +36,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             </div>
             <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
               Application Error
+            
             </h2>
+
+<div>
+  {JSON.stringify(this.state)}
+</div>
             <p className="text-sm text-gray-500 mb-6 font-medium whitespace-normal break-words">
               {this.state.error?.message || "An unexpected error occurred in the application."}
             </p>

@@ -38,7 +38,7 @@ export function DataTable<T>({ columns, data, className }: DataTableProps<T>) {
               {columns.map((column, index) => (
                 <TableHead
                   key={index}
-                  className="px-6 py-4 text-left text-sm font-semibold text-[#666666] border-none"
+                  className="px-6 py-4 text-left text-sm font-semibold whitespace-nowrap text-[#666666] border-none"
                 >
                   {column.header}
                 </TableHead>

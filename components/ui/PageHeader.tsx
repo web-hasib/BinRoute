@@ -28,7 +28,7 @@ export function PageHeader({
   return (
     <div className={cn("flex flex-col md:flex-row items-start  justify-between gap-4", className)}>
       <div className="space-y-1">
-        <h1 className="text-3xl font-semibold tracking-tighter text-slate-900 dark:text-white leading-none">
+        <h1 className="text-3xl font-semibold tracking-tighter text-slate-700 dark:text-white leading-none">
           {title}
         </h1>
         {subtitle && (
