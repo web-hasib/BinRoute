@@ -93,10 +93,12 @@ const BookingPage = () => {
      
       <PageHeader title="All Booking Service" actions={
         <div className="flex items-center gap-2">
-          <Button variant="primary" >
-            <Plus className="w-5 h-5" />
-            Add new Booking 
-          </Button>
+          <Link href="/dashboard/booking/add">
+            <Button variant="primary" >
+              <Plus className="w-5 h-5" />
+              Add new Booking 
+            </Button>
+          </Link>
         </div>
       }/>
        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">

@@ -55,8 +55,8 @@ const BookingFlow = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-12">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="w-full">
+      <div className="container mx-auto px-4 max-w-6xl py-8">
         <StepProgress currentStep={currentStep} />
 
         <div className="mt-12">
