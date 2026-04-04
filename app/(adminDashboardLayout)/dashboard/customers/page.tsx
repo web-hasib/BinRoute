@@ -4,7 +4,7 @@ import CustomerList from "@/components/dashboard/customers/CustomerList";
 
 const CustomersPage = () => {
   return (
-    <Container className="py-8 bg-[#F8FAFC] min-h-screen">
+    <Container className="py-8 ">
       <CustomerList />
     </Container>
   );

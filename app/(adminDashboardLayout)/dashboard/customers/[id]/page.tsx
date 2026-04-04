@@ -9,7 +9,7 @@ const CustomerDetailsPage = () => {
     const { id } = useParams() as { id: string };
     
     return (
-        <Container className="py-8 bg-[#F8FAFC] min-h-screen">
+        <Container className="">
             <CustomerProfile id={id} />
         </Container>
     );
