@@ -5,6 +5,7 @@ import Container from "@/components/ui/container";
 import { Search, ChevronLeft, ChevronRight, Eye, Download } from "lucide-react";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { CustomPagination } from "@/components/ui/CustomPagination";
+import Link from "next/link";
 
 interface Booking {
   id: string;
@@ -16,7 +17,7 @@ interface Booking {
 }
 
 const bookings: Booking[] = Array(10).fill({
-  id: "#INV-88321",
+  id: "INV-88321",
   customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
   service: "Commercial Service",
   amount: "$245.00",
@@ -60,11 +61,11 @@ const columns: ColumnDef<Booking>[] = [
   },
   {
     header: "Action",
-    cell: () => (
+    cell: (item) => (
       <div className="flex items-center justify-end gap-3">
-        <button className="text-[#0062FF] hover:bg-blue-50 p-1 transition-colors">
+        <Link href={`/dashboard/booking/${item.id}`} className="text-[#0062FF] hover:bg-blue-50 p-1 transition-colors">
           <Eye className="w-5 h-5" />
-        </button>
+        </Link>
         <button className="text-[#0062FF] hover:bg-blue-50 p-1 transition-colors">
           <Download className="w-5 h-5" />
         </button>
