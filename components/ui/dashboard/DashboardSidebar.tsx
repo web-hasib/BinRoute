@@ -139,7 +139,7 @@ export function DashboardSidebar() {
             )}
             <ul className="space-y-1">
               {group.items.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 const Icon = item.icon;
                 return (
                   <li key={item.href} className="relative group/item w-full px-2">
