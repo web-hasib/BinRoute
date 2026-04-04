@@ -2,10 +2,15 @@
 
 import React from "react";
 import Container from "@/components/ui/container";
-import { Search, ChevronLeft, ChevronRight, Eye, Download } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Eye, Download, Plus, TrendingUp, Users, UserCheck, Briefcase } from "lucide-react";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { CustomPagination } from "@/components/ui/CustomPagination";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/booking/details/StatusBadge";
+import { StatCard } from "@/components/dashboard/StatCard";
 
 interface Booking {
   id: string;
@@ -85,8 +90,44 @@ const BookingPage = () => {
 
   return (
     <Container>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#001D3D]">All Booking Service</h1>
+     
+      <PageHeader title="All Booking Service" actions={
+        <div className="flex items-center gap-2">
+          <Button variant="primary" >
+            <Plus className="w-5 h-5" />
+            Add new Booking 
+          </Button>
+        </div>
+      }/>
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
+        <StatCard 
+          label="Total Revenue" 
+          value="$12,3620" 
+          icon={TrendingUp} 
+          iconBgColor="bg-green-50" 
+          iconColor="text-green-600"
+        />
+        <StatCard 
+          label="Total Customer" 
+          value="1200" 
+          icon={Users} 
+          iconBgColor="bg-blue-50" 
+          iconColor="text-blue-600"
+        />
+        <StatCard 
+          label="Total Driver" 
+          value="50" 
+          icon={UserCheck} 
+          iconBgColor="bg-purple-50" 
+          iconColor="text-purple-600"
+        />
+        <StatCard 
+          label="Active Work" 
+          value="20" 
+          icon={Briefcase} 
+          iconBgColor="bg-red-50" 
+          iconColor="text-red-600"
+        />
       </div>
 
       <div className="bg-white border border-gray-100 rounded-none overflow-hidden">
