@@ -1,9 +1,7 @@
 "use client";
 
-import React from "react";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CustomPaginationProps {
   currentPage: number;
@@ -54,16 +52,16 @@ export const CustomPagination = ({
       </div>
 
       {/* Right: Navigation */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-4">
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-[#666666] border border-gray-200 border-r-0 hover:bg-gray-50 disabled:opacity-30 rounded-none transition-colors"
+          className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-[#0062AA] border border-[#0062AA] hover:bg-[#013255] disabled:opacity-30 rounded-none transition-colors"
         >
           <ChevronLeft size={16} /> Previous
         </button>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           {pages.map((page) => {
             if (totalPages > 5) {
               if (
@@ -76,19 +74,20 @@ export const CustomPagination = ({
                     key={page}
                     onClick={() => onPageChange(page)}
                     className={cn(
-                      "w-10 h-10 flex items-center justify-center text-sm font-bold border-y border-r border-gray-200 transition-all",
+                      "w-10 h-10 flex items-center justify-center text-sm font-bold border border-gray-600 transition-all",
                       currentPage === page
-                        ? "bg-[#0062FF] text-white border-[#0062FF]"
+                        ? "bg-[#0062AA] text-white border-[#0062AA]"
                         : "text-[#666666] hover:bg-gray-50 border-gray-200",
                     )}
                   >
+
                     {page}
                   </button>
                 );
               }
               if (page === currentPage - 2 || page === currentPage + 2) {
                 return (
-                  <span key={page} className="w-10 h-10 flex items-center justify-center text-[#666666] border-y border-r border-gray-200 bg-white">
+                  <span key={page} className="w-10 h-10 flex items-center justify-center text-[#666666] border border-gray-200 bg-white">
                     ...
                   </span>
                 );
@@ -101,9 +100,9 @@ export const CustomPagination = ({
                 key={page}
                 onClick={() => onPageChange(page)}
                 className={cn(
-                  "w-10 h-10 flex items-center justify-center text-sm font-bold border-y border-r border-gray-200 transition-all",
+                  "w-10 h-10 flex items-center justify-center text-sm font-bold border border-gray-200 transition-all",
                   currentPage === page
-                    ? "bg-[#0062FF] text-white border-[#0062FF]"
+                    ? "bg-[#0062AA] text-white border-[#0062AA]"
                     : "text-[#666666] hover:bg-gray-50 border-gray-200",
                 )}
               >
@@ -116,7 +115,7 @@ export const CustomPagination = ({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-[#0062FF] border border-[#0062FF] hover:bg-blue-700 disabled:opacity-30 rounded-none transition-colors"
+          className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-[#0062AA] border border-[#0062AA] hover:bg-[#013255] disabled:opacity-30 rounded-none transition-colors"
         >
           Next <ChevronRight size={16} />
         </button>

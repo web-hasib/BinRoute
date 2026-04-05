@@ -40,11 +40,11 @@ const Modal = ({
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       {/* Overlay */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" 
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      
+
       {/* Modal Container */}
       <div className={cn(
         "relative bg-white w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl transition-all transform",
@@ -58,7 +58,7 @@ const Modal = ({
               {description && <p className="text-gray-500 text-sm mt-1">{description}</p>}
             </div>
             {showCloseButton && (
-              <button 
+              <button
                 onClick={onClose}
                 className="p-3 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-gray-600 shadow-sm transition-colors"
               >
