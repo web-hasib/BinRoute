@@ -14,6 +14,7 @@ import baseApi from "./api/baseApi";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
 import userReducer  from "../feature/user/userSlice"
 import bookingReducer from "../feature/user/bookingSlice"
+import blogReducer from "../feature/blog/blogSlice"
 
 const createNoopStorage = () => ({
   getItem() {
@@ -41,6 +42,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   user: userReducer,
   booking: bookingReducer,
+  blog: blogReducer,
   [baseApi.reducerPath]: baseApi.reducer,
 });
 
