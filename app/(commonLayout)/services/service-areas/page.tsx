@@ -4,7 +4,7 @@ import ServiceAreaList from "@/components/sections/ServiceAreaList";
 export default function ServiceAreasPage() {
     return (
         <main>
-            <ServiceAreaHero />
+            {/* <ServiceAreaHero /> */}
             <ServiceAreaList />
         </main>
     );

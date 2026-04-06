@@ -32,19 +32,6 @@ const Footer = () => {
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
               Fast waste removal across central Massachusetts and greater Boston
             </p>
-            <div className="mt-8">
-              <h4 className="font-semibold mb-4">Get Updates</h4>
-              <div className="flex gap-2 h-10">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="bg-[#1A2631] border-none rounded-sm px-3 text-sm flex-1 outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <Button className="bg-[#3B9EFF] hover:bg-blue-500 rounded-sm px-6 h-full font-semibold">
-                  Join
-                </Button>
-              </div>
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -166,17 +153,17 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-[#1A2631] flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex gap-4 text-gray-500 text-xs">
-            <Link href="#" className="hover:text-white transition-colors">
+        <div className="pt-8 mb-32 border-t border-[#1A2631] flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex gap-4 text-gray-200 text-xs">
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>
             <span>|</span>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="/terms-condition" className="hover:text-white transition-colors">
               Terms of Use
             </Link>
           </div>
-          <p className="text-gray-500 text-xs">
+          <p className="text-gray-400 text-xs">
             © 2024 <span className="italic">Labonte Disposal</span> Dumpster
             Rentals. All rights reserved.
           </p>
