@@ -100,9 +100,9 @@ export function DashboardSidebar() {
         {!collapsed && (
           <Link href="/" className="flex items-center">
             <Image
-              src="/icon/dashboard-logo.png"
+              src="/logo.png"
               alt="Logo"
-              width={160}
+              width={60}
               height={50}
               className="w-auto"
             />
