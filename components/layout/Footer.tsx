@@ -168,11 +168,11 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#1A2631] flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex gap-4 text-gray-500 text-xs">
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>
             <span>|</span>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="/terms-condition" className="hover:text-white transition-colors">
               Terms of Use
             </Link>
           </div>
