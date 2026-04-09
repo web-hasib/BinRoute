@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, User, Phone, Mail, MapPin, Lock, Eye } from "lucide-react";
+import { ArrowLeft, User, Phone, Mail, MapPin, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useAddDriverMutation } from "@/redux/api/auth/authApi";
+import { toast } from "sonner";
 
 interface DriverFormProps {
     mode: "add" | "edit";
@@ -14,13 +16,36 @@ interface DriverFormProps {
 const DriverForm = ({ mode, id }: DriverFormProps) => {
     const router = useRouter();
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [addDriver, { isLoading: isAdding }] = useAddDriverMutation();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Form States
+    const [fullName, setFullName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+    const [address, setAddress] = useState("");
+    const [contactEmail, setContactEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate save logic
+        
         if (mode === "add") {
-            setIsSubmitted(true);
+            try {
+                await addDriver({
+                    fullName,
+                    phone,
+                    email,
+                    address,
+                    contactEmail,
+                    password
+                }).unwrap();
+                setIsSubmitted(true);
+            } catch (error: any) {
+                toast.error(error?.data?.message || "Failed to add driver");
+            }
         } else {
+            // Edit logic would go here if implemented
             router.back();
         }
     };
@@ -36,8 +61,8 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                     className="object-contain"
                 />
                 </div>
-                <div className="space-y-4">
-                <h2 className="text-3xl font-extrabold text-[#172C41]">You Added Tomas Diko as a Driver</h2>
+                <div className="space-y-4 text-center">
+                <h2 className="text-3xl font-extrabold text-[#172C41]">You Added {fullName} as a Driver</h2>
                 <p className="text-gray-400 font-medium text-sm leading-relaxed max-w-sm mx-auto">
                     You have successfully added a new driver. Now you can <br /> assign jobs to the new driver.
                 </p>
@@ -74,7 +99,10 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input 
                     type="text" 
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     placeholder="Tomas Diko" 
+                    required
                     className="w-full pl-12 pr-4 py-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0265AF] text-sm text-[#172C41] font-medium placeholder:text-gray-300 rounded-none"
                   />
                 </div>
@@ -85,7 +113,10 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input 
                     type="text" 
-                    placeholder="12 Dec 2026" 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+1 234 567 890" 
+                    required
                     className="w-full pl-12 pr-4 py-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0265AF] text-sm text-[#172C41] font-medium placeholder:text-gray-300 rounded-none"
                   />
                 </div>
@@ -96,7 +127,10 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input 
                     type="email" 
-                    placeholder="null@gmail.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="driver@example.com" 
+                    required
                     className="w-full pl-12 pr-4 py-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0265AF] text-sm text-[#172C41] font-medium placeholder:text-gray-300 rounded-none"
                   />
                 </div>
@@ -107,7 +141,10 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                   <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input 
                     type="text" 
-                    placeholder="12 Dec 2026" 
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="123 Main St, Anytown" 
+                    required
                     className="w-full pl-12 pr-4 py-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0265AF] text-sm text-[#172C41] font-medium placeholder:text-gray-300 rounded-none"
                   />
                 </div>
@@ -127,21 +164,33 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input 
                       type="email" 
-                      placeholder="null@gmail.com" 
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="driver.login@example.com" 
+                      required
                       className="w-full pl-12 pr-4 py-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0265AF] text-sm text-[#172C41] font-medium placeholder:text-gray-300 rounded-none"
                     />
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-sm font-bold text-[#172C41]">One Time Password For Login</label>
+                  <label className="text-sm font-bold text-[#172C41]">Password For Login</label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input 
-                      type="password" 
-                      placeholder="123456789" 
+                      type={showPassword ? "text" : "password"} 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter password" 
+                      required
                       className="w-full pl-12 pr-12 py-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0265AF] text-sm text-[#172C41] font-medium placeholder:text-gray-300 rounded-none"
                     />
-                    <Eye className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer" />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -157,9 +206,10 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                 </Button>
                 <Button 
                     type="submit"
-                    className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white font-bold px-8 py-3 h-auto rounded-none"
+                    disabled={isAdding}
+                    className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white font-bold px-8 py-3 h-auto rounded-none min-w-[200px]"
                 >
-                    Save Driver Information and Send Credentials
+                    {isAdding ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Save Driver Information and Send Credentials"}
                 </Button>
               </div>
             </div>

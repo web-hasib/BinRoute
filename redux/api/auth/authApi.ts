@@ -114,6 +114,21 @@ export interface ResourceUpdateInput {
   profileImage?: string | null;
 }
 
+export interface IAddAdminPayload {
+  fullName: string;
+  email: string;
+  phone: string;
+}
+
+export interface IAddDriverPayload {
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  password?: string;
+  contactEmail: string;
+}
+
 const authApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
@@ -215,6 +230,24 @@ const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
+    addAdmin: builder.mutation<IBaseResponse, IAddAdminPayload>({
+      query: (body) => ({
+        url: "/auth/admin/create-admin",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    addDriver: builder.mutation<IBaseResponse, IAddDriverPayload>({
+      query: (body) => ({
+        url: "/auth/admin/create-driver",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -230,4 +263,6 @@ export const {
   useGetAllResourceQuery,
   useUpdateProfileMutation,
   useGoogleLoginMutation,
+  useAddAdminMutation,
+  useAddDriverMutation,
 } = authApi;
