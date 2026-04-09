@@ -182,9 +182,9 @@ const authApi = baseApi.injectEndpoints({
       }),
     }),
     // set password
-    setUpPassword: builder.mutation({
+    changePassword: builder.mutation({
       query: (body: unknown) => ({
-        url: "/auth/set-password",
+        url: "/auth/change-password",
         method: "POST",
         body,
       }),
@@ -225,7 +225,7 @@ export const {
   useEmailVerifyOtpMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
-  useSetUpPasswordMutation,
+  useChangePasswordMutation,
   useVerifyOtpMutation,
   useGetAllResourceQuery,
   useUpdateProfileMutation,

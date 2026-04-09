@@ -1,12 +1,81 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Camera, User, Phone, Mail, MapPin, Edit, Lock, Eye } from "lucide-react";
+import { Camera, User, Phone, Mail, MapPin, Edit, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useChangePasswordMutation, useGetMeQuery, useUpdateProfileMutation } from "@/redux/api/auth/authApi";
+import { toast } from "sonner";
 
 const AdminInfo = () => {
     const [isEditing, setIsEditing] = useState(false);
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
+    // Form States
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    
+    // Personal Info States (for editing)
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [address, setAddress] = useState("");
+
+    const { data: userData, isLoading: isUserLoading } = useGetMeQuery(undefined);
+    const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
+    const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+
+    useEffect(() => {
+        if (userData?.data) {
+            setName(userData.data.name || "");
+            setPhone(userData.data.phone || "");
+            setAddress(userData.data.location || "");
+        }
+    }, [userData]);
+
+    const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+        if (newPassword !== confirmPassword) {
+            toast.error("New passwords do not match");
+            return;
+        }
+
+        try {
+            await changePassword({ oldPassword, newPassword }).unwrap();
+            toast.success("Password changed successfully");
+            setOldPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+        } catch (error: any) {
+            toast.error(error?.data?.message || "Failed to change password");
+        }
+    };
+
+    const handleProfileSubmit = async () => {
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("phone", phone);
+        formData.append("location", address);
+
+        try {
+            await updateProfile(formData).unwrap();
+            toast.success("Profile updated successfully");
+            setIsEditing(false);
+        } catch (error: any) {
+            toast.error(error?.data?.message || "Failed to update profile");
+        }
+    };
+
+    if (isUserLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-[#0265AF]" />
+            </div>
+        );
+    }
 
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
@@ -26,8 +95,8 @@ const AdminInfo = () => {
             <div className="flex justify-between items-end -mt-16 mb-8 relative z-10">
               <div className="relative w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-md">
                 <Image 
-                  src="/driver_profile_avatar_1775316560340.png"
-                  alt="Tomas Diko"
+                  src={userData?.data?.profileImage || "/driver_profile_avatar_1775316560340.png"}
+                  alt={userData?.data?.name || "Admin"}
                   fill
                   className="object-cover"
                 />
@@ -49,7 +118,9 @@ const AdminInfo = () => {
                   <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
                   <input
                     type="text"
-                    placeholder={isEditing ? "Write down your new name......" : "Tomas Diko"}
+                    value={isEditing ? name : userData?.data?.name || ""}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Write down your name"
                     className="w-full pl-14 pr-4 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF] placeholder:text-gray-300"
                     readOnly={!isEditing}
                   />
@@ -61,7 +132,9 @@ const AdminInfo = () => {
                   <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
                   <input
                     type="text"
-                    placeholder={isEditing ? "Write down your new phone number......" : "12 Dec 2026"}
+                    value={isEditing ? phone : userData?.data?.phone || ""}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Write down your phone number"
                     className="w-full pl-14 pr-4 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF] placeholder:text-gray-300"
                     readOnly={!isEditing}
                   />
@@ -73,9 +146,9 @@ const AdminInfo = () => {
                   <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
                   <input
                     type="email"
-                    placeholder={isEditing ? "Write down your new email......" : "null@gmail.com"}
-                    className="w-full pl-14 pr-4 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF] placeholder:text-gray-300"
-                    readOnly={!isEditing}
+                    value={userData?.data?.email || ""}
+                    readOnly
+                    className="w-full pl-14 pr-4 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] opacity-70 cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -85,7 +158,9 @@ const AdminInfo = () => {
                   <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
                   <input
                     type="text"
-                    placeholder={isEditing ? "Write down your new address......" : "12 Dec 2026"}
+                    value={isEditing ? address : userData?.data?.location || ""}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Write down your address"
                     className="w-full pl-14 pr-4 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF] placeholder:text-gray-300"
                     readOnly={!isEditing}
                   />
@@ -97,8 +172,7 @@ const AdminInfo = () => {
                 {!isEditing ? (
                     <Button 
                         onClick={() => setIsEditing(true)}
-                        variant="primary"
-                        className="flex items-center gap-2 h-auto py-3.5"
+                        className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white flex items-center gap-2 h-auto py-3.5 rounded-none"
                     >
                         <Edit className="w-4 h-4" /> Edit Personal Information
                     </Button>
@@ -112,11 +186,11 @@ const AdminInfo = () => {
                             Cancel
                         </Button>
                         <Button 
-                            onClick={() => setIsEditing(false)}
-                            variant="primary"
-                            className="h-auto py-3.5"
+                            onClick={handleProfileSubmit}
+                            disabled={isUpdatingProfile}
+                            className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white h-auto py-3.5 rounded-none min-w-[140px]"
                         >
-                            Save Changes
+                            {isUpdatingProfile ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Save Changes"}
                         </Button>
                     </>
                 )}
@@ -126,49 +200,97 @@ const AdminInfo = () => {
 
         {/* Change Password */}
         <div className="bg-white p-10 border border-gray-100 shadow-sm space-y-10 rounded-none">
-          <h3 className="text-xl font-bold text-[#172C41]">Personal Information</h3>
+          <h3 className="text-xl font-bold text-[#172C41]">Change Password</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-            <div className="space-y-3">
-              <label className="text-[15px] font-bold text-[#172C41]">Old Password</label>
-              <div className="relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
-                <input
-                  type="password"
-                  defaultValue="123456789"
-                  className="w-full pl-14 pr-12 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF]"
-                />
-                <Eye className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+          <form onSubmit={handlePasswordSubmit} className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+              <div className="space-y-3">
+                <label className="text-[15px] font-bold text-[#172C41]">Old Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    placeholder="Enter old password"
+                    required
+                    className="w-full pl-14 pr-12 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showOldPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="text-[15px] font-bold text-[#172C41]">New Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    required
+                    className="w-full pl-14 pr-12 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="text-[15px] font-bold text-[#172C41]">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    required
+                    className="w-full pl-14 pr-12 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="space-y-3">
-              <label className="text-[15px] font-bold text-[#172C41]">New Password</label>
-              <div className="relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
-                <input
-                  type="password"
-                  defaultValue="123456789"
-                  className="w-full pl-14 pr-12 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF]"
-                />
-                <Eye className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
-              </div>
-            </div>
-          </div>
 
-          <div className="flex justify-end gap-4">
-              <Button 
-                variant="outline"
-                className="px-10 border-[#0265AF] text-[#0265AF] hover:bg-blue-50 h-auto py-3.5 rounded-none font-bold"
-              >
-                  Cancel
-              </Button>
-              <Button 
-                variant="primary"
-                className="h-auto py-3.5"
-              >
-                  Save New Password
-              </Button>
-          </div>
+            <div className="flex justify-end gap-4">
+                <Button 
+                  type="button"
+                  onClick={() => {
+                      setOldPassword("");
+                      setNewPassword("");
+                      setConfirmPassword("");
+                  }}
+                  variant="outline"
+                  className="px-10 border-[#0265AF] text-[#0265AF] hover:bg-blue-50 h-auto py-3.5 rounded-none font-bold"
+                >
+                    Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white h-auto py-3.5 rounded-none min-w-[160px]"
+                >
+                    {isChangingPassword ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Save New Password"}
+                </Button>
+            </div>
+          </form>
         </div>
       </div>
     );

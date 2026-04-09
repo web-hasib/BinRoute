@@ -806,3 +806,14 @@ export interface ICreateCouponPayload {
 
 export type ICouponResponse = IBaseResponse<ICoupon>;
 export type IAllCouponsResponse = IBaseResponse<ICoupon[]>;
+
+// Terms and Privacy Types
+export interface ITermsAndPrivacyData {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type IPrivacyResponse = IBaseResponse<ITermsAndPrivacyData>;
+export type ITermsResponse = IBaseResponse<ITermsAndPrivacyData>;
