@@ -2,6 +2,7 @@
 
 import { IBaseResponse, IForgotPasswordPayload, IUserRespon, IUserResponse, IVerifyOTPPayload } from "@/types/global";
 import baseApi from "../baseApi";
+import { email } from "zod";
 
 
 
@@ -43,7 +44,7 @@ export type UsersApiResponse = {
 export type WorkingDay = "M" | "T" | "W" | "TH" | "F" | "S" | "SU";
 
 export type ResourceRegistration = {
-  name: string;
+  fullName: string;
   role?: string; // e.g. "USER", "ADMIN", etc.
   email: string;
 
@@ -131,12 +132,22 @@ const authApi = baseApi.injectEndpoints({
 
     signUp: builder.mutation<AuthSuccessResponse, ResourceRegistration>({
       query: (body) => ({
-        url: "/users",
+        url: "/auth/create-account",
         method: "POST",
         body,
       }),
       invalidatesTags: ["User"],
     }),
+
+    emailVerifyOtp: builder.mutation({
+      query: (body: IVerifyOTPPayload) => ({
+        url: "/auth/email-verify",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
     // get all resourse (user)
     getAllResource: builder.query<IUserResponse, void>({
       query: () => ({
@@ -146,28 +157,30 @@ const authApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
-   
-   
- 
+
+
+
 
     forgotPassword: builder.mutation({
       query: (body: IForgotPasswordPayload) => ({
-        url: "auth/forgot-password",
+        url: "/auth/forgot-password",
         method: "POST",
         body,
       }),
       invalidatesTags: ["User"],
     }),
     // reset password
-    resetPassword: builder.mutation<IBaseResponse, { token: string; password: string }>({
-      query: ({ token, password }) => ({
-        url: `/auth/reset-password?token=${token}`,
+    // In your authApi.ts
+    resetPassword: builder.mutation<any, { accessToken: string; newPassword: string }>({
+      query: ({ accessToken, newPassword }) => ({
+        url: "/auth/reset-password",
         method: "POST",
-        body: { password },
+        body: { newPassword },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,   // Must have "Bearer " + space
+        },
       }),
-      invalidatesTags: ["User"],
     }),
-
     // set password
     setUpPassword: builder.mutation({
       query: (body: unknown) => ({
@@ -177,7 +190,7 @@ const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
-   
+
     updateProfile: builder.mutation<IBaseResponse, FormData>({
       query: (body) => ({
         url: "/users/update-profile",
@@ -188,7 +201,7 @@ const authApi = baseApi.injectEndpoints({
     }),
     verifyOtp: builder.mutation({
       query: (body: IVerifyOTPPayload) => ({
-        url: "/otp/verify",
+        url: "/auth/verify-reset-password-otp",
         method: "POST",
         body,
       }),
@@ -209,6 +222,7 @@ export const {
   useGetMeQuery,
   useLogInMutation,
   useSignUpMutation,
+  useEmailVerifyOtpMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useSetUpPasswordMutation,

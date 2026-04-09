@@ -13,50 +13,53 @@ import { useResetPasswordMutation } from "@/redux/api/auth/authApi";
 
 export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
+  const [Password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [reset, { isLoading }] = useResetPasswordMutation();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const email = searchParams.get("email");
+  const accessToken = searchParams.get("accessToken");
 
   const [backendErrors, setBackendErrors] = useState<Record<string, string>>(
     {},
   );
-  const token = searchParams.get("token");
 
-  const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setBackendErrors({});
+  setBackendErrors({});
 
-    if (newPassword !== confirmPassword) {
-      setBackendErrors({ confirmPassword: "Passwords do not match" });
-      return;
-    }
+  if (Password !== confirmPassword) {
+    setBackendErrors({ confirmPassword: "Passwords do not match" });
+    return;
+  }
 
-    if (!token) {
-      toast.error("token not found");
-      return;
-    }
+  if (!accessToken) {
+    toast.error("Token not found. Please use the link from your email again.");
+    return;
+  }
 
-    try {
-      await reset({
-        token,
-        password: newPassword, // ← ONLY THIS
-      }).unwrap();
-      toast.success("Password reset successfully!");
-      setTimeout(() => router.push("/login"), 1500);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      const errors = err?.data?.errors || [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  try {
+    await reset({
+      accessToken: accessToken!,
+      newPassword: Password,
+    }).unwrap();
+
+    toast.success("Password reset successfully!");
+    setTimeout(() => router.push("/login"), 1800);
+  } catch (err: any) {
+    const errors = err?.data?.errors || err?.data?.message || [];
+    
+    if (typeof errors === "string") {
+      toast.error(errors);
+    } else {
       const map = errors.reduce((acc: any, e: any) => {
-        acc[e.path] = e.message;
+        acc[e.path || "general"] = e.message;
         return acc;
       }, {});
       setBackendErrors(map);
     }
-  };
+  }
+};
 
   return (
     <div className="">
@@ -94,8 +97,8 @@ export default function ResetPasswordPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     id="newPassword"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    value={Password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Please enter new password"
                     required
                     className="w-full px-4 py-3 text-gray-700 bg-gray-100 border-none focus:ring-2 focus:ring-blue-500 outline-none transition text-sm placeholder-gray-400 font-sans"
@@ -139,9 +142,9 @@ export default function ResetPasswordPage() {
                     {backendErrors.confirmPassword}
                   </p>
                 )}
-                {newPassword &&
+                {Password &&
                   confirmPassword &&
-                  newPassword !== confirmPassword && (
+                  Password !== confirmPassword && (
                     <p className="mt-1 text-sm text-red-600">
                       Passwords do not match
                     </p>

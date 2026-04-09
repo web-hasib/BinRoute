@@ -18,8 +18,10 @@ export default function ForgetPasswordPage() {
 
     try {
       const response = await sendOtp({ email }).unwrap();
+      const userId = response.data?.id;
+      console.log("Received userId from forgotPassword response:", userId);
       toast.success(response.message || "OTP sent! Check your email.");
-      router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
+      router.push(`/verify-otp?userId=${encodeURIComponent(userId)}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.data?.message || "Failed to send OTP");

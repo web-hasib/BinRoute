@@ -12,8 +12,8 @@ export const baseApi = createApi({
     credentials: "include",
     prepareHeaders: (headers) => {
       const accessToken = Cookies.get("accessToken");
-      if (accessToken) {
-        headers.set("Authorization", accessToken);
+      if (accessToken && !headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${accessToken}`);
       }
       return headers;
     },

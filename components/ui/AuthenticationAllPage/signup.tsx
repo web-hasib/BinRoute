@@ -44,10 +44,9 @@ export default function SignupForm() {
 
     try {
       await register({
-        name: `${firstName} ${lastName}`,
+        fullName: `${firstName} ${lastName}`,
         email,
         password,
-        role: "user",
       }).unwrap();
 
       toast.success("Account created successfully!");

@@ -73,12 +73,18 @@ export default function LoginForm() {
     try {
       const res = await googleLogin(response.credential).unwrap();
       if (res.success) {
-        const { accessToken, user } = res.data;
-        dispatch(setCredentials({ user, accessToken }));
+        const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = res.data;
+          const user: UserProfile = {
+        id,
+        name: fullName,           // ← important mapping
+        email: userEmail,
+        role,
+      };
+        dispatch(setCredentials({user,  accessToken }));
         Cookies.set("accessToken", accessToken);
         toast.success("Login successfully with Google");
 
-        if (user.role === "super_admin") {
+        if (role === "SUPERADMIN" || role === "ADMIN") {
           router.push("/dashboard");
         } else {
           const params = new URLSearchParams(window.location.search);
@@ -95,40 +101,53 @@ export default function LoginForm() {
   /* No longer need onGoogleClick since we are using renderButton */
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setErrors({});
+  e.preventDefault();
+  setErrors({});
 
-    if (!email || !password) {
-      setErrors({ general: "Please enter both email and password." });
-      return;
-    }
+  if (!email || !password) {
+    setErrors({ general: "Please enter both email and password." });
+    return;
+  }
 
-    try {
-      const response = await signIn({ email, password }).unwrap();
-      if (response.success) {
-        // Assuming response structure matches what we expect
-        const { accessToken, user } = response.data;
+  try {
+    const response = await signIn({ email, password }).unwrap();
 
-        dispatch(setCredentials({ user, accessToken }));
-        Cookies.set("accessToken", accessToken);
-        toast.success("Login successfully");
+    if (response.success) {
+      // FIXED: API returns user fields directly in data (not nested under "user")
+      const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = response.data;
 
-        // Redirect logic基于角色
-        if (user.role === "super_admin" || user.role === "ADMIN") {
-          router.push("/dashboard");
-        } else {
-          const params = new URLSearchParams(window.location.search);
-          const callback = params.get("callback") || "/";
-          router.push(callback);
-        }
-        router.refresh();
+      // Map to your UserProfile shape (interface expects "name", not "fullName")
+      const user: UserProfile = {
+        id,
+        name: fullName,           // ← important mapping
+        email: userEmail,
+        role,
+      };
+
+      dispatch(setCredentials({ user, accessToken }));
+      Cookies.set("accessToken", accessToken);
+
+      toast.success("Login successfully");
+
+      // Redirect logic
+      if (role === "SUPERADMIN" || role === "ADMIN") {
+        router.push("/dashboard");
+      } else {
+        // Optional: redirect normal users somewhere else
+        const params = new URLSearchParams(window.location.search);
+        const callback = params.get("callback") || "/";
+        router.push(callback);
       }
-    } catch (error: any) {
-      const errorMessage = error?.data?.message || "Login failed. Please check your credentials.";
-      setErrors({ general: errorMessage });
-      toast.error(errorMessage);
+
+      router.refresh(); // good practice (same as Google login)
     }
-  };
+  } catch (error: any) {
+    // This now only catches real API errors, not our own JS bugs
+    const errorMessage = error?.data?.message || "Login failed. Please check your credentials.";
+    setErrors({ general: errorMessage });
+    toast.error(errorMessage);
+  }
+};
 
   return (
     <div className="flex h-screen w-full overflow-hidden font-sans">

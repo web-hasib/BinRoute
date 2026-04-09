@@ -106,8 +106,8 @@ export type IResetPasswordResponse = IBaseResponse;
 
 // Verify OTP type
 export interface IVerifyOTPPayload {
-  email: string;
-  otp: string;
+  userId: string;
+  otpCode: string;
 }
 
 export type IVerifyOTPResponse = IBaseResponse<{ message: string }>;
