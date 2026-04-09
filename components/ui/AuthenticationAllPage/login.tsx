@@ -158,7 +158,7 @@ export default function LoginForm() {
           <Image
             src="/logoHome.png"
             alt="Login illustration"
-            width={64}
+            width={96}
             height={56}
             className="object-cover mb-6"
           />

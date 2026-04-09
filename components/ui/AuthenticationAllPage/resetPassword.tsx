@@ -71,7 +71,7 @@ export default function ResetPasswordPage() {
             <Image
               src="/logoHome.png"
               alt="Logo"
-              width={64}
+              width={96}
               height={56}
               className="object-cover mb-6"
             />

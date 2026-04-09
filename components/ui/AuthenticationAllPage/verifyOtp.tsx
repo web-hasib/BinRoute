@@ -12,8 +12,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useVerifyOtpMutation } from "@/redux/api/auth/authApi";
 
-
-
 export default function VerifyOtpPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -61,7 +59,7 @@ export default function VerifyOtpPage() {
       toast.error("Please enter a complete 6-digit OTP");
       return;
     }
-    
+
     try {
       const response = await verifyOtp({
         userId: id || "",
@@ -80,24 +78,13 @@ export default function VerifyOtpPage() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden font-sans">
-      {/* Left: Full bleed image */}
-      <div className="hidden md:block relative w-1/2 h-full flex-shrink-0">
-        <Image
-          src="/auth-iamge.png"
-          alt="OTP verification illustration"
-          fill
-          priority
-          className="object-cover"
-        />
-      </div>
-
       {/* Right: Form Panel */}
       <div className="flex-1 border border-blue-200 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
         <div className="w-full max-w-xl bg-white border border-blue-300 rounded-2xl px-10 py-12 flex flex-col items-center">
           <Image
-            src="/login-logo.png"
+            src="/logoHome.png"
             alt="Login illustration"
-            width={64}
+            width={96}
             height={56}
             className="object-cover mb-6"
           />
@@ -191,6 +178,24 @@ export default function VerifyOtpPage() {
           </p>
         </div>
       </div>
+
+      {/* Left: Full bleed image */}
+      <div className="hidden md:block relative w-1/2 flex-shrink-0">
+              <Image
+                src="/login-image.png"
+                alt="Sign up illustration"
+                fill
+                priority
+                className="object-cover"
+              />
+              {/* Dark Branded Overlay */}
+              <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
+                <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
+                <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
+                  Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
+                </p>
+              </div>
+            </div>
     </div>
   );
 }
