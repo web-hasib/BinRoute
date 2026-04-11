@@ -181,21 +181,21 @@ export default function VerifyOtpPage() {
 
       {/* Left: Full bleed image */}
       <div className="hidden md:block relative w-1/2 flex-shrink-0">
-              <Image
-                src="/login-image.png"
-                alt="Sign up illustration"
-                fill
-                priority
-                className="object-cover"
-              />
-              {/* Dark Branded Overlay */}
-              <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
-                <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
-                <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
-                  Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
-                </p>
-              </div>
-            </div>
+        <Image
+          src="/login-image.png"
+          alt="Sign up illustration"
+          fill
+          priority
+          className="object-cover"
+        />
+        {/* Dark Branded Overlay */}
+        <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
+          <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
+          <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
+            Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

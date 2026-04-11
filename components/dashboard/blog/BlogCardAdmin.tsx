@@ -1,10 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDeleteBlogMutation } from "@/redux/api/blog/blogApi";
+import { toast } from "sonner";
 
 interface BlogCardProps {
     id: string;
@@ -25,8 +27,24 @@ const BlogCardAdmin: React.FC<BlogCardProps> = ({
     excerpt,
     image,
 }) => {
+    const [deleteBlog, { isLoading }] = useDeleteBlogMutation();
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this blog?")) return;
+        
+        setIsDeleting(true);
+        try {
+            await deleteBlog(id).unwrap();
+            toast.success("Blog deleted successfully!");
+        } catch (error) {
+            toast.error("Failed to delete blog. Please try again.");
+            setIsDeleting(false);
+        }
+    };
+
     return (
-        <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+        <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 relative">
             {/* Image with Category Badge */}
             <div className="relative aspect-video w-full overflow-hidden">
                 <Image src={image} alt={title} fill className="object-cover" />
@@ -55,12 +73,25 @@ const BlogCardAdmin: React.FC<BlogCardProps> = ({
                     {excerpt}
                 </p>
 
-               <div className="flex items-center justify-end gap-4">
-                <Link href={`/dashboard/blog/${id}`}><Button  variant={"primary"} className="px-4! h-10 text-sm font-bold ">  View Blog</Button></Link>
-                <Link href={`/dashboard/blog/edit/${id}`}>
-                  <Button  variant="outline"
-                          className="border-[#0061AA] bg-blue-50 text-[#0061AA] hover:bg-[#8e8f91] hover:text-white px-5 h-10 text-sm font-bold flex items-center gap-2 rounded-none transition-all group/edit">  Edit Blog</Button>
+               <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                <Link href={`/dashboard/blog/${id}`}>
+                    <Button variant={"outline"} className="px-3 h-9 text-xs font-bold border-[#0061AA] text-[#0061AA] hover:bg-blue-50 rounded-none">
+                        View
+                    </Button>
                 </Link>
+                <Link href={`/dashboard/blog/edit/${id}`}>
+                  <Button variant="outline" className="px-3 h-9 text-xs font-bold border-[#0061AA] bg-[#0061AA] text-white hover:bg-[#004e89] hover:text-white rounded-none transition-all">
+                      Edit
+                  </Button>
+                </Link>
+                <Button 
+                    variant="outline" 
+                    onClick={handleDelete}
+                    disabled={isLoading || isDeleting}
+                    className="px-3 h-9 text-xs font-bold border-red-500 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-none transition-all"
+                >
+                    {(isLoading || isDeleting) ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                </Button>
                </div>
             </div>
         </div>

@@ -23,6 +23,9 @@ export const baseApi = createApi({
     "User",
     "Privacy",
     "Terms",
+    "Contact",
+    "Faq",
+    "Blog",
   ],
 });
 

@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 
 const Hero = () => {
   return (
-    <section className="relative h-[450px] sm:h-[550px] lg:h-[calc(100vh-100px)] w-full overflow-hidden flex items-center justify-center">
+    <section className="relative h-[450px] sm:h-[550px] lg:h-[calc(90vh-100px)] w-full overflow-hidden flex items-center justify-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/dummy.png"
+          src="/hero.png"
           alt="Dumpster Rentals"
           fill
-          className="object-cover"
+          className=""
           priority
         />
         {/* Gradient Overlay */}
@@ -23,8 +23,8 @@ const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="container relative z-20 text-center text-[#FAFDFF]">
-        <h1 className="text-2xl sm:text-3xl md:text-[4rem] font-bold mb-6 tracking-tight leading-[1.1]">
+      <div className="container relative z-20 text-center text-[#FAFDFF] mt-20">
+        <h1 className="text-2xl sm:text-3xl md:text-7xl font-bold mb-6 tracking-tight leading-[1.1]">
           Dumpster Rentals in <br />
           Greater Worcester MA
         </h1>

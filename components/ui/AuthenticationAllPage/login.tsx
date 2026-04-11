@@ -74,13 +74,13 @@ export default function LoginForm() {
       const res = await googleLogin(response.credential).unwrap();
       if (res.success) {
         const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = res.data;
-          const user: UserProfile = {
-        id,
-        name: fullName,           // ← important mapping
-        email: userEmail,
-        role,
-      };
-        dispatch(setCredentials({user,  accessToken }));
+        const user: UserProfile = {
+          id,
+          name: fullName,           // ← important mapping
+          email: userEmail,
+          role,
+        };
+        dispatch(setCredentials({ user, accessToken }));
         Cookies.set("accessToken", accessToken);
         toast.success("Login successfully with Google");
 
@@ -101,53 +101,53 @@ export default function LoginForm() {
   /* No longer need onGoogleClick since we are using renderButton */
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setErrors({});
+    e.preventDefault();
+    setErrors({});
 
-  if (!email || !password) {
-    setErrors({ general: "Please enter both email and password." });
-    return;
-  }
-
-  try {
-    const response = await signIn({ email, password }).unwrap();
-
-    if (response.success) {
-      // FIXED: API returns user fields directly in data (not nested under "user")
-      const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = response.data;
-
-      // Map to your UserProfile shape (interface expects "name", not "fullName")
-      const user: UserProfile = {
-        id,
-        name: fullName,           // ← important mapping
-        email: userEmail,
-        role,
-      };
-
-      dispatch(setCredentials({ user, accessToken }));
-      Cookies.set("accessToken", accessToken);
-
-      toast.success("Login successfully");
-
-      // Redirect logic
-      if (role === "SUPERADMIN" || role === "ADMIN") {
-        router.push("/dashboard");
-      } else {
-        // Optional: redirect normal users somewhere else
-        const params = new URLSearchParams(window.location.search);
-        const callback = params.get("callback") || "/";
-        router.push(callback);
-      }
-
-      router.refresh(); // good practice (same as Google login)
+    if (!email || !password) {
+      setErrors({ general: "Please enter both email and password." });
+      return;
     }
-  } catch (error: any) {
-    // This now only catches real API errors, not our own JS bugs
-    const errorMessage = error?.data?.message || "Login failed. Please check your credentials.";
-    setErrors({ general: errorMessage });
-    toast.error(errorMessage);
-  }
-};
+
+    try {
+      const response = await signIn({ email, password }).unwrap();
+
+      if (response.success) {
+        // FIXED: API returns user fields directly in data (not nested under "user")
+        const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = response.data;
+
+        // Map to your UserProfile shape (interface expects "name", not "fullName")
+        const user: UserProfile = {
+          id,
+          name: fullName,           // ← important mapping
+          email: userEmail,
+          role,
+        };
+
+        dispatch(setCredentials({ user, accessToken }));
+        Cookies.set("accessToken", accessToken);
+
+        toast.success("Login successfully");
+
+        // Redirect logic
+        if (role === "SUPERADMIN" || role === "ADMIN") {
+          router.push("/dashboard");
+        } else {
+          // Optional: redirect normal users somewhere else
+          const params = new URLSearchParams(window.location.search);
+          const callback = params.get("callback") || "/";
+          router.push(callback);
+        }
+
+        router.refresh(); // good practice (same as Google login)
+      }
+    } catch (error: any) {
+      // This now only catches real API errors, not our own JS bugs
+      const errorMessage = error?.data?.message || "Login failed. Please check your credentials.";
+      setErrors({ general: errorMessage });
+      toast.error(errorMessage);
+    }
+  };
 
   return (
     <div className="flex h-screen w-full overflow-hidden font-sans">
@@ -320,11 +320,11 @@ export default function LoginForm() {
       {/* Right: Illustration with Overlay */}
       <div className="hidden md:block relative w-1/2 flex-shrink-0">
         <Image
-          src="/login-image.png"
+          src="/hero.png"
           alt="Sign up illustration"
           fill
           priority
-          className="object-cover"
+          className=""
         />
         {/* Dark Branded Overlay */}
         <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">

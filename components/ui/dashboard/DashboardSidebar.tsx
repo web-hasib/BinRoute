@@ -147,19 +147,19 @@ export function DashboardSidebar() {
                     {isActive && !collapsed && (
                       <div className="absolute -left-2 top-0 h-full w-1.5 rounded-r-full bg-[#0061AA] z-10" />
                     )}
-                    
+
                     <Link
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         "flex items-center transition-all duration-200 relative",
-                        collapsed 
-                          ? "justify-center h-12 w-12 mx-auto rounded-xl my-3" 
+                        collapsed
+                          ? "justify-center h-12 w-12 mx-auto rounded-xl my-3"
                           : "gap-3 px-4 py-3 my-2 rounded-none", // Rectangular in expanded view
                         isActive
                           ? collapsed
                             ? "bg-[#0061AA] text-white shadow-md"
-                            : "bg-white text-[#0061AA] shadow-sm ml-2" 
+                            : "bg-white text-[#0061AA] shadow-sm ml-2"
                           : "text-gray-600 hover:bg-white/40 hover:text-gray-900"
                       )}
                     >
@@ -215,7 +215,7 @@ export function DashboardSidebar() {
             </div>
           )}
           {!collapsed && (
-            <button 
+            <button
               onClick={handleLogout}
               className="text-[#718096] hover:text-[#0061AA] transition-colors ml-auto"
             >

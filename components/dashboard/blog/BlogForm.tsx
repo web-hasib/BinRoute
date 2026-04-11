@@ -1,68 +1,123 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { ArrowLeft, X, Upload } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { ArrowLeft, X, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Container from "@/components/ui/container";
 import { useRouter } from "next/navigation";
 import CustomEditor from "@/components/editor/custom_editor";
-import { useAppDispatch, useAppSelector } from "@/redux/hook";
-import { updateDraft, setTags as setDraftTags, resetDraft } from "@/feature/blog/blogSlice";
 import BlogSuccessModal from "./BlogSuccessModal";
-
-interface BlogDraft {
-  title: string;
-  readingTime: string;
-  category: string;
-  excerpt: string;
-  content: string;
-  tags: string[];
-  coverPhoto: string | null;
-  thumbnail: string | null;
-}
+import { useCreateBlogMutation, useUpdateBlogMutation, IBlog } from "@/redux/api/blog/blogApi";
+import { toast } from "sonner";
 
 interface BlogFormProps {
   mode: "add" | "edit";
   id?: string;
-  initialData?: Partial<BlogDraft>;
+  initialData?: IBlog | null;
 }
 
 const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const draft = useAppSelector((state) => state.blog.draft);
   
+  const [title, setTitle] = useState("");
+  const [readingTime, setReadingTime] = useState("");
+  const [category, setCategory] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [content, setContent] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+
+  const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
+  
+  const isSubmitting = isCreating || isUpdating;
 
   useEffect(() => {
     if (mode === "edit" && initialData) {
-      dispatch(updateDraft(initialData));
+      setTitle(initialData.title);
+      setReadingTime(initialData.readingTime.toString());
+      setCategory(initialData.category);
+      setExcerpt(initialData.shortDescription);
+      setContent(initialData.fullContent);
+      setTags(initialData.tags || []);
+      setCoverPhotoPreview(initialData.coverPhoto);
+      setThumbnailPreview(initialData.thumbnail);
     }
-    if (id) {
-        console.log("Editing blog with ID:", id);
-    }
-  }, [mode, initialData, dispatch, id]);
-
-  const handleUpdateField = <T extends keyof BlogDraft>(field: T, value: BlogDraft[T]) => {
-    dispatch(updateDraft({ [field]: value }));
-  };
+  }, [mode, initialData]);
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
-      dispatch(setDraftTags([...draft.tags, tagInput.trim()]));
+      if (!tags.includes(tagInput.trim())) {
+        setTags([...tags, tagInput.trim()]);
+      }
       setTagInput("");
     }
   };
 
   const removeTag = (index: number) => {
-    dispatch(setDraftTags(draft.tags.filter((_, i) => i !== index)));
+    setTags(tags.filter((_, i) => i !== index));
   };
 
-  const handlePublish = () => {
-    // Here usually call an API
-    setShowSuccess(true);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'cover' | 'thumbnail') => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const previewUrl = URL.createObjectURL(file);
+      
+      if (type === 'cover') {
+        setCoverPhotoFile(file);
+        setCoverPhotoPreview(previewUrl);
+      } else {
+        setThumbnailFile(file);
+        setThumbnailPreview(previewUrl);
+      }
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!title || !readingTime || !category || !excerpt || !content) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    const payloadData = {
+        title,
+        readingTime: parseInt(readingTime, 10),
+        category,
+        shortDescription: excerpt,
+        fullContent: content,
+        tags
+    };
+
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(payloadData));
+    
+    if (coverPhotoFile) {
+      formData.append("coverPhoto", coverPhotoFile);
+    }
+    if (thumbnailFile) {
+      formData.append("thumbnail", thumbnailFile);
+    }
+
+    try {
+      if (mode === "add") {
+        await createBlog(formData).unwrap();
+        setShowSuccess(true);
+      } else if (mode === "edit" && id) {
+        await updateBlog({ id, data: formData }).unwrap();
+        setShowSuccess(true);
+      }
+    } catch (error: unknown) {
+      const err = error as any;
+      toast.error(err?.data?.message || "Something went wrong.");
+    }
   };
 
   return (
@@ -78,22 +133,11 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
         </button>
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           <Button
-            variant="outline"
-            className="flex-1 sm:flex-none border-[#D1D5DB] text-[#4B5563] px-8 py-5 h-12 text-sm font-bold rounded-none hover:bg-gray-50"
-          >
-            Save Draft
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/blog/preview")}
-            className="flex-1 sm:flex-none border-[#D1D5DB] text-[#4B5563] px-8 py-5 h-12 text-sm font-bold rounded-none hover:bg-gray-50"
-          >
-            Preview
-          </Button>
-          <Button
             onClick={handlePublish}
-            className="w-full sm:w-auto bg-[#0061AA] hover:bg-[#004e89] text-white px-8 py-5 h-12 text-sm font-bold rounded-none"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto bg-[#0061AA] hover:bg-[#004e89] text-white px-8 py-5 h-12 text-sm font-bold rounded-none flex items-center justify-center gap-2"
           >
+            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {mode === "edit" ? "Update Blog" : "Publish Blog"}
           </Button>
         </div>
@@ -107,9 +151,9 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
           <input
             type="text"
             placeholder="e.g., The Future of Industrial Recycling 2024"
-            value={draft.title}
-            onChange={(e) => handleUpdateField("title", e.target.value)}
-            className="w-full p-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0061AA] outline-none text-sm"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full p-4 bg-[#F8FAFC] border border-gray-100 focus:ring-1 focus:ring-[#0061AA] outline-none text-sm"
           />
         </div>
 
@@ -119,24 +163,27 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
             <label className="text-sm font-bold text-[#0A2540]">Reading Time (mins)</label>
             <input
               type="number"
-              placeholder="3"
-              value={draft.readingTime}
-              onChange={(e) => handleUpdateField("readingTime", e.target.value)}
-              className="w-full p-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0061AA] outline-none text-sm"
+              placeholder="e.g., 5"
+              value={readingTime}
+              onChange={(e) => setReadingTime(e.target.value)}
+              className="w-full p-4 bg-[#F8FAFC] border border-gray-100 focus:ring-1 focus:ring-[#0061AA] outline-none text-sm"
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-bold text-[#0A2540]">Category</label>
             <div className="relative">
               <select
-                value={draft.category}
-                onChange={(e) => handleUpdateField("category", e.target.value)}
-                className="w-full p-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0061AA] outline-none text-sm appearance-none"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full p-4 bg-[#F8FAFC] border border-gray-100 focus:ring-1 focus:ring-[#0061AA] outline-none text-sm appearance-none"
               >
                 <option value="">Select category</option>
                 <option value="Construction">Construction</option>
                 <option value="Recycling">Recycling</option>
                 <option value="Commercial">Commercial</option>
+                <option value="Programming">Programming</option>
+                <option value="Project Tips">Project Tips</option>
+                <option value="Other">Other</option>
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -151,7 +198,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
         <div className="space-y-2">
           <label className="text-sm font-bold text-[#0A2540]">Tags</label>
           <div className="flex flex-wrap gap-2 mb-2">
-            {draft.tags.map((tag, i) => (
+            {tags.map((tag, i) => (
               <span key={i} className="flex items-center gap-1.5 px-3 py-1 bg-[#F0FDF4] text-[#166534] text-xs font-bold rounded-none border border-[#BBF7D0]">
                 #{tag}
                 <X className="size-3 cursor-pointer" onClick={() => removeTag(i)} />
@@ -160,11 +207,11 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
           </div>
           <input
             type="text"
-            placeholder="Add tag.."
+            placeholder="Add tag and press Enter.."
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleAddTag}
-            className="w-full p-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0061AA] outline-none text-sm"
+            className="w-full p-4 bg-[#F8FAFC] border border-gray-100 focus:ring-1 focus:ring-[#0061AA] outline-none text-sm"
           />
         </div>
 
@@ -172,23 +219,58 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
             <label className="text-sm font-bold text-[#0A2540]">Cover Photo</label>
-            <div className="border-2 border-dashed border-[#E5E7EB] p-8 md:p-12 flex flex-col items-center justify-center bg-white min-h-[200px]">
-              <Upload className="size-10 text-gray-400 mb-4" />
-              <p className="text-sm text-gray-500 text-center">
-                Drag & Drop your cover image<br />
-                here or <span className="text-[#0061AA] font-bold cursor-pointer">Click to browse</span>
-              </p>
+            <div className="relative border-2 border-dashed border-[#E5E7EB] p-8 md:p-12 flex flex-col items-center justify-center bg-[#F8FAFC] min-h-[200px] overflow-hidden">
+              {coverPhotoPreview ? (
+                <>
+                   <img src={coverPhotoPreview} alt="Cover Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                   <div className="relative z-10 p-2 bg-white/80 rounded-md">
+                     <span className="text-[#0061AA] font-bold text-sm cursor-pointer">Change Image</span>
+                   </div>
+                </>
+              ) : (
+                <>
+                  <Upload className="size-10 text-gray-400 mb-4" />
+                  <p className="text-sm text-gray-500 text-center">
+                    Drag & Drop your cover image<br />
+                    here or <span className="text-[#0061AA] font-bold cursor-pointer">Click to browse</span>
+                  </p>
+                </>
+              )}
+               <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'cover')}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+               />
             </div>
             <p className="text-[10px] text-gray-400">Recommended size: 818 x 345px</p>
           </div>
+
           <div className="space-y-3">
             <label className="text-sm font-bold text-[#0A2540]">Thumbnail</label>
-            <div className="border-2 border-dashed border-[#E5E7EB] p-8 md:p-12 flex flex-col items-center justify-center bg-white min-h-[200px]">
-              <Upload className="size-10 text-gray-400 mb-4" />
-              <p className="text-sm text-gray-500 text-center">
-                Drag & Drop your cover image<br />
-                here or <span className="text-[#0061AA] font-bold cursor-pointer">Click to browse</span>
-              </p>
+            <div className="relative border-2 border-dashed border-[#E5E7EB] p-8 md:p-12 flex flex-col items-center justify-center bg-[#F8FAFC] min-h-[200px] overflow-hidden">
+               {thumbnailPreview ? (
+                <>
+                   <img src={thumbnailPreview} alt="Thumbnail Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                   <div className="relative z-10 p-2 bg-white/80 rounded-md">
+                     <span className="text-[#0061AA] font-bold text-sm cursor-pointer">Change Image</span>
+                   </div>
+                </>
+              ) : (
+                <>
+                  <Upload className="size-10 text-gray-400 mb-4" />
+                  <p className="text-sm text-gray-500 text-center">
+                    Drag & Drop your thumbnail image<br />
+                    here or <span className="text-[#0061AA] font-bold cursor-pointer">Click to browse</span>
+                  </p>
+                </>
+              )}
+               <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'thumbnail')}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+               />
             </div>
             <p className="text-[10px] text-gray-400">Recommended size: 379 x 197px</p>
           </div>
@@ -200,19 +282,19 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
           <textarea
             placeholder="A brief summary of the post for social sharing and previews.."
             rows={3}
-            value={draft.excerpt}
-            onChange={(e) => handleUpdateField("excerpt", e.target.value)}
-            className="w-full p-4 bg-[#F8FAFC] border-none focus:ring-1 focus:ring-[#0061AA] outline-none text-sm resize-none"
+            value={excerpt}
+            onChange={(e) => setExcerpt(e.target.value)}
+            className="w-full p-4 bg-[#F8FAFC] border border-gray-100 focus:ring-1 focus:ring-[#0061AA] outline-none text-sm resize-none"
           />
         </div>
 
         {/* CKEditor */}
         <div className="space-y-2">
           <label className="text-sm font-bold text-[#0A2540]">Full Blog Content</label>
-          <div className="bg-white overflow-hidden">
+          <div className="bg-white overflow-hidden border border-gray-100">
             <CustomEditor 
-              onDataChange={(data) => handleUpdateField("content", data)}
-              title={draft.content}
+              onDataChange={(data) => setContent(data)}
+              title={content}
             />
           </div>
         </div>
@@ -223,7 +305,16 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
         onViewBlog={() => router.push("/dashboard/blog")}
         onAddAnother={() => {
           setShowSuccess(false);
-          dispatch(resetDraft());
+          setTitle("");
+          setReadingTime("");
+          setCategory("");
+          setExcerpt("");
+          setContent("");
+          setTags([]);
+          setCoverPhotoFile(null);
+          setCoverPhotoPreview(null);
+          setThumbnailFile(null);
+          setThumbnailPreview(null);
           if (mode === "edit") {
             router.push("/dashboard/blog/add");
           }

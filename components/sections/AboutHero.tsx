@@ -9,14 +9,14 @@ const AboutHero = () => {
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <Image
-                    src="/about/about_hero.png"
+                    src="/hero.png"
                     alt="Dumpster Rentals Made Simple"
                     fill
                     className="object-cover"
                     priority
                 />
                 {/* Dark Overlay for Text Readability - Matching the photo's feel */}
-                <div className="absolute inset-0 bg-black/40 z-10" />
+                <div className="absolute inset-0 bg-black/10 z-10" />
             </div>
 
             {/* Content */}

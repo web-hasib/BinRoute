@@ -127,7 +127,7 @@ export default function ForgetPasswordPage() {
       {/* Right: Illustration with Overlay */}
       <div className="hidden md:block relative w-1/2 flex-shrink-0">
         <Image
-          src="/login-image.png"
+          src="/hero.png"
           alt="Login illustration"
           fill
           priority

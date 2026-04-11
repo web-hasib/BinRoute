@@ -24,42 +24,42 @@ export default function ResetPasswordPage() {
     {},
   );
 
-    const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-  setBackendErrors({});
+    setBackendErrors({});
 
-  if (Password !== confirmPassword) {
-    setBackendErrors({ confirmPassword: "Passwords do not match" });
-    return;
-  }
-
-  if (!accessToken) {
-    toast.error("Token not found. Please use the link from your email again.");
-    return;
-  }
-
-  try {
-    await reset({
-      accessToken: accessToken!,
-      newPassword: Password,
-    }).unwrap();
-
-    toast.success("Password reset successfully!");
-    setTimeout(() => router.push("/login"), 1800);
-  } catch (err: any) {
-    const errors = err?.data?.errors || err?.data?.message || [];
-    
-    if (typeof errors === "string") {
-      toast.error(errors);
-    } else {
-      const map = errors.reduce((acc: any, e: any) => {
-        acc[e.path || "general"] = e.message;
-        return acc;
-      }, {});
-      setBackendErrors(map);
+    if (Password !== confirmPassword) {
+      setBackendErrors({ confirmPassword: "Passwords do not match" });
+      return;
     }
-  }
-};
+
+    if (!accessToken) {
+      toast.error("Token not found. Please use the link from your email again.");
+      return;
+    }
+
+    try {
+      await reset({
+        accessToken: accessToken!,
+        newPassword: Password,
+      }).unwrap();
+
+      toast.success("Password reset successfully!");
+      setTimeout(() => router.push("/login"), 1800);
+    } catch (err: any) {
+      const errors = err?.data?.errors || err?.data?.message || [];
+
+      if (typeof errors === "string") {
+        toast.error(errors);
+      } else {
+        const map = errors.reduce((acc: any, e: any) => {
+          acc[e.path || "general"] = e.message;
+          return acc;
+        }, {});
+        setBackendErrors(map);
+      }
+    }
+  };
 
   return (
     <div className="">
@@ -183,12 +183,19 @@ export default function ResetPasswordPage() {
         {/* Right: Login Panel — scrollable, centered */}
         <div className="hidden md:block relative w-1/2  flex-shrink-0">
           <Image
-            src="/login-image.png"
+            src="/hero.png"
             alt="Login illustration"
             fill
             priority
             className=""
           />
+          {/* Dark Branded Overlay */}
+          <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
+            <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
+            <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
+              Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
+            </p>
+          </div>
         </div>
       </div>
     </div>
