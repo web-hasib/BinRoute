@@ -224,7 +224,7 @@ const authApi = baseApi.injectEndpoints({
     }),
     googleLogin: builder.mutation({
       query: (token: string) => ({
-        url: "/auth/google",
+        url: "/auth/google-login",
         method: "POST",
         body: { idToken: token },
       }),

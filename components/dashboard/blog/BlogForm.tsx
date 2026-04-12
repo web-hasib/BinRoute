@@ -18,7 +18,7 @@ interface BlogFormProps {
 
 const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
   const router = useRouter();
-  
+
   const [title, setTitle] = useState("");
   const [readingTime, setReadingTime] = useState("");
   const [category, setCategory] = useState("");
@@ -36,7 +36,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
 
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
-  
+
   const isSubmitting = isCreating || isUpdating;
 
   useEffect(() => {
@@ -70,7 +70,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const previewUrl = URL.createObjectURL(file);
-      
+
       if (type === 'cover') {
         setCoverPhotoFile(file);
         setCoverPhotoPreview(previewUrl);
@@ -88,17 +88,17 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
     }
 
     const payloadData = {
-        title,
-        readingTime: parseInt(readingTime, 10),
-        category,
-        shortDescription: excerpt,
-        fullContent: content,
-        tags
+      title,
+      readingTime: parseInt(readingTime, 10),
+      category,
+      shortDescription: excerpt,
+      fullContent: content,
+      tags
     };
 
     const formData = new FormData();
     formData.append("data", JSON.stringify(payloadData));
-    
+
     if (coverPhotoFile) {
       formData.append("coverPhoto", coverPhotoFile);
     }
@@ -181,7 +181,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
                 <option value="Construction">Construction</option>
                 <option value="Recycling">Recycling</option>
                 <option value="Commercial">Commercial</option>
-                <option value="Programming">Programming</option>
                 <option value="Project Tips">Project Tips</option>
                 <option value="Other">Other</option>
               </select>
@@ -222,10 +221,10 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
             <div className="relative border-2 border-dashed border-[#E5E7EB] p-8 md:p-12 flex flex-col items-center justify-center bg-[#F8FAFC] min-h-[200px] overflow-hidden">
               {coverPhotoPreview ? (
                 <>
-                   <img src={coverPhotoPreview} alt="Cover Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                   <div className="relative z-10 p-2 bg-white/80 rounded-md">
-                     <span className="text-[#0061AA] font-bold text-sm cursor-pointer">Change Image</span>
-                   </div>
+                  <img src={coverPhotoPreview} alt="Cover Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                  <div className="relative z-10 p-2 bg-white/80 rounded-md">
+                    <span className="text-[#0061AA] font-bold text-sm cursor-pointer">Change Image</span>
+                  </div>
                 </>
               ) : (
                 <>
@@ -236,12 +235,12 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
                   </p>
                 </>
               )}
-               <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, 'cover')}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-               />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'cover')}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
             </div>
             <p className="text-[10px] text-gray-400">Recommended size: 818 x 345px</p>
           </div>
@@ -249,12 +248,12 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
           <div className="space-y-3">
             <label className="text-sm font-bold text-[#0A2540]">Thumbnail</label>
             <div className="relative border-2 border-dashed border-[#E5E7EB] p-8 md:p-12 flex flex-col items-center justify-center bg-[#F8FAFC] min-h-[200px] overflow-hidden">
-               {thumbnailPreview ? (
+              {thumbnailPreview ? (
                 <>
-                   <img src={thumbnailPreview} alt="Thumbnail Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                   <div className="relative z-10 p-2 bg-white/80 rounded-md">
-                     <span className="text-[#0061AA] font-bold text-sm cursor-pointer">Change Image</span>
-                   </div>
+                  <img src={thumbnailPreview} alt="Thumbnail Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                  <div className="relative z-10 p-2 bg-white/80 rounded-md">
+                    <span className="text-[#0061AA] font-bold text-sm cursor-pointer">Change Image</span>
+                  </div>
                 </>
               ) : (
                 <>
@@ -265,12 +264,12 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
                   </p>
                 </>
               )}
-               <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, 'thumbnail')}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-               />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'thumbnail')}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
             </div>
             <p className="text-[10px] text-gray-400">Recommended size: 379 x 197px</p>
           </div>
@@ -292,7 +291,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
         <div className="space-y-2">
           <label className="text-sm font-bold text-[#0A2540]">Full Blog Content</label>
           <div className="bg-white overflow-hidden border border-gray-100">
-            <CustomEditor 
+            <CustomEditor
               onDataChange={(data) => setContent(data)}
               title={content}
             />

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import BlogCard from "./BlogCard";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useGetAllBlogsQuery } from "@/redux/api/blog/blogApi";
+import { format } from "date-fns";
 
 const categories = [
     "All",
@@ -12,100 +14,36 @@ const categories = [
     "Commercial",
 ];
 
-const blogPosts = [
-    {
-        id: "1",
-        category: "Construction",
-        date: "Oct 12, 2023",
-        readTime: "5 minutes",
-        title: "Construction Site Safety Protocols",
-        excerpt:
-            "Learn how new technologies are changing the way businesses handle waste and...",
-        image: "/dummy.png",
-    },
-    {
-        id: "2",
-        category: "Project Tips",
-        date: "Oct 10, 2023",
-        readTime: "8 minutes",
-        title: "Maximizing Your Dumpster Space",
-        excerpt:
-            "Effective waste management is more than just throwing things away. It's about strategy...",
-        image: "/dummy.png",
-    },
-    {
-        id: "3",
-        category: "Recycling",
-        date: "Oct 05, 2023",
-        readTime: "6 minutes",
-        title: "Sustainable Disposal: What Can Be Recycled?",
-        excerpt:
-            "Discover which materials from your renovation project can be diverted from landfills...",
-        image: "/dummy.png",
-    },
-    {
-        id: "4",
-        category: "Commercial",
-        date: "Sep 28, 2023",
-        readTime: "7 minutes",
-        title: "Managing Waste for Large Scale Operations",
-        excerpt:
-            "Commercial waste needs are unique. Here's how to streamline your operations...",
-        image: "/dummy.png",
-    },
-    {
-        id: "5",
-        category: "Construction",
-        date: "Sep 20, 2023",
-        readTime: "5 minutes",
-        title: "Residential Cleanout Guide",
-        excerpt: "The ultimate checklist for your next home decluttering project...",
-        image: "/dummy.png",
-    },
-    {
-        id: "6",
-        category: "Project Tips",
-        date: "Sep 15, 2023",
-        readTime: "4 minutes",
-        title: "Choosing Between Dumpster Sizes",
-        excerpt:
-            "A quick guide to help you decide which yard size fits your project best...",
-        image: "/dummy.png",
-    },
-    {
-        id: "7",
-        category: "Construction",
-        date: "Sep 08, 2023",
-        readTime: "5 minutes",
-        title: "Construction Site Safety Protocols",
-        excerpt:
-            "Learn how new technologies are changing the way businesses handle waste and...",
-        image: "/dummy.png",
-    },
-    {
-        id: "8",
-        category: "Construction",
-        date: "Aug 30, 2023",
-        readTime: "5 minutes",
-        title: "Construction Site Safety Protocols",
-        excerpt:
-            "Learn how new technologies are changing the way businesses handle waste and...",
-        image: "/dummy.png",
-    },
-    {
-        id: "9",
-        category: "Construction",
-        date: "Aug 22, 2023",
-        readTime: "5 minutes",
-        title: "Construction Site Safety Protocols",
-        excerpt:
-            "Learn how new technologies are changing the way businesses handle waste and...",
-        image: "/dummy.png",
-    },
-];
-
 const BlogGrid = () => {
     const [activeCategory, setActiveCategory] = useState("All");
+    const [page, setPage] = useState(1);
+    
+    // Add sorting state if needed, here keeping it simple
+    const limit = 6;
+    const searchTerm = activeCategory === "All" ? "" : activeCategory;
+
+    const { data: blogsResponse, isLoading } = useGetAllBlogsQuery({ 
+        page, 
+        limit, 
+        searchTerm,
+        sortBy: "createdAt",
+        sortOrder: "desc"
+    });
+
+    const blogs = blogsResponse?.data?.data || [];
+    const meta = blogsResponse?.data?.meta;
+    const totalPages = meta?.totalPage || 1;
+
+    // Build pagination array
+    const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+    const handlePrevious = () => {
+        if (page > 1) setPage(page - 1);
+    };
+
+    const handleNext = () => {
+        if (page < totalPages) setPage(page + 1);
+    };
 
     return (
         <section className="py-16 md:py-24 bg-white">
@@ -127,7 +65,10 @@ const BlogGrid = () => {
                         {categories.map((cat) => (
                             <button
                                 key={cat}
-                                onClick={() => setActiveCategory(cat)}
+                                onClick={() => {
+                                    setActiveCategory(cat);
+                                    setPage(1); // Reset page on category change
+                                }}
                                 className={`px-5 py-2 text-sm font-semibold transition-colors duration-300 ${activeCategory === cat
                                         ? "bg-[#0061AA] text-white"
                                         : "text-gray-600 hover:text-[#0061AA]"
@@ -148,32 +89,66 @@ const BlogGrid = () => {
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                    {blogPosts.map((post) => (
-                        <BlogCard key={post.id} {...post} />
-                    ))}
-                </div>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-center gap-2">
-                    <button className="p-2 border border-gray-200 text-gray-400 hover:text-[#0061AA] hover:border-[#0061AA] transition-all">
-                        <ChevronLeft className="size-5" />
-                    </button>
-                    {[1, 2, 3, 4].map((num) => (
-                        <button
-                            key={num}
-                            className={`w-10 h-10 flex items-center justify-center font-bold transition-all ${num === 1
-                                    ? "bg-[#0061AA] text-white"
-                                    : "text-gray-600 hover:text-[#0061AA]"
-                                }`}
-                        >
-                            {num}
-                        </button>
-                    ))}
-                    <button className="p-2 border border-gray-200 text-gray-400 hover:text-[#0061AA] hover:border-[#0061AA] transition-all">
-                        <ChevronRight className="size-5" />
-                    </button>
-                </div>
+                {isLoading ? (
+                    <div className="flex justify-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0061AA]"></div>
+                    </div>
+                ) : (
+                    <>
+                        {blogs.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                                {blogs.map((post) => (
+                                    <BlogCard 
+                                        key={post.id} 
+                                        id={post.id}
+                                        category={post.category}
+                                        date={post.createdAt ? format(new Date(post.createdAt), "MMM dd, yyyy") : ""}
+                                        readTime={`${post.readingTime} minutes`}
+                                        title={post.title}
+                                        excerpt={post.shortDescription}
+                                        image={post.thumbnail || post.coverPhoto || "/blog/hero_bg.png"}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-16 text-gray-500 text-lg">
+                                No blogs found for this category.
+                            </div>
+                        )}
+                        
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-center gap-2 mt-8">
+                                <button 
+                                    onClick={handlePrevious}
+                                    disabled={page === 1}
+                                    className="p-2 border border-gray-200 text-gray-400 hover:text-[#0061AA] hover:border-[#0061AA] transition-all disabled:opacity-50 disabled:hover:text-gray-400 disabled:hover:border-gray-200"
+                                >
+                                    <ChevronLeft className="size-5" />
+                                </button>
+                                {pages.map((num) => (
+                                    <button
+                                        key={num}
+                                        onClick={() => setPage(num)}
+                                        className={`w-10 h-10 flex items-center justify-center font-bold transition-all ${num === page
+                                                ? "bg-[#0061AA] text-white"
+                                                : "text-gray-600 hover:text-[#0061AA]"
+                                            }`}
+                                    >
+                                        {num}
+                                    </button>
+                                ))}
+                                <button 
+                                    onClick={handleNext}
+                                    disabled={page === totalPages}
+                                    className="p-2 border border-gray-200 text-gray-400 hover:text-[#0061AA] hover:border-[#0061AA] transition-all disabled:opacity-50 disabled:hover:text-gray-400 disabled:hover:border-gray-200"
+                                >
+                                    <ChevronRight className="size-5" />
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         </section>
     );

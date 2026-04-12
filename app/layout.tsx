@@ -26,12 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script src="https://accounts.google.com/gsi/client" async defer></script>
       </head>
       <body
         className={`inter antialiased bg-[#F6F6F6]`}
+        suppressHydrationWarning
       >
       {/* <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F6F6F6]`}
