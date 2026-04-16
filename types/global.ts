@@ -815,6 +815,9 @@ export interface ITermsAndPrivacyData {
   updatedAt: string;
 }
 
+export type IPrivacyResponse = IBaseResponse<ITermsAndPrivacyData>;
+export type ITermsResponse = IBaseResponse<ITermsAndPrivacyData>;
+
 export interface ILocationInfo {
   lat: number;
   lng: number;
@@ -859,3 +862,41 @@ export interface IServiceAreaResponse {
   meta: IMeta;
   data: IServiceArea[];
 }
+
+export interface IServicePlan {
+  id: string;
+  image: string;
+  price: number;
+  category: string;
+  dumpsterSize: string;
+  features: string[];
+  extraInfo: string;
+  createdAt: string;
+  updatedAt: string;
+  stripeProductId: string;
+}
+
+export interface IServicePlanResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  meta: IMeta;
+  data: IServicePlan[];
+}
+
+export interface ICreateServiceAreaPayload {
+  name: string;
+  address: string;
+  postalCodes: string[];
+  locationInfo: {
+    lat: number;
+    lng: number;
+    placeId: string;
+    formattedAddress: string;
+    city: string;
+    state: string;
+    country: string;
+  };
+  planIds: string[];
+}
+

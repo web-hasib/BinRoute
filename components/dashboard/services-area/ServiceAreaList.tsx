@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader"
 import { DataTable, ColumnDef } from "@/components/ui/DataTable"
 import { CustomPagination } from "@/components/ui/CustomPagination"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, Trash2, MapPin, Plus, Loader2 } from "lucide-react"
+import { Search, Eye, Trash2, MapPin, Plus, Loader2, Pencil } from "lucide-react"
 import Link from "next/link"
 import { useGetServiceAreasQuery } from "@/redux/api/service-area/serviceAreaApi"
 import { IServiceArea } from "@/types/global"
@@ -93,13 +93,14 @@ export const ServiceAreaList = () => {
         <div className="flex items-center gap-2">
           <Link
             href={`/dashboard/services-area/edit/${row.id}`}
+            title="Edit"
             className="w-8 h-8 border border-[#0265AF]/20 rounded bg-[#0265AF]/5 flex items-center justify-center text-[#0265AF] hover:bg-[#0265AF]/10 transition-colors"
           >
-            <Eye className="w-4 h-4" />
+            <Pencil className="w-4 h-4" />
           </Link>
-          <button className="w-8 h-8 border border-[#0265AF]/20 rounded bg-[#0265AF]/5 flex items-center justify-center text-[#0265AF] hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
+          {/* <button className="w-8 h-8 border border-[#0265AF]/20 rounded bg-[#0265AF]/5 flex items-center justify-center text-[#0265AF] hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
             <Trash2 className="w-4 h-4" />
-          </button>
+          </button> */}
         </div>
       )
     }

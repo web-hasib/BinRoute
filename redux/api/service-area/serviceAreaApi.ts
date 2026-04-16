@@ -1,4 +1,10 @@
-import { IServiceAreaResponse } from "@/types/global";
+import {
+  IBaseResponse,
+  ICreateServiceAreaPayload,
+  IServiceArea,
+  IServiceAreaResponse,
+  IServicePlanResponse,
+} from "@/types/global";
 import baseApi from "../baseApi";
 
 export const serviceAreaApi = baseApi.injectEndpoints({
@@ -20,7 +26,49 @@ export const serviceAreaApi = baseApi.injectEndpoints({
       },
       providesTags: ["ServiceArea"],
     }),
+
+    getServicePlans: builder.query<IServicePlanResponse, void>({
+      query: () => "/service-plans",
+    }),
+
+    getServiceAreaById: builder.query<IBaseResponse<IServiceArea>, string>({
+      query: (id) => ({
+        url: `/service-areas/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "ServiceArea", id }],
+    }),
+
+    createServiceArea: builder.mutation<
+      IServiceAreaResponse,
+      ICreateServiceAreaPayload
+    >({
+      query: (body) => ({
+        url: "/service-areas",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["ServiceArea"],
+    }),
+
+    updateServiceArea: builder.mutation<
+      IServiceAreaResponse,
+      { id: string; data: Partial<ICreateServiceAreaPayload> }
+    >({
+      query: ({ id, data }) => ({
+        url: `/service-areas/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => ["ServiceArea", { type: "ServiceArea", id }],
+    }),
   }),
 });
 
-export const { useGetServiceAreasQuery } = serviceAreaApi;
+export const {
+  useGetServiceAreasQuery,
+  useGetServicePlansQuery,
+  useGetServiceAreaByIdQuery,
+  useCreateServiceAreaMutation,
+  useUpdateServiceAreaMutation,
+} = serviceAreaApi;
