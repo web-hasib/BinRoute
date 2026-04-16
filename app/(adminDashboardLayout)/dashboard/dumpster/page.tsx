@@ -1,58 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Container from "@/components/ui/container";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import DumpsterCard from "@/components/dashboard/dumpster/DumpsterCard";
 import { cn } from "@/lib/utils";
-
-interface Dumpster {
-  id: string;
-  image: string;
-  title: string;
-  price: number;
-  category: "commercial" | "roll-off";
-  capacity?: string;
-  additionalInfo?: string[];
-  deliveryNote?: string;
-}
-
-const dummyDumpsters: Dumpster[] = [
-  // Commercial
-  { id: "cm-1", image: "/blog/hero_bg.png", title: "2 Yard Dumpster", price: 80, category: "commercial" },
-  { id: "cm-2", image: "/blog/hero_bg.png", title: "4 Yard Dumpster", price: 80, category: "commercial" },
-  { id: "cm-3", image: "/blog/hero_bg.png", title: "6 Yard Dumpster", price: 80, category: "commercial" },
-  { id: "cm-4", image: "/blog/hero_bg.png", title: "8 Yard Dumpster", price: 110, category: "commercial" },
-  { id: "cm-5", image: "/blog/hero_bg.png", title: "10 Yard Dumpster", price: 110, category: "commercial" },
-  // Roll off
-  { 
-    id: "ro-1", image: "/blog/hero_bg.png", title: "10 Yard Dumpster", price: 450, category: "roll-off", capacity: "1 Ton", 
-    additionalInfo: ["-60 large trash bags, or", "-4 pickup truck loads"],
-    deliveryNote: "Delivery and rental fees may apply."
-  },
-  { 
-    id: "ro-2", image: "/blog/hero_bg.png", title: "15 Yard Dumpster", price: 550, category: "roll-off", capacity: "1.5 Ton", 
-    additionalInfo: ["-90 large trash bags, or", "-6 pickup truck loads"],
-    deliveryNote: "Delivery and rental fees may apply."
-  },
-  { 
-    id: "ro-3", image: "/blog/hero_bg.png", title: "20 Yard Dumpster", price: 650, category: "roll-off", capacity: "2 Ton", 
-    additionalInfo: ["-120 large trash bags, or", "-8 pickup truck loads"],
-    deliveryNote: "Delivery and rental fees may apply."
-  },
-  { 
-    id: "ro-4", image: "/blog/hero_bg.png", title: "30 Yard Dumpster", price: 850, category: "roll-off", capacity: "3 Ton", 
-    additionalInfo: ["-180 large trash bags, or", "-14 pickup truck loads"],
-    deliveryNote: "Delivery and rental fees may apply."
-  },
-];
+import { useGetServicePlansQuery } from "@/redux/api/dumpster-plan/dumpsterPlanApi";
 
 const DumpsterPage = () => {
-  const [activeTab, setActiveTab] = useState<"commercial" | "roll-off">("commercial");
+  const [activeTab, setActiveTab] = useState<"COMMERCIAL" | "ROLL_OFF">("COMMERCIAL");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const filteredDumpsters = dummyDumpsters.filter(d => d.category === activeTab);
+  // Debounce search term to minimize API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch real data from the API
+  const { data: plansData, isLoading } = useGetServicePlansQuery({
+    category: activeTab, // Now matches the API enum exactly
+    searchTerm: debouncedSearch,
+  });
 
   return (
     <Container className="space-y-6 pb-10">
@@ -74,7 +48,9 @@ const DumpsterPage = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
           <input 
             type="text" 
-            placeholder="Search" 
+            placeholder="Search by size (e.g. 4 Yard)" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full h-12 pl-12 pr-4 bg-[#F4F7F9] border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0062AA] font-medium text-[#1A1A1A] placeholder:text-gray-400" 
           />
         </div>
@@ -82,10 +58,10 @@ const DumpsterPage = () => {
         {/* Custom Tabs */}
         <div className="flex items-center gap-1 bg-[#F4F7F9] p-1 rounded-none border border-gray-100">
           <button
-            onClick={() => setActiveTab("commercial")}
+            onClick={() => setActiveTab("COMMERCIAL")}
             className={cn(
               "px-5 py-2.5 text-sm font-bold transition-all",
-              activeTab === "commercial" 
+              activeTab === "COMMERCIAL" 
                 ? "bg-[#0062AA] text-white shadow-sm" 
                 : "text-[#64748B] hover:text-[#0A2540]"
             )}
@@ -93,10 +69,10 @@ const DumpsterPage = () => {
             Commercial Service
           </button>
           <button
-            onClick={() => setActiveTab("roll-off")}
+            onClick={() => setActiveTab("ROLL_OFF")}
             className={cn(
               "px-5 py-2.5 text-sm font-bold transition-all",
-              activeTab === "roll-off" 
+              activeTab === "ROLL_OFF" 
                 ? "bg-[#0062AA] text-white shadow-sm" 
                 : "text-[#64748B] hover:text-[#0A2540]"
             )}
@@ -106,14 +82,33 @@ const DumpsterPage = () => {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
-        {filteredDumpsters.map((dumpster) => (
-          <DumpsterCard key={dumpster.id} {...dumpster} id={dumpster.id} />
-        ))}
-      </div>
+      {/* Loading & Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center p-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#0062AA]" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
+          {plansData?.data?.map((plan) => (
+            <DumpsterCard 
+              key={plan.id} 
+              id={plan.id}
+              image={plan.image || "/blog/hero_bg.png"} 
+              title={plan.dumpsterSize}
+              price={plan.price}
+              additionalInfo={plan.features}
+              deliveryNote={plan.extraInfo}
+            />
+          ))}
+          {plansData?.data?.length === 0 && (
+            <div className="col-span-full py-20 text-center bg-gray-50 border border-dashed border-gray-200">
+              <p className="text-gray-500">No dumpsters found for this category or search.</p>
+            </div>
+          )}
+        </div>
+      )}
     </Container>
   );
 };
 
-export default DumpsterPage;
+export default DumpsterPage;

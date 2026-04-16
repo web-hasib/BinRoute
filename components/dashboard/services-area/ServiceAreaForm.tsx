@@ -5,11 +5,11 @@ import { ArrowLeft, Check, Loader2, MapPin, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { 
-  useCreateServiceAreaMutation, 
-  useGetServicePlansQuery, 
-  useGetServiceAreaByIdQuery, 
-  useUpdateServiceAreaMutation 
+import {
+  useCreateServiceAreaMutation,
+  useGetServicePlansQuery,
+  useGetServiceAreaByIdQuery,
+  useUpdateServiceAreaMutation
 } from "@/redux/api/service-area/serviceAreaApi"
 import { toast } from "sonner"
 import { ICreateServiceAreaPayload } from "@/types/global"
@@ -71,7 +71,7 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
     if (isEdit && singleAreaData?.data) {
       const area = singleAreaData.data;
       console.log("Populating form with area data:", area); // Debug log
-      
+
       setFormData({
         name: area.name,
         address: area.address,
@@ -79,7 +79,7 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
         planIds: area.plans?.map((p) => p.planId) || [],
         locationInfo: area.locationInfo
       });
-      
+
       // Crucial: Update the search input field text
       setAddressInput(area.address);
     }
@@ -274,7 +274,7 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
               <label className="text-sm font-semibold text-[#1B253F]">Select service plans</label>
               <span className="text-[10px] uppercase font-bold text-gray-400">Total {plansData?.data?.length || 0} plans available</span>
             </div>
-            
+
             {isLoadingPlans ? (
               <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
                 <Loader2 className="w-4 h-4 animate-spin" /> Fetching available plans...
@@ -287,8 +287,8 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
                     onClick={() => togglePlan(plan.id)}
                     className={cn(
                       "flex gap-5 p-5 border cursor-pointer transition-all duration-200 rounded-none relative overflow-hidden group",
-                      formData.planIds?.includes(plan.id) 
-                        ? "border-[#0265AF] bg-blue-50/20 shadow-sm" 
+                      formData.planIds?.includes(plan.id)
+                        ? "border-[#0265AF] bg-blue-50/20 shadow-sm"
                         : "border-gray-100 bg-white hover:border-gray-200"
                     )}
                   >
@@ -311,13 +311,13 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
                         {plan.extraInfo || "No additional information available."}
                       </p>
                     </div>
-                    
+
                     <div className="absolute top-0 right-0 p-1">
                       <div
                         className={cn(
                           "w-5 h-5 border-[1.5px] rounded-full flex items-center justify-center transition-colors shadow-sm",
-                          formData.planIds?.includes(plan.id) 
-                            ? "bg-[#0265AF] border-[#0265AF]" 
+                          formData.planIds?.includes(plan.id)
+                            ? "bg-[#0265AF] border-[#0265AF]"
                             : "bg-white border-gray-200"
                         )}
                       >

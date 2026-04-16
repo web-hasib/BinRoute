@@ -1,12 +1,14 @@
 "use client"
 
-import React, { useState } from "react"
-import { ArrowLeft, Plus, Image as ImageIcon, Trash2, X } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import { ArrowLeft, Plus, Image as ImageIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 import SuccessModal from "@/components/ui/SuccessModal"
 import { useRouter } from "next/navigation"
+import { useCreateServicePlanMutation, useUpdateServicePlanMutation } from "@/redux/api/dumpster-plan/dumpsterPlanApi"
+import { toast } from "sonner"
 
 export interface DumpsterData {
   id?: string | number
@@ -28,6 +30,10 @@ const sharedInputClasses = "w-full h-12 px-4 bg-[#d6d8da33] border-none text-sm 
 
 const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
   const router = useRouter()
+  const [createServicePlan, { isLoading: isCreating }] = useCreateServicePlanMutation()
+  const [updateServicePlan, { isLoading: isUpdating }] = useUpdateServicePlanMutation()
+  const isSubmitting = React.useRef(false) // Hard lock for submission
+  
   const [formData, setFormData] = useState({
     size: initialData?.title || "",
     price: initialData?.price || "",
@@ -38,7 +44,25 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
     image: initialData?.image || null
   })
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image || null)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+
+  // Update form if initialData changes (important for edit mode after fetch)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        size: initialData.title || "",
+        price: initialData.price || "",
+        category: initialData.category || "",
+        capacity: initialData.capacity || "",
+        additionalInfo: initialData.additionalInfo || [""],
+        extraInfo: initialData.deliveryNote || "",
+        image: initialData.image || null
+      });
+      setImagePreview(initialData.image || null);
+    }
+  }, [initialData]);
 
   const handleAddField = () => {
     setFormData(prev => ({
@@ -60,12 +84,70 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
     setFormData(prev => ({ ...prev, additionalInfo: newInfo }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Simulate API call
-    console.log("Submitting formData:", formData)
-    setIsSuccessModalOpen(true)
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation() // Prevent event from bubbling up
+
+    if (isSubmitting.current || isCreating || isUpdating) return; 
+    
+    isSubmitting.current = true; // Lock it
+
+    if (!selectedFile && !imagePreview && mode === "add") {
+      toast.error("Please select a dumpster image")
+      isSubmitting.current = false;
+      return
+    }
+
+    if (!formData.category) {
+      toast.error("Please select a category")
+      isSubmitting.current = false;
+      return
+    }
+
+    const payload = {
+      dumpsterSize: formData.size,
+      category: formData.category.toUpperCase().replace("-", "_"),
+      price: Number(formData.price.toString().replace("$", "")),
+      features: formData.additionalInfo.filter(f => f.trim() !== ""),
+      extraInfo: formData.extraInfo
+    }
+
+    const submitData = new FormData()
+    if (selectedFile) {
+      submitData.append("image", selectedFile)
+    }
+    submitData.append("data", JSON.stringify(payload))
+
+    try {
+      let res;
+      if (mode === "add") {
+        res = await createServicePlan(submitData).unwrap()
+      } else {
+        res = await updateServicePlan({ id: initialData?.id as string, formData: submitData }).unwrap()
+      }
+
+      if (res.success) {
+        setIsSuccessModalOpen(true)
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Something went wrong")
+      isSubmitting.current = false;
+    }
+  }
+
+  const isPending = isCreating || isUpdating;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 pb-20">
@@ -92,9 +174,10 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
           )}
           <Button 
             type="submit"
-            className="h-10 px-8 bg-[#0062AA] hover:bg-[#004e89] text-white font-bold rounded-none shadow-md transition-all active:scale-[0.98]"
+            disabled={isCreating}
+            className="h-10 px-8 bg-[#0062AA] hover:bg-[#004e89] text-white font-bold rounded-none shadow-md transition-all active:scale-[0.98] disabled:opacity-70"
           >
-            {mode === "add" ? "Add Dumpster" : "Save New Changes"}
+            {isCreating ? "Saving..." : (mode === "add" ? "Add Dumpster" : "Save New Changes")}
           </Button>
         </div>
       </div>
@@ -106,22 +189,24 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-bold text-[#0A2540]">Dumpster Size</label>
             <input 
+              required
               type="text" 
               value={formData.size}
               onChange={(e) => setFormData(p => ({ ...p, size: e.target.value }))}
-              placeholder="12 Yard Dumpster"
+              placeholder="e.g. 4 Yard"
               className={sharedInputClasses}
             />
           </div>
 
           {/* Price Starting at */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#0A2540]">Price Starting at</label>
+            <label className="text-sm font-bold text-[#0A2540]">Price Starting at ($)</label>
             <input 
-              type="text" 
+              required
+              type="number" 
               value={formData.price}
               onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))}
-              placeholder="$120"
+              placeholder="250"
               className={sharedInputClasses}
             />
           </div>
@@ -130,6 +215,7 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
           <div className="space-y-2">
             <label className="text-sm font-bold text-[#0A2540]">Category</label>
             <select 
+              required
               value={formData.category}
               onChange={(e) => setFormData(p => ({ ...p, category: e.target.value }))}
               className={`${sharedInputClasses} appearance-none cursor-pointer`}
@@ -142,7 +228,7 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
 
           {/* Capacity */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#0A2540]">Dumpster Capacity</label>
+            <label className="text-sm font-bold text-[#0A2540]">Dumpster Capacity (Optional)</label>
             <input 
               type="text" 
               value={formData.capacity}
@@ -156,7 +242,7 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
           {formData.additionalInfo.map((info, index) => (
             <div key={index} className="space-y-2 relative">
                 <div className="flex items-center justify-between">
-                    <label className="text-sm font-bold text-[#0A2540]">Additional Information {index + 1}</label>
+                    <label className="text-sm font-bold text-[#0A2540]">Feature {index + 1}</label>
                     {formData.additionalInfo.length > 1 && (
                         <button type="button" onClick={() => handleRemoveField(index)} className="text-red-500 hover:text-red-700 p-1">
                             <X className="size-4" />
@@ -167,7 +253,7 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
                 type="text" 
                 value={info}
                 onChange={(e) => handleInfoChange(index, e.target.value)}
-                placeholder="60 large trash bags, or"
+                placeholder="Weekly pickup, Recycling support, etc."
                 className={sharedInputClasses}
               />
             </div>
@@ -181,21 +267,41 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
           className="h-10 px-4 flex items-center gap-2 border border-[#0062AA] text-[#0062AA] font-bold hover:bg-[#EAF6FF] transition-all rounded-none"
         >
           <Plus className="size-4" />
-          Add More Additional Information
+          Add More Features
         </Button>
       </div>
 
       {/* Photo Selection Card */}
-      <div className="bg-red border border-gray-100 p-8 space-y-6 shadow-sm">
+      <div className="bg-white border border-gray-100 p-8 space-y-6 shadow-sm">
         <h3 className="text-sm font-bold text-[#0A2540]">Dumpster Photo</h3>
-        <div className="w-full border-2 border-dashed border-blue-100 bg-[#d6d8da33] rounded-none py-16 flex flex-col items-center justify-center relative hover:border-[#0062AA]/30 transition-all cursor-pointer group">
-          <ImageIcon className="size-12 text-[#64748B] mb-4 group-hover:scale-110 transition-transform" />
-          <p className="text-sm text-[#64748B] mb-1 font-medium">
-            Drag & Drop your cover image here or <span className="text-[#0062AA] font-bold">Click to browse</span>
-          </p>
-          <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+        <div className="w-full border-2 border-dashed border-blue-100 bg-[#d6d8da33] rounded-none py-10 flex flex-col items-center justify-center relative hover:border-[#0062AA]/30 transition-all cursor-pointer group">
+          {imagePreview ? (
+            <div className="relative w-40 h-32">
+              <Image src={imagePreview} alt="Preview" fill className="object-contain" />
+              <button 
+                type="button" 
+                onClick={(e) => { e.preventDefault(); setImagePreview(null); setSelectedFile(null); }}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <ImageIcon className="size-12 text-[#64748B] mb-4 group-hover:scale-110 transition-transform" />
+              <p className="text-sm text-[#64748B] mb-1 font-medium">
+                Drag & Drop or <span className="text-[#0062AA] font-bold">Click to browse</span>
+              </p>
+            </>
+          )}
+          <input 
+            type="file" 
+            accept="image/*"
+            onChange={handleImageChange}
+            className="absolute inset-0 opacity-0 cursor-pointer" 
+          />
         </div>
-        <p className="text-xs text-gray-400">Recommended size: 818 x 345px</p>
+        <p className="text-xs text-gray-400 text-center">Recommended size: 818 x 345px</p>
       </div>
 
       {/* Extra Information Card */}
@@ -205,7 +311,7 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
             type="text" 
             value={formData.extraInfo}
             onChange={(e) => setFormData(p => ({ ...p, extraInfo: e.target.value }))}
-            placeholder="Delivery fees may apply"
+            placeholder="e.g. Best for small commercial spaces."
             className={sharedInputClasses}
         />
       </div>
