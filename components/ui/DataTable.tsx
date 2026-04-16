@@ -21,9 +21,15 @@ interface DataTableProps<T> {
   columns: ColumnDef<T>[];
   data: T[];
   className?: string;
+  isLoading?: boolean;
 }
 
-export function DataTable<T>({ columns, data, className }: DataTableProps<T>) {
+export function DataTable<T>({
+  columns,
+  data,
+  className,
+  isLoading,
+}: DataTableProps<T>) {
   return (
     <div
       className={cn(
@@ -46,7 +52,21 @@ export function DataTable<T>({ columns, data, className }: DataTableProps<T>) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length > 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="px-6 py-12 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <div className="w-8 h-8 border-4 border-[#0265AF]/20 border-t-[#0265AF] rounded-full animate-spin" />
+                    <p className="text-sm text-gray-500 font-medium">
+                      Loading data...
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : data.length > 0 ? (
               data.map((item, rowIndex) => (
                 <TableRow
                   key={rowIndex}

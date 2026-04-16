@@ -815,5 +815,47 @@ export interface ITermsAndPrivacyData {
   updatedAt: string;
 }
 
-export type IPrivacyResponse = IBaseResponse<ITermsAndPrivacyData>;
-export type ITermsResponse = IBaseResponse<ITermsAndPrivacyData>;
+export interface ILocationInfo {
+  lat: number;
+  lng: number;
+  placeId: string;
+  formattedAddress: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
+export interface IPlan {
+  id: string;
+  category: string;
+  dumpsterSize: string;
+  extraInfo: string;
+}
+
+export interface IServiceAreaPlan {
+  id: string;
+  planId: string;
+  areaId: string;
+  createdAt: string;
+  plan: IPlan;
+}
+
+export interface IServiceArea {
+  id: string;
+  name: string;
+  address: string;
+  locationInfo: ILocationInfo;
+  isActive: boolean;
+  postalCodes: string[];
+  createdAt: string;
+  updatedAt: string;
+  plans: IServiceAreaPlan[];
+}
+
+export interface IServiceAreaResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  meta: IMeta;
+  data: IServiceArea[];
+}
