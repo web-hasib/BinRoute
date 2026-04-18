@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Container from "@/components/ui/container";
-import { Search, Plus, Loader2 } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import DumpsterCard from "@/components/dashboard/dumpster/DumpsterCard";
+import { DumpsterGridSkeleton } from "@/components/dashboard/dumpster/DumpsterSkeleton";
 import { cn } from "@/lib/utils";
 import { useGetServicePlansQuery } from "@/redux/api/dumpster-plan/dumpsterPlanApi";
 
@@ -84,9 +85,7 @@ const DumpsterPage = () => {
 
       {/* Loading & Grid */}
       {isLoading ? (
-        <div className="flex items-center justify-center p-20">
-          <Loader2 className="w-8 h-8 animate-spin text-[#0062AA]" />
-        </div>
+        <DumpsterGridSkeleton />
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
           {plansData?.data?.map((plan) => (

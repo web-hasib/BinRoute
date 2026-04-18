@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface ColumnDef<T> {
   header: string;
@@ -53,19 +54,15 @@ export function DataTable<T>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="px-6 py-12 text-center"
-                >
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="w-8 h-8 border-4 border-[#0265AF]/20 border-t-[#0265AF] rounded-full animate-spin" />
-                    <p className="text-sm text-gray-500 font-medium">
-                      Loading data...
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, rowIndex) => (
+                <TableRow key={rowIndex} className="border-b border-gray-100 last:border-0">
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={colIndex} className="px-6 py-4 border-none">
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : data.length > 0 ? (
               data.map((item, rowIndex) => (
                 <TableRow

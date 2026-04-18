@@ -5,13 +5,10 @@ import { ArrowLeft, Check, Loader2, MapPin, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import {
-  useCreateServiceAreaMutation,
-  useGetServicePlansQuery,
-  useGetServiceAreaByIdQuery,
-  useUpdateServiceAreaMutation
-} from "@/redux/api/service-area/serviceAreaApi"
+import { useCreateServiceAreaMutation, useGetServicePlansQuery, useGetServiceAreaByIdQuery, useUpdateServiceAreaMutation } from "@/redux/api/service-area/serviceAreaApi"
 import { toast } from "sonner"
+import { Skeleton } from "@/components/ui/skeleton"
+import { FormSkeleton } from "@/components/ui/FormSkeleton"
 import { ICreateServiceAreaPayload } from "@/types/global"
 
 interface ServiceAreaFormProps {
@@ -194,8 +191,8 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
 
   if (isLoadingSingle) {
     return (
-      <div className="flex items-center justify-center p-20 min-h-[400px]">
-        <Loader2 className="w-10 h-10 animate-spin text-[#0265AF]" />
+      <div className="max-w-5xl mx-auto py-10">
+        <FormSkeleton fields={4} />
       </div>
     )
   }
@@ -276,8 +273,20 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
             </div>
 
             {isLoadingPlans ? (
-              <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
-                <Loader2 className="w-4 h-4 animate-spin" /> Fetching available plans...
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex gap-5 p-5 border border-gray-100 bg-white">
+                    <Skeleton className="w-[64px] h-[64px] shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-5 w-12" />
+                      </div>
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

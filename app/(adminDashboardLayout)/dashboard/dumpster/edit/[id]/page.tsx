@@ -5,7 +5,7 @@ import Container from "@/components/ui/container"
 import DumpsterForm from "@/components/dashboard/dumpster/DumpsterForm"
 import { useParams } from "next/navigation"
 import { useGetServicePlanByIdQuery } from "@/redux/api/dumpster-plan/dumpsterPlanApi"
-import { Loader2 } from "lucide-react"
+import { FormSkeleton } from "@/components/ui/FormSkeleton"
 
 const EditDumpsterPage = () => {
   const params = useParams()
@@ -17,9 +17,9 @@ const EditDumpsterPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-10 h-10 animate-spin text-[#0062AA]" />
-      </div>
+      <Container className="py-10">
+        <FormSkeleton fields={6} />
+      </Container>
     )
   }
 
