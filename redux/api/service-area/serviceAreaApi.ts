@@ -11,13 +11,14 @@ export const serviceAreaApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getServiceAreas: builder.query<
       IServiceAreaResponse,
-      { page?: number; limit?: number; searchTerm?: string }
+      { page?: number; limit?: number; searchTerm?: string; isActive?: boolean }
     >({
       query: (params) => {
         const queryParams = new URLSearchParams();
         if (params.page) queryParams.append("page", params.page.toString());
         if (params.limit) queryParams.append("limit", params.limit.toString());
         if (params.searchTerm) queryParams.append("searchTerm", params.searchTerm);
+        if (params.isActive !== undefined) queryParams.append("isActive", params.isActive.toString());
 
         return {
           url: `/service-areas?${queryParams.toString()}`,
