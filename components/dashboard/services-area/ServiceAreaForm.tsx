@@ -9,36 +9,51 @@ import { useCreateServiceAreaMutation, useGetServicePlansQuery, useGetServiceAre
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FormSkeleton } from "@/components/ui/FormSkeleton"
+import { useJsApiLoader } from "@react-google-maps/api"
 import { ICreateServiceAreaPayload } from "@/types/global"
+import Container from "@/components/ui/container";
+
+const LIBRARIES: ("places")[] = ["places"];
 
 interface ServiceAreaFormProps {
   mode: "add" | "edit"
   id?: string
 }
 
-interface NominatimAddress {
-  suburb?: string;
-  neighbourhood?: string;
-  city?: string;
-  town?: string;
-  village?: string;
-  state?: string;
-  country?: string;
-  postcode?: string;
+interface GoogleAutocompleteSuggestion {
+  description: string;
+  place_id: string;
 }
 
-interface NominatimPlace {
-  lat: string;
-  lon: string;
-  osm_id: number;
-  display_name: string;
-  address: NominatimAddress;
+interface GoogleAddressComponent {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
+
+interface GooglePlaceDetails {
+  place_id: string;
+  formatted_address: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    }
+  };
+  address_components: GoogleAddressComponent[];
 }
 
 export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
   const router = useRouter()
   const isEdit = mode === "edit"
 
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || "",
+    libraries: LIBRARIES
+  })
+
+  // API Hooks
   const { data: plansData, isLoading: isLoadingPlans } = useGetServicePlansQuery()
   const [createServiceArea, { isLoading: isCreating }] = useCreateServiceAreaMutation()
   const [updateServiceArea, { isLoading: isUpdating }] = useUpdateServiceAreaMutation()
@@ -48,12 +63,18 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
     skip: !isEdit || !id,
   })
 
-  // Nominatim Search States
+  // States
   const [addressInput, setAddressInput] = useState("")
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [shouldSearch, setShouldSearch] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Google Services Refs
+  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null)
+  const placesService = useRef<google.maps.places.PlacesService | null>(null)
+  const mapAnchor = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState<Partial<ICreateServiceAreaPayload>>({
     name: "",
@@ -79,8 +100,9 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
 
       // Crucial: Update the search input field text
       setAddressInput(area.address);
+      setShouldSearch(false);
     }
-  }, [isEdit, singleAreaData, setAddressInput]);
+  }, [isEdit, singleAreaData]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -93,56 +115,150 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Nominatim Search Logic (Debounced)
+  // Google Search Logic (Debounced)
   useEffect(() => {
-    if (addressInput.length < 3) {
+    if (!isLoaded || addressInput.length < 3 || !shouldSearch) {
+      if (!shouldSearch) setShowDropdown(false);
       setSuggestions([])
       return
     }
 
-    const delayDebounce = setTimeout(async () => {
+    if (!autocompleteService.current) {
+      autocompleteService.current = new window.google.maps.places.AutocompleteService()
+    }
+
+    const delayDebounce = setTimeout(() => {
       setIsSearching(true)
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(addressInput)}`
-        )
-        const data = await response.json()
-        setSuggestions(data.slice(0, 5))
-        setShowDropdown(true)
-      } catch (error) {
-        console.error("Geocoding error:", error)
-      } finally {
-        setIsSearching(false)
-      }
+      console.log("Searching for:", addressInput); // Debug log
+      
+      autocompleteService.current?.getPlacePredictions(
+        { input: addressInput },
+        (predictions, status) => {
+          console.log("Places API Status:", status); // Debug log
+          console.log("Predictions:", predictions); // Debug log
+          
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setSuggestions(predictions.slice(0, 5))
+            setShowDropdown(true)
+          } else {
+            if (status !== window.google.maps.places.PlacesServiceStatus.OK) {
+              console.error("Google Places Error Status:", status);
+            }
+            setSuggestions([])
+          }
+          setIsSearching(false)
+        }
+      )
     }, 600)
 
     return () => clearTimeout(delayDebounce)
-  }, [addressInput])
+  }, [addressInput, isLoaded])
 
-  const handleSelectPlace = (place: NominatimPlace) => {
-    const addr = place.address
-    const locationInfo = {
-      lat: parseFloat(place.lat),
-      lng: parseFloat(place.lon),
-      placeId: place.osm_id.toString(),
-      formattedAddress: place.display_name,
-      city: addr.city || addr.town || addr.village || addr.suburb || "",
-      state: addr.state || "",
-      country: addr.country || ""
+  const handleSelectPlace = (suggestion: any) => {
+    if (!isLoaded || !mapAnchor.current) return
+
+    setIsSearching(true)
+    if (!placesService.current) {
+      placesService.current = new window.google.maps.places.PlacesService(mapAnchor.current)
     }
 
-    const areaName = addr.suburb || addr.neighbourhood || addr.city || addr.town || "Service Area"
+    placesService.current.getDetails(
+      { 
+        placeId: suggestion.place_id,
+        fields: ['geometry', 'address_components', 'formatted_address', 'name']
+      },
+      async (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+          const getComponent = (components: any[] | undefined, type: string) => {
+            const comp = components?.find(c => c.types.includes(type));
+            return comp?.long_name || comp?.short_name || "";
+          };
 
-    setFormData(prev => ({
-      ...prev,
-      name: areaName,
-      address: place.display_name,
-      postalCodes: addr.postcode ? [addr.postcode] : [],
-      locationInfo
-    }))
+          let postcode = getComponent(place.address_components, "postal_code");
+          const city = getComponent(place.address_components, "locality") || getComponent(place.address_components, "administrative_area_level_2");
+          const state = getComponent(place.address_components, "administrative_area_level_1");
+          const country = getComponent(place.address_components, "country");
+          const areaName = getComponent(place.address_components, "sublocality") || city || "Service Area";
 
-    setAddressInput(place.display_name)
-    setShowDropdown(false)
+          // Fallback 1: Try to extract from formatted_address using regex (common for BD postal codes)
+          if (!postcode && place.formatted_address) {
+            const match = place.formatted_address.match(/\b\d{4,5}\b/);
+            if (match) postcode = match[0];
+          }
+
+          // Fallback 2: If missing, attempt to find it by reverse geocoding coordinates
+          if (!postcode && place.geometry?.location) {
+            const geocoder = new window.google.maps.Geocoder();
+            try {
+              const response = await geocoder.geocode({ location: place.geometry.location });
+              if (response.results && response.results.length > 0) {
+                for (const result of response.results) {
+                  const pc = result.address_components?.find((c: any) => c.types.includes("postal_code"))?.long_name;
+                  if (pc) {
+                    postcode = pc;
+                    break;
+                  }
+                }
+              }
+            } catch (error) {
+              console.error("Error fetching postal code via reverse geocoding:", error);
+            }
+          }
+
+          // Fallback 3: Try searching by address string as a last resort
+          if (!postcode && place.formatted_address) {
+            const geocoder = new window.google.maps.Geocoder();
+            try {
+              const response = await geocoder.geocode({ address: place.formatted_address });
+              if (response.results && response.results.length > 0) {
+                for (const result of response.results) {
+                  const pc = result.address_components?.find((c: any) => c.types.includes("postal_code"))?.long_name;
+                  if (pc) {
+                    postcode = pc;
+                    break;
+                  }
+                }
+              }
+            } catch (error) {
+              console.error("Error fetching postal code via address geocoding:", error);
+            }
+          }
+
+          // Fallback 4: Try to extract from the original suggestion description text
+          if (!postcode && suggestion.description) {
+            const match = suggestion.description.match(/\b\d{4,5}\b/);
+            if (match) postcode = match[0];
+          }
+
+
+          const locationInfo = {
+            lat: place.geometry?.location?.lat() || 0,
+            lng: place.geometry?.location?.lng() || 0,
+            placeId: place.place_id || "",
+            formattedAddress: place.formatted_address || "",
+            city: city,
+            state: state,
+            country: country
+          }
+
+          setFormData(prev => ({
+            ...prev,
+            name: areaName,
+            address: place.formatted_address || "",
+            postalCodes: postcode ? [postcode] : [],
+            locationInfo
+          }))
+
+          setAddressInput(place.formatted_address || "")
+          setShouldSearch(false)
+          setShowDropdown(false)
+          setSuggestions([])
+        } else {
+          toast.error("Failed to fetch location details")
+        }
+        setIsSearching(false)
+      }
+    )
   }
 
   const togglePlan = (id: string) => {
@@ -198,7 +314,8 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pb-12">
+    <Container className="mx-auto pb-12">
+      <div ref={mapAnchor} style={{ display: 'none' }} />
       <div className="flex items-center gap-3 mb-6">
         <Link href="/dashboard/services-area" className="text-gray-600 hover:text-gray-900 transition-colors">
           <ArrowLeft className="w-6 h-6" />
@@ -210,7 +327,7 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
 
       <div className="bg-white border border-gray-100 shadow-[0_2px_15px_rgba(0,0,0,0.03)] rounded-none p-8">
         <div className="space-y-8">
-          {/* Free Location Search (OpenStreetMap) */}
+          {/* Google Places Location Search */}
           <div className="space-y-3 relative" ref={dropdownRef}>
             <label className="text-sm font-semibold text-[#1B253F]">Service location (Search Area/City)</label>
             <div className="relative">
@@ -219,8 +336,11 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
                 type="text"
                 placeholder="Type location (e.g. Badda, Dhaka)"
                 value={addressInput}
-                onChange={(e) => setAddressInput(e.target.value)}
-                onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
+                onChange={(e) => {
+                  setAddressInput(e.target.value)
+                  setShouldSearch(true)
+                }}
+                onFocus={() => shouldSearch && suggestions.length > 0 && setShowDropdown(true)}
                 className="w-full pl-12 pr-12 py-3.5 bg-[#F9FAFB] border border-gray-100 outline-none text-sm placeholder:text-gray-400 focus:ring-1 focus:ring-[#0265AF] rounded-none"
               />
               {isSearching && (
@@ -230,7 +350,7 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
               )}
             </div>
 
-            {/* Nominatim Suggestions Dropdown */}
+            {/* Google Places Suggestions Dropdown */}
             {showDropdown && suggestions.length > 0 && (
               <div className="absolute z-[100] left-0 right-0 top-[100%] mt-1 bg-white border border-gray-100 shadow-xl max-h-[300px] overflow-y-auto">
                 {suggestions.map((place, idx) => (
@@ -241,8 +361,8 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
                   >
                     <MapPin className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
                     <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-[#1B253F]">{place.display_name.split(',')[0]}</span>
-                      <span className="text-xs text-gray-500 line-clamp-1">{place.display_name}</span>
+                      <span className="text-sm font-semibold text-[#1B253F]">{place.description.split(',')[0]}</span>
+                      <span className="text-xs text-gray-500 line-clamp-1">{place.description}</span>
                     </div>
                   </div>
                 ))}
@@ -251,17 +371,32 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
           </div>
 
           {/* Selected Area Info Card */}
-          {formData.name && (
-            <div className="p-5 bg-blue-50/30 border border-blue-100/50 flex flex-col gap-1 animate-in fade-in slide-in-from-top-2">
-              <p className="text-[10px] font-bold text-[#0265AF] uppercase tracking-widest mb-1">Area Identified</p>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-600" />
-                <p className="text-base font-bold text-[#1B253F]">{formData.name}</p>
+          {formData.address && (
+            <div className="p-6 bg-blue-50/40 border border-blue-100/60 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2">
+              <div>
+                <p className="text-[10px] font-bold text-[#0265AF] uppercase tracking-widest mb-1.5">Area Identified</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <p className="text-base font-bold text-[#1B253F]">{formData.name}</p>
+                </div>
+                <p className="text-sm text-gray-500 pl-6 leading-tight">{formData.address}</p>
               </div>
-              <p className="text-sm text-gray-500 pl-6">{formData.address}</p>
-              {formData.postalCodes && formData.postalCodes.length > 0 && (
-                <p className="text-xs text-gray-400 pl-6 mt-1">Postal Code: {formData.postalCodes[0]}</p>
-              )}
+
+              <div className="pl-6 pt-1">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-[#1B253F] flex items-center gap-1">
+                    Postal Code
+                    <span className="text-[10px] text-gray-400 font-normal">(Verify or add manually if missing)</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.postalCodes?.[0] || ""}
+                    onChange={(e) => setFormData(prev => ({ ...prev, postalCodes: [e.target.value] }))}
+                    placeholder="e.g. 1700"
+                    className="w-full max-w-[180px] px-3 py-2 bg-white border border-gray-200 outline-none text-sm placeholder:text-gray-300 focus:ring-1 focus:ring-[#0265AF] transition-all"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -362,7 +497,7 @@ export const ServiceAreaForm = ({ mode, id }: ServiceAreaFormProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   )
 }
 
