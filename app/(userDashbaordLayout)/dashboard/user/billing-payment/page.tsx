@@ -37,7 +37,7 @@ const BillingPaymentPage = () => {
       {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Quick Pay Card */}
-        <div className="bg-white p-8 shadow-sm flex flex-col justify-between border border-gray-100">
+        <div className="bg-white p-4 md:p-8 shadow-sm flex flex-col justify-between border border-gray-100">
           <div className="flex justify-between items-start mb-6">
             <div>
               <p className="text-sm font-bold text-[#172C41] mb-4">Quick Pay</p>
@@ -58,7 +58,7 @@ const BillingPaymentPage = () => {
         </div>
 
         {/* Payment Method Card */}
-        <div className="bg-[#F4F9FD] p-8 shadow-sm flex flex-col justify-between border border-gray-100">
+        <div className="bg-[#F4F9FD] p-4 md:p-8 shadow-sm flex flex-col justify-between border border-gray-100">
           <div className="flex justify-between items-start mb-6">
             <div>
               <p className="text-sm font-bold text-[#172C41] mb-4">Payment Method</p>

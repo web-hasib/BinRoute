@@ -49,7 +49,7 @@ const PaymentHistory = ({ title = "All Payment History" }) => {
     };
 
     return (
-        <div className="bg-white p-8 rounded-none shadow-sm h-fit">
+        <div className="bg-white p-4 md:p-6 rounded-none shadow-sm h-fit">
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold text-[#172C41]">{title}</h2>
 

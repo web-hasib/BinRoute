@@ -6,21 +6,15 @@ import PaymentHistory from "@/components/sections/dashboard/PaymentHistory";
 export default function ProfilePage() {
     return (
         <main className="bg-gray-50/50 h-full">
-            <div className="container px-4 flex flex-col lg:flex-row gap-8">
-                {/* Sidebar - Profile & Navigation */}
-             
+            <div className="flex flex-col gap-8">
+                {/* Welcome & Active Services */}
+                <ActiveServices />
 
-                {/* Main Content */}
-                <div className="flex-1 flex flex-col gap-8">
-                    {/* Welcome & Active Services */}
-                    <ActiveServices />
+                {/* Activity Timeline */}
+                <ActivityTimeline />
 
-                    {/* Activity Timeline */}
-                    <ActivityTimeline />
-
-                    {/* Payment History */}
-                    <PaymentHistory />
-                </div>
+                {/* Payment History */}
+                <PaymentHistory />
             </div>
         </main>
     );

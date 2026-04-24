@@ -67,10 +67,10 @@ const ServiceRequestsPage = () => {
       </div>
 
       {/* Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[
           { id: "frequency", title: "Change Frequency", icon: RefreshCw, desc: "Update weekly or bi-weekly cycles" },
-          { id: "reschedule", title: "Reschedule Pickup", icon: Calendar, desc: "Modify your existing pickup time" },
+          // { id: "reschedule", title: "Reschedule Pickup", icon: Calendar, desc: "Modify your existing pickup time" },
           { id: "damage", title: "Report Damage", icon: AlertCircle, desc: "Container repair or replacement request" },
         ].map((action, idx) => (
           <div key={idx} className="bg-white p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
@@ -129,7 +129,7 @@ const ServiceRequestsPage = () => {
       )}
 
       {/* Request History Table */}
-      <div className="bg-white p-8 rounded-none shadow-sm">
+      <div className="bg-white p-4 md:p-8 rounded-none shadow-sm">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-[#172C41]">Request History</h2>
           <div className="flex items-center gap-2">
