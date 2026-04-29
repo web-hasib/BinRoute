@@ -31,6 +31,7 @@ export interface BookingState {
   subscriptionId: string | null;
   dropoffLatitude?: number;
   dropoffLongitude?: number;
+  distance?: number;
 }
 
 const initialState: BookingState = {
@@ -88,9 +89,15 @@ const bookingSlice = createSlice({
     updateContactInfo: (state, action: PayloadAction<Partial<BookingState["contactInfo"]>>) => {
       state.contactInfo = { ...state.contactInfo, ...action.payload };
     },
-    setSubscriptionData: (state, action: PayloadAction<{ clientSecret: string; subscriptionId: string }>) => {
+    setSubscriptionData: (state, action: PayloadAction<{ clientSecret: string; subscriptionId: string; distance?: number; totalAmount?: number }>) => {
       state.clientSecret = action.payload.clientSecret;
       state.subscriptionId = action.payload.subscriptionId;
+      if (action.payload.distance !== undefined) {
+         state.distance = action.payload.distance;
+      }
+      if (action.payload.totalAmount !== undefined) {
+         state.pricing.total = action.payload.totalAmount;
+      }
     },
     resetBooking: () => initialState,
   },

@@ -13,7 +13,7 @@ interface SuccessModalProps {
 
 const SuccessModal = ({ onClose }: SuccessModalProps) => {
   const dispatch = useDispatch();
-  const { serviceType, dumpsterSize, pricing, dropOffAddress } = useSelector(
+  const { serviceType, dumpsterSize, pricing, dropOffAddress, subscriptionId, distance, contractDuration } = useSelector(
     (state: RootState) => state.booking,
   );
 
@@ -21,6 +21,10 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
     dispatch(resetBooking());
     onClose();
   };
+
+  const shortId = subscriptionId ? subscriptionId.slice(-6).toUpperCase() : "882941";
+  const displayDistance = distance ? `${distance.toFixed(1)} Miles` : "N/A";
+  const rentalDuration = serviceType === "roll-off" ? "N/A" : contractDuration || "1 year";
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -39,23 +43,23 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
           </div>
 
           <h2 className="text-3xl font-bold text-[#0c243c] mb-2">
-            Your Roll of Service is Active
+            Your Service is Active
           </h2>
           <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
-            Confirmation #CF-882941. Your premium waste management solution has
+            Confirmation #CF-{shortId}. Your premium waste management solution has
             been successfully provisioned and is ready for operation.
           </p>
         </div>
 
         {/* Order Details */}
         <div className="mt-10 space-y-4">
-          <DetailRow label="Order Id" value="#123654" />
-          <DetailRow label="Calculated Distance" value="42.4 Miles" />
+          <DetailRow label="Order Id" value={`#CF-${shortId}`} />
+          <DetailRow label="Calculated Distance" value={displayDistance} />
           <DetailRow
             label="Service Type"
             value={
               serviceType === "roll-off"
-                ? "Roll of Dumpster Service"
+                ? "Roll off Dumpster Service"
                 : "Commercial Service"
             }
           />
@@ -65,14 +69,14 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
             isUpper
           />
           <DetailRow
-            label="Rental Duration"
-            value="1 Month (Nov 12 - Dec 12)"
+            label="Rental/Contract Duration"
+            value={rentalDuration}
           />
           <DetailRow
             label="Delivery Address"
             value={
               dropOffAddress ||
-              "1402 Industry Ave, Building B Detroit, MI 48201"
+              "N/A"
             }
           />
         </div>
@@ -80,7 +84,7 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
         {/* Price Breakdown */}
         <div className="mt-8 pt-8 border-t border-dashed border-gray-200 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Subtotal Address</span>
+            <span className="text-gray-500">Subtotal</span>
             <span className="font-bold text-[#0c243c]">
               ${pricing.subtotal.toFixed(2)}
             </span>
@@ -92,7 +96,7 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Calculated Distance Free</span>
+            <span className="text-gray-500">Service Area Fee</span>
             <span className="font-bold text-[#0c243c]">
               ${pricing.fee.toFixed(2)}
             </span>

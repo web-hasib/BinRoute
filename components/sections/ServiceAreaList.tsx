@@ -1,10 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
-import { MapPin, ArrowRight, ArrowDown, Search, Building2, Wrench } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { MapPin, ArrowRight, ArrowDown, Search, Building2, Wrench, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useGetServiceAreasQuery } from "@/redux/api/service-area/serviceAreaApi";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useJsApiLoader } from "@react-google-maps/api";
+
+const LIBRARIES: ("places")[] = ["places"];
+
+interface GoogleAutocompleteSuggestion {
+  description: string;
+  place_id: string;
+}
+
+interface GoogleAddressComponent {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
+
+interface GooglePlaceDetails {
+  place_id: string;
+  formatted_address: string;
+  address_components: GoogleAddressComponent[];
+}
 
 const servicesMapping = {
   COMMERCIAL: {
@@ -39,6 +59,91 @@ const ServiceAreaList = () => {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
+  // Google Maps Logic
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || "",
+    libraries: LIBRARIES
+  })
+
+  const [addressInput, setAddressInput] = useState("")
+  const [suggestions, setSuggestions] = useState<GoogleAutocompleteSuggestion[]>([])
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const [shouldSearch, setShouldSearch] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null)
+  const placesService = useRef<google.maps.places.PlacesService | null>(null)
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // Google Search Logic
+  useEffect(() => {
+    if (!isLoaded || addressInput.length < 3 || !shouldSearch) {
+      if (!shouldSearch) setShowDropdown(false);
+      setSuggestions([])
+      return
+    }
+
+    if (!autocompleteService.current) {
+      autocompleteService.current = new window.google.maps.places.AutocompleteService()
+    }
+
+    const delayDebounce = setTimeout(() => {
+      setIsSearching(true)
+      autocompleteService.current?.getPlacePredictions(
+        { input: addressInput },
+        (predictions, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setSuggestions(predictions.slice(0, 5))
+            setShowDropdown(true)
+          } else {
+            setSuggestions([])
+          }
+          setIsSearching(false)
+        }
+      )
+    }, 600)
+
+    return () => clearTimeout(delayDebounce)
+  }, [addressInput, isLoaded, shouldSearch])
+
+  const handleSuggestionClick = (suggestion: GoogleAutocompleteSuggestion) => {
+    setAddressInput(suggestion.description)
+    setShouldSearch(false)
+    setShowDropdown(false)
+
+    if (!placesService.current) {
+      const mapDiv = document.createElement('div')
+      placesService.current = new window.google.maps.places.PlacesService(mapDiv)
+    }
+
+    placesService.current.getDetails(
+      { placeId: suggestion.place_id, fields: ['address_components', 'formatted_address'] },
+      (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.address_components) {
+          const postalCode = place.address_components.find(c => c.types.includes("postal_code"))?.long_name
+          
+          if (postalCode) {
+            setSearch(postalCode)
+          } else {
+            // Fallback to formatted address or first part of address if no postal code
+            setSearch(suggestion.description)
+          }
+        }
+      }
+    )
+  }
+
   const { data: areasData, isLoading } = useGetServiceAreasQuery({
     isActive: true,
     searchTerm: search,
@@ -60,8 +165,11 @@ const ServiceAreaList = () => {
     const areaPlan = area?.plans?.find(p => p.id === serviceId);
     const category = areaPlan?.plan?.category;
     const type = category === "ROLL_OFF" ? "roll-off" : "commercial";
+    
+    // If search is empty, use the first postal code of the selected area as a default
+    const zipCode = search || (area?.postalCodes && area.postalCodes[0]) || "";
 
-    router.push(`/services/booking?areaId=${locationId}&dumstar=${serviceId}&type=${type}`);
+    router.push(`/services/booking?areaId=${locationId}&dumstar=${serviceId}&type=${type}&zipCode=${zipCode}`);
   };
 
   const areas = areasData?.data || [];
@@ -79,22 +187,54 @@ const ServiceAreaList = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-6">
             Please select your area below
           </h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 relative" ref={dropdownRef}>
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-gray-400" />
               </div>
               <input
                 type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={addressInput}
+                onChange={(e) => {
+                  setAddressInput(e.target.value)
+                  setShouldSearch(true)
+                }}
+                onFocus={() => {
+                  if (suggestions.length > 0) setShowDropdown(true)
+                }}
                 placeholder="Enter your address..."
-                className="w-full pl-10 pr-4 py-3 text-sm text-gray-700 bg-white rounded-md outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full pl-10 pr-10 py-3 text-sm text-gray-700 bg-white rounded-md outline-none focus:ring-2 focus:ring-blue-400"
               />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {isSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showDropdown && suggestions.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg rounded-md overflow-hidden">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.place_id}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-start gap-3 transition-colors border-b last:border-none border-gray-100"
+                    >
+                      <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700 line-clamp-1">{suggestion.description}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <button
-              className="px-6 py-3 text-white text-sm font-semibold rounded-md transition"
+              onClick={() => {
+                if (addressInput) {
+                  setSearch(addressInput)
+                  setShowDropdown(false)
+                }
+              }}
+              className="px-6 py-3 text-white text-sm font-semibold rounded-md transition hover:bg-blue-600 disabled:opacity-50"
               style={{ background: "#2563eb" }}
+              disabled={isSearching}
             >
               Search
             </button>

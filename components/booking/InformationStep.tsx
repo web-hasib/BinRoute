@@ -151,22 +151,36 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
   }, [addressInput, isLoaded, shouldSearch])
 
   const handleSuggestionClick = (suggestion: GoogleAutocompleteSuggestion) => {
-    setAddressInput(suggestion.description)
-    setShouldSearch(false)
-    setShowDropdown(false)
-
     if (!placesService.current) {
       const mapDiv = document.createElement('div')
       placesService.current = new window.google.maps.places.PlacesService(mapDiv)
     }
 
     placesService.current.getDetails(
-      { placeId: suggestion.place_id, fields: ['geometry', 'formatted_address'] },
+      { placeId: suggestion.place_id, fields: ['geometry', 'formatted_address', 'address_components'] },
       (place, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+          const postalCode = place.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+          const allowedPostalCodes = areaData?.data?.postalCodes || [];
+
+          // Validation: Ensure the selected address is within the service area's allowed postal codes
+          if (allowedPostalCodes.length > 0) {
+            if (!postalCode || !allowedPostalCodes.includes(postalCode)) {
+              toast.error(
+                `The selected address (Zip: ${postalCode || "N/A"}) is outside the service area for ${areaData?.data?.name || "this location"}. Allowed Zips: ${allowedPostalCodes.join(", ")}`
+              );
+              setAddressInput("");
+              return;
+            }
+          }
+
           const lat = place.geometry.location.lat()
           const lng = place.geometry.location.lng()
           
+          setAddressInput(place.formatted_address || suggestion.description)
+          setShouldSearch(false)
+          setShowDropdown(false)
+
           dispatch(updateBookingData({
             dropOffAddress: place.formatted_address || suggestion.description,
             dropoffLatitude: lat,
@@ -181,13 +195,35 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
     dispatch(updateBookingData({ [field]: value }));
   };
 
+  const getFrequencyLimit = (frequency: string) => {
+    if (frequency === "Every other week" || frequency === "Once a month" || frequency === "Twice a month") return 1;
+    const match = frequency.match(/(\d+)x/);
+    return match ? parseInt(match[1]) : 1;
+  };
+
   const handleDayToggle = (day: string) => {
     const currentDays = booking.serviceDays || [];
-    const newDays = currentDays.includes(day)
-      ? currentDays.filter((d) => d !== day)
-      : [...currentDays, day];
-    handleInputChange("serviceDays", newDays);
+    const limit = getFrequencyLimit(booking.serviceFrequency || "1x/week");
+
+    if (currentDays.includes(day)) {
+      const newDays = currentDays.filter((d) => d !== day);
+      handleInputChange("serviceDays", newDays);
+    } else {
+      if (currentDays.length >= limit) {
+        toast.error(`You can only select ${limit} day(s) for ${booking.serviceFrequency} service.`);
+        return;
+      }
+      const newDays = [...currentDays, day];
+      handleInputChange("serviceDays", newDays);
+    }
   };
+
+  // Clear service days if frequency changes
+  useEffect(() => {
+    if (isCommercial) {
+      handleInputChange("serviceDays", []);
+    }
+  }, [booking.serviceFrequency]);
 
   const handleContactChange = (field: string, value: string) => {
     dispatch(updateContactInfo({ [field]: value }));
@@ -210,6 +246,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         return;
       }
 
+      const validDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
       const payload: any = {
         planId,
         dropoffAddress: booking.dropOffAddress,
@@ -229,7 +267,13 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       if (isCommercial) {
         payload.serviceFrequency = booking.serviceFrequency || "1x/week";
         payload.contractDuration = booking.contractDuration || "1 year";
-        payload.serviceDays = booking.serviceDays?.length ? booking.serviceDays : ["Monday"];
+        // Filter out any short names (like "Mon") and only send full day names
+        payload.serviceDays = (booking.serviceDays || [])
+          .filter(day => validDays.includes(day));
+        
+        if (payload.serviceDays.length === 0) {
+          payload.serviceDays = ["Monday"]; // Fallback to at least one day
+        }
       } else {
         payload.pickupDate = booking.pickUpDate ? new Date(booking.pickUpDate).toISOString() : null;
         payload.rentalDuration = "0"; // As per roll-off example
@@ -238,13 +282,16 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       const response = await createSubscription(payload).unwrap();
       
       if (response.success) {
-        // Handle the weird key with spaces for client secret
         const clientSecret = response.data?.["   "] || response.data?.clientSecret;
         const subscriptionId = response.data?.subscription?.id;
+        const distance = response.data?.distance;
+        const totalAmount = response.data?.subscription?.totalAmount;
 
         dispatch(setSubscriptionData({
           clientSecret,
-          subscriptionId
+          subscriptionId,
+          distance,
+          totalAmount
         }));
 
         toast.success("Booking initiated! Moving to payment...");
