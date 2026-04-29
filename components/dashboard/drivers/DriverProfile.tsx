@@ -101,15 +101,15 @@ const DriverProfile = ({ id }: DriverProfileProps) => {
           <div className="flex justify-between items-end -mt-16 mb-8 relative z-10">
             <div className="relative w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-md bg-white">
               {driver?.image || isDriverLoading ? (
-                 <Image
-                    src={driver?.image || "/driver_profile_avatar_1775316560340.png"}
-                    alt={driver?.fullName || "Driver"}
-                    fill
-                    className="object-cover"
+                <Image
+                  src={driver?.image || "/driver_profile_avatar_1775316560340.png"}
+                  alt={driver?.fullName || "Driver"}
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                    <User className="w-12 h-12 text-gray-300" />
+                  <User className="w-12 h-12 text-gray-300" />
                 </div>
               )}
             </div>
@@ -124,7 +124,7 @@ const DriverProfile = ({ id }: DriverProfileProps) => {
 
           <div className="space-y-4">
             <h2 className="text-2xl font-extrabold text-[#172C41]">
-                {isDriverLoading ? <Skeleton className="h-8 w-48" /> : driver?.fullName}
+              {isDriverLoading ? <Skeleton className="h-8 w-48" /> : driver?.fullName}
             </h2>
             <div className="space-y-2 text-[15px] font-medium text-gray-500">
               <p>Phone : <span className="text-[#172C41]">{isDriverLoading ? <Skeleton className="h-4 w-32 inline-block" /> : driver?.phone}</span></p>
@@ -133,65 +133,65 @@ const DriverProfile = ({ id }: DriverProfileProps) => {
               <p>Address : <span className="text-[#172C41]">{isDriverLoading ? <Skeleton className="h-4 w-60 inline-block" /> : driver?.address}</span></p>
             </div>
             {isDriverLoading ? (
-                <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
             ) : (
-                <span className={cn(
-                    "inline-block px-3 py-1 text-[11px] font-bold rounded-none uppercase",
-                    driver?.status === "ACTIVE" ? "bg-[#F0FDF4] text-[#22C55E]" : "bg-red-50 text-red-500"
-                )}>
-                    {driver?.status}
-                </span>
+              <span className={cn(
+                "inline-block px-3 py-1 text-[11px] font-bold rounded-none uppercase",
+                driver?.status === "ACTIVE" ? "bg-[#F0FDF4] text-[#22C55E]" : "bg-red-50 text-red-500"
+              )}>
+                {driver?.status}
+              </span>
             )}
           </div>
         </div>
 
         {/* Stats Cards */}
         <div className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 bg-gray-50/30">
-          <StatCard 
-            label="Total Completed" 
-            value={stats?.totalCompletedJobs.toString() || "0"} 
-            icon={Briefcase} 
-            iconBgColor="bg-blue-50" 
+          <StatCard
+            label="Total Completed"
+            value={stats?.totalCompletedJobs.toString() || "0"}
+            icon={Briefcase}
+            iconBgColor="bg-blue-50"
             iconColor="text-blue-600"
             isLoading={isStatsLoading}
           />
-          <StatCard 
-            label="This Month" 
-            value={stats?.thisMonthCompletedJobs.toString() || "0"} 
-            icon={Calendar} 
-            iconBgColor="bg-purple-50" 
+          <StatCard
+            label="This Month"
+            value={stats?.thisMonthCompletedJobs.toString() || "0"}
+            icon={Calendar}
+            iconBgColor="bg-purple-50"
             iconColor="text-purple-600"
             isLoading={isStatsLoading}
           />
-          <StatCard 
-            label="Today's Job" 
-            value={stats?.todayTotalJobs.toString() || "0"} 
-            icon={Clock} 
-            iconBgColor="bg-orange-50" 
+          <StatCard
+            label="Today's Job"
+            value={stats?.todayTotalJobs.toString() || "0"}
+            icon={Clock}
+            iconBgColor="bg-orange-50"
             iconColor="text-orange-600"
             isLoading={isStatsLoading}
           />
-          <StatCard 
-            label="Completed Today" 
-            value={stats?.todayCompletedJobs.toString() || "0"} 
-            icon={CheckSquare} 
-            iconBgColor="bg-green-50" 
+          <StatCard
+            label="Completed Today"
+            value={stats?.todayCompletedJobs.toString() || "0"}
+            icon={CheckSquare}
+            iconBgColor="bg-green-50"
             iconColor="text-green-600"
             isLoading={isStatsLoading}
           />
-          <StatCard 
-            label="Pending Jobs" 
-            value={stats?.pendingJobs.toString() || "0"} 
-            icon={Clock} 
-            iconBgColor="bg-red-50" 
+          <StatCard
+            label="Pending Jobs"
+            value={stats?.pendingJobs.toString() || "0"}
+            icon={Clock}
+            iconBgColor="bg-red-50"
             iconColor="text-red-600"
             isLoading={isStatsLoading}
           />
-          <StatCard 
-            label="In Progress" 
-            value={stats?.inProgressJobs.toString() || "0"} 
-            icon={Briefcase} 
-            iconBgColor="bg-yellow-50" 
+          <StatCard
+            label="In Progress"
+            value={stats?.inProgressJobs.toString() || "0"}
+            icon={Briefcase}
+            iconBgColor="bg-yellow-50"
             iconColor="text-yellow-600"
             isLoading={isStatsLoading}
           />
