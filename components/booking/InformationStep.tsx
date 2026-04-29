@@ -1,12 +1,34 @@
 "use client";
-
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
-import { MapPin, Calendar, ChevronDown } from "lucide-react";
-import { updateBookingData, updateContactInfo } from "@/feature/user/bookingSlice";
+import { MapPin, Calendar, ChevronDown, Search, Loader2 } from "lucide-react";
+import { updateBookingData, updateContactInfo, setSubscriptionData } from "@/feature/user/bookingSlice";
 import PricingSidebar from "./PricingSidebar";
 import { cn } from "@/lib/utils";
+import { useCreateSubscriptionMutation } from "@/redux/api/subscription/subscriptionApi";
+import { useGetServiceAreaByIdQuery } from "@/redux/api/service-area/serviceAreaApi";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { useJsApiLoader } from "@react-google-maps/api";
+
+const LIBRARIES: ("places")[] = ["places"];
+
+interface GoogleAutocompleteSuggestion {
+  description: string;
+  place_id: string;
+}
+
+interface GooglePlaceDetails {
+  place_id: string;
+  formatted_address: string;
+  geometry: {
+    location: {
+      lat: () => number;
+      lng: () => number;
+    }
+  };
+}
 
 interface InformationStepProps {
   onNext: () => void;
@@ -53,10 +75,107 @@ const contractDurations = ["1 year", "2 year", "3 year"];
 
 const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
+  const areaId = searchParams.get("areaId");
+  
   const booking = useSelector((state: RootState) => state.booking);
-  const { contactInfo, serviceType } = booking;
-
+  const { contactInfo, serviceType, dumpsterSize } = booking;
   const isCommercial = serviceType === "commercial";
+
+  const { data: areaData } = useGetServiceAreaByIdQuery(areaId || "");
+  const [createSubscription, { isLoading }] = useCreateSubscriptionMutation();
+
+  // Google Maps Logic
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || "",
+    libraries: LIBRARIES
+  })
+
+  const [addressInput, setAddressInput] = useState(booking.dropOffAddress || "")
+  const [suggestions, setSuggestions] = useState<GoogleAutocompleteSuggestion[]>([])
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const [shouldSearch, setShouldSearch] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null)
+  const placesService = useRef<google.maps.places.PlacesService | null>(null)
+
+  // Sync initial address
+  useEffect(() => {
+    if (booking.dropOffAddress && !addressInput) {
+      setAddressInput(booking.dropOffAddress)
+    }
+  }, [booking.dropOffAddress])
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // Google Search Logic
+  useEffect(() => {
+    if (!isLoaded || addressInput.length < 3 || !shouldSearch) {
+      if (!shouldSearch) setShowDropdown(false);
+      setSuggestions([])
+      return
+    }
+
+    if (!autocompleteService.current) {
+      autocompleteService.current = new window.google.maps.places.AutocompleteService()
+    }
+
+    const delayDebounce = setTimeout(() => {
+      setIsSearching(true)
+      autocompleteService.current?.getPlacePredictions(
+        { input: addressInput },
+        (predictions, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setSuggestions(predictions.slice(0, 5))
+            setShowDropdown(true)
+          } else {
+            setSuggestions([])
+          }
+          setIsSearching(false)
+        }
+      )
+    }, 600)
+
+    return () => clearTimeout(delayDebounce)
+  }, [addressInput, isLoaded, shouldSearch])
+
+  const handleSuggestionClick = (suggestion: GoogleAutocompleteSuggestion) => {
+    setAddressInput(suggestion.description)
+    setShouldSearch(false)
+    setShowDropdown(false)
+
+    if (!placesService.current) {
+      const mapDiv = document.createElement('div')
+      placesService.current = new window.google.maps.places.PlacesService(mapDiv)
+    }
+
+    placesService.current.getDetails(
+      { placeId: suggestion.place_id, fields: ['geometry', 'formatted_address'] },
+      (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+          const lat = place.geometry.location.lat()
+          const lng = place.geometry.location.lng()
+          
+          dispatch(updateBookingData({
+            dropOffAddress: place.formatted_address || suggestion.description,
+            dropoffLatitude: lat,
+            dropoffLongitude: lng
+          }))
+        }
+      }
+    )
+  }
 
   const handleInputChange = (field: string, value: any) => {
     dispatch(updateBookingData({ [field]: value }));
@@ -72,6 +191,69 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
 
   const handleContactChange = (field: string, value: string) => {
     dispatch(updateContactInfo({ [field]: value }));
+  };
+
+  const handleConfirmBooking = async () => {
+    try {
+      // Find the actual planId from area data
+      const selectedPlan = areaData?.data?.plans?.find((p: any) => p.id === dumpsterSize);
+      const planId = selectedPlan?.planId;
+
+      if (!planId) {
+        toast.error("Please select a service plan first.");
+        return;
+      }
+
+      // Basic validation
+      if (!contactInfo.firstName || !contactInfo.email || !booking.dropOffAddress) {
+        toast.error("Please fill in all required contact and schedule information.");
+        return;
+      }
+
+      const payload: any = {
+        planId,
+        dropoffAddress: booking.dropOffAddress,
+        dropoffDate: new Date(booking.dropOffDate || Date.now()).toISOString(),
+        dropoffLatitude: booking.dropoffLatitude || 23.8,
+        dropoffLongitude: booking.dropoffLongitude || 90.42,
+        businessType: booking.businessType || "Other",
+        wasteType: booking.wasteType || "Trash",
+        firstName: contactInfo.firstName,
+        lastName: contactInfo.lastName,
+        email: contactInfo.email,
+        phone: contactInfo.phone,
+        companyName: contactInfo.companyName,
+        deliveryInstructions: contactInfo.deliveryInstructions,
+      };
+
+      if (isCommercial) {
+        payload.serviceFrequency = booking.serviceFrequency || "1x/week";
+        payload.contractDuration = booking.contractDuration || "1 year";
+        payload.serviceDays = booking.serviceDays?.length ? booking.serviceDays : ["Monday"];
+      } else {
+        payload.pickupDate = booking.pickUpDate ? new Date(booking.pickUpDate).toISOString() : null;
+        payload.rentalDuration = "0"; // As per roll-off example
+      }
+
+      const response = await createSubscription(payload).unwrap();
+      
+      if (response.success) {
+        // Handle the weird key with spaces for client secret
+        const clientSecret = response.data?.["   "] || response.data?.clientSecret;
+        const subscriptionId = response.data?.subscription?.id;
+
+        dispatch(setSubscriptionData({
+          clientSecret,
+          subscriptionId
+        }));
+
+        toast.success("Booking initiated! Moving to payment...");
+        onNext();
+      }
+    } catch (error: any) {
+      console.error("Subscription Error:", error);
+      toast.error(error?.data?.message || "Failed to initiate booking. Please try again.");
+    }
   };
 
   return (
@@ -93,18 +275,47 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
           <h3 className="text-xl font-bold text-[#0c243c] mb-8">Schedule Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
             {/* Drop-off Address */}
-            <div className="md:col-span-2 space-y-2">
+            <div className="md:col-span-2 space-y-2 relative" ref={dropdownRef}>
               <label className="text-sm font-semibold text-[#0c243c]">Dumpster Drop-off Address</label>
               <div className="relative">
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder={isCommercial ? "150 Cambridge St Boston, MA 02114" : "Enter full address..."}
-                  value={booking.dropOffAddress}
-                  onChange={(e) => handleInputChange("dropOffAddress", e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                  value={addressInput}
+                  onChange={(e) => {
+                    setAddressInput(e.target.value)
+                    setShouldSearch(true)
+                  }}
+                  onFocus={() => {
+                    if (suggestions.length > 0) setShowDropdown(true)
+                  }}
+                  className="w-full pl-12 pr-12 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
                 />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                  {isSearching ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                  ) : (
+                    <Search className="w-4 h-4 text-gray-400" />
+                  )}
+                </div>
               </div>
+
+              {/* Suggestions Dropdown */}
+              {showDropdown && suggestions.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg rounded-md overflow-hidden">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.place_id}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-start gap-3 transition-colors border-b last:border-none border-gray-100"
+                    >
+                      <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700 line-clamp-1">{suggestion.description}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Dates */}
@@ -325,8 +536,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       {/* Right Column: Pricing Sidebar */}
       <div className="lg:col-span-4">
         <PricingSidebar 
-           buttonText={isCommercial ? "Continue Booking" : "Confirm Booking"}
-           onButtonClick={onNext}
+           buttonText={isLoading ? "Processing..." : (isCommercial ? "Continue Booking" : "Confirm Booking")}
+           onButtonClick={handleConfirmBooking}
         />
       </div>
     </div>

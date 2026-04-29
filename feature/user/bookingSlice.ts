@@ -27,6 +27,10 @@ export interface BookingState {
     fee: number;
     total: number;
   };
+  clientSecret: string | null;
+  subscriptionId: string | null;
+  dropoffLatitude?: number;
+  dropoffLongitude?: number;
 }
 
 const initialState: BookingState = {
@@ -56,6 +60,10 @@ const initialState: BookingState = {
     fee: 150,
     total: 0,
   },
+  clientSecret: null,
+  subscriptionId: null,
+  dropoffLatitude: 0,
+  dropoffLongitude: 0,
 };
 
 const bookingSlice = createSlice({
@@ -80,6 +88,10 @@ const bookingSlice = createSlice({
     updateContactInfo: (state, action: PayloadAction<Partial<BookingState["contactInfo"]>>) => {
       state.contactInfo = { ...state.contactInfo, ...action.payload };
     },
+    setSubscriptionData: (state, action: PayloadAction<{ clientSecret: string; subscriptionId: string }>) => {
+      state.clientSecret = action.payload.clientSecret;
+      state.subscriptionId = action.payload.subscriptionId;
+    },
     resetBooking: () => initialState,
   },
 });
@@ -90,6 +102,7 @@ export const {
   setDumpsterSize, 
   updateBookingData, 
   updateContactInfo, 
+  setSubscriptionData,
   resetBooking 
 } = bookingSlice.actions;
 
