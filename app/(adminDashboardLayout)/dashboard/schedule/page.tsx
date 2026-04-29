@@ -112,29 +112,46 @@ const mockJobs: Job[] = [
   },
 ];
 
+import { useGetAllSchedulesQuery, ISchedule } from "@/redux/api/adminDashboard/jobApi";
+import { format } from "date-fns";
+import { useDebounce } from "@/hooks/useDebounce";
+
 const SchedulePage = () => {
-  const [activeService, setActiveService] = useState("Roll off Service");
+  const [activeService, setActiveService] = useState("ROLL_OFF");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [selectedJob, setSelectedJob] = useState<ISchedule | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const handleAssignClick = (job: Job) => {
+  const { data: scheduleData, isLoading } = useGetAllSchedulesQuery({
+    page: currentPage,
+    limit: rowsPerPage,
+    seachTerm: debouncedSearchTerm,
+    category: activeService
+  });
+
+  const schedules = scheduleData?.data?.data || [];
+  const meta = scheduleData?.data?.meta;
+
+  const handleAssignClick = (job: ISchedule) => {
     setSelectedJob(job);
     setIsModalOpen(true);
   };
 
-  const columns: ColumnDef<Job>[] = [
+  const columns: ColumnDef<ISchedule>[] = [
     {
       header: "Job ID",
-      accessorKey: "id",
+      accessorKey: "jobId",
+      cell: (job) => <span className="font-bold text-[#172C41]">#{job.jobId.slice(-6).toUpperCase()}</span>
     },
     {
       header: "Customer Name",
       cell: (job) => (
         <div className="py-2">
-          <p className="font-bold text-[#172C41]">{job.customer.name}</p>
-          <p className="text-xs text-gray-400 font-medium">{job.customer.email}</p>
+          <p className="font-bold text-[#172C41]">{job.customerName}</p>
+          <p className="text-xs text-gray-400 font-medium">{job.subscription?.user?.email || "N/A"}</p>
         </div>
       ),
     },
@@ -145,7 +162,7 @@ const SchedulePage = () => {
     {
       header: "Location",
       cell: (job) => (
-        <p className="text-sm text-gray-600 font-medium">{job.location}</p>
+        <p className="text-sm text-gray-600 font-medium truncate max-w-[200px]">{job.location}</p>
       )
     },
     {
@@ -156,7 +173,7 @@ const SchedulePage = () => {
       header: "Status",
       cell: (job) => (
         <span className="px-3 py-1.5 bg-[#F8FAFC] text-gray-500 text-[11px] font-bold tracking-tight rounded-none border border-gray-100/50">
-          {job.status}
+          {job.jobType.replace("_", " ")}
         </span>
       ),
     },
@@ -164,16 +181,15 @@ const SchedulePage = () => {
       header: "Action",
       cell: (job) => (
         <div className="flex justify-start">
-          {job.isAssigned ? (
-            <button className="px-6 py-2 border-2 border-[#EBF6FF] text-[#22C55E] bg-[#F0FDF4] text-[13px] font-bold rounded-none hover:bg-green-50 transition-colors">
-              Conform Assign
-            </button>
+          {job.driverId ? (
+            <div className="flex items-center gap-2 px-6 py-2 border-2 border-[#EBF6FF] text-[#22C55E] bg-[#F0FDF4] text-[13px] font-bold rounded-none cursor-default">
+              Assigned ({job.driverName || "Driver"})
+            </div>
           ) : (
             <Button
               onClick={() => handleAssignClick(job)}
               variant={"primary"}
-              
-              className=" py-2 text-[13px] font-bold rounded-none"
+              className="py-2 text-[13px] font-bold rounded-none"
             >
               Assign Driver
             </Button>
@@ -183,18 +199,11 @@ const SchedulePage = () => {
     },
   ];
 
-  // Adjust mock data for Commercial Service
-  const tableData = mockJobs.map(job => ({
-    ...job,
-    serviceType: activeService === "Roll off Service" ? "Roll of Service" : "Commercial Service",
-    status: activeService === "Roll off Service" ? job.status : "Waste Pickup"
-  }));
-
   return (
     <Container className="py-8">
       <PageHeader title="Today All Schedule" className="mb-8" />
 
-      <div className="bg-white border border-gray-100 overflow-hidden">
+      <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
         {/* Filters and Tabs */}
         <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-gray-100">
           <div className="relative w-full md:w-[350px]">
@@ -202,15 +211,17 @@ const SchedulePage = () => {
             <input
               type="text"
               placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border-none rounded-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0265AF]"
             />
           </div>
 
           <div className="flex items-center p-1 bg-[#F8FAFC] border border-gray-100 gap-1">
             <button 
-              onClick={() => setActiveService("Roll off Service")}
+              onClick={() => setActiveService("ROLL_OFF")}
               className={`px-8 py-2.5 text-sm font-bold transition-all ${
-                activeService === "Roll off Service" 
+                activeService === "ROLL_OFF" 
                   ? "bg-[#0265AF] text-white rounded-none shadow-md" 
                   : "text-gray-500 hover:text-[#172C41]"
               }`}
@@ -218,9 +229,9 @@ const SchedulePage = () => {
               Roll off Service
             </button>
             <button 
-              onClick={() => setActiveService("Commercial Service")}
+              onClick={() => setActiveService("COMMERCIAL")}
               className={`px-8 py-2.5 text-sm font-bold transition-all ${
-                activeService === "Commercial Service" 
+                activeService === "COMMERCIAL" 
                   ? "bg-[#0265AF] text-white rounded-none shadow-md" 
                   : "text-gray-500 hover:text-[#172C41]"
               }`}
@@ -231,12 +242,12 @@ const SchedulePage = () => {
         </div>
 
         {/* Schedule Table */}
-        <DataTable columns={columns} data={tableData} className="border-none shadow-none" />
+        <DataTable columns={columns} data={schedules} isLoading={isLoading} className="border-none shadow-none" />
 
         {/* Pagination */}
         <CustomPagination 
           currentPage={currentPage}
-          totalPages={4}
+          totalPages={meta?.totalPage || 1}
           onPageChange={setCurrentPage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={setRowsPerPage}

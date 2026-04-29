@@ -10,9 +10,11 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useGetAllDriversQuery, IDriver } from "@/redux/api/adminDashboard/driverApi";
 import { format } from "date-fns";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const DriverList = () => {
     const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
     const [activeFilter, setActiveFilter] = useState("All");
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -20,8 +22,8 @@ const DriverList = () => {
     const { data: driversData, isLoading } = useGetAllDriversQuery({
         page: currentPage,
         limit: rowsPerPage,
-        searchTerm,
-        driverStatus: activeFilter === "All" ? undefined : activeFilter.toUpperCase()
+        seachTerm: debouncedSearchTerm,
+        driverStatus: activeFilter === "All" ? undefined : activeFilter.toUpperCase().replace(" ", "_")
     });
 
     const drivers = driversData?.data.data || [];

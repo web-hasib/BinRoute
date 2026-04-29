@@ -28,7 +28,9 @@ export const baseApi = createApi({
     "Blog",
     "ServiceArea",
     "ServicePlan",
-    "Driver"
+    "Driver",
+    "Booking"
+
   ],
 });
 

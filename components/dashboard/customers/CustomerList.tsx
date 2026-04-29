@@ -11,6 +11,7 @@ import Link from "next/link";
 import { StatCard } from "@/components/dashboard/StatCard";
 
 import { useGetAllCustomersQuery, useGetCustomerStatsQuery } from "@/redux/api/adminDashboard/customerApi";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export interface Customer {
   id: string;
@@ -26,13 +27,14 @@ const CustomerList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState("Filter");
 
     const { data: customersData, isLoading } = useGetAllCustomersQuery({
       page: currentPage,
       limit: rowsPerPage,
-      ...(searchTerm && { searchTerm }),
+      seachTerm: debouncedSearchTerm,
     });
 
     const { data: statsData } = useGetCustomerStatsQuery({});

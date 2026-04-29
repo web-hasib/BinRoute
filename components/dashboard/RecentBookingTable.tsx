@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Eye, Download } from "lucide-react";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { useGetAllSubscriptionsQuery } from "@/redux/api/adminDashboard/subscriptionApi";
+import { useGetAllBookingsQuery, IBooking } from "@/redux/api/adminDashboard/bookingApi";
 import { format } from "date-fns";
 
 interface Booking {
@@ -42,7 +42,7 @@ const columns: ColumnDef<Booking>[] = [
   },
   {
     header: "Date",
-    accessorKey: "date",
+    cell: (item) => <span className="text-[#666666]">{item.date}</span>,
   },
   {
     header: "Status",
@@ -56,29 +56,26 @@ const columns: ColumnDef<Booking>[] = [
   },
   {
     header: "Action",
-    cell: () => (
-      <div className="flex items-center justify-end gap-3">
-        <button className="text-[#0062FF] hover:bg-blue-50 p-1 transition-colors">
+    cell: (item) => (
+      <div className="flex items-center justify-end">
+        <Link href={`/dashboard/booking/${item.id}`} className="text-[#0062FF] hover:bg-blue-50 p-1 transition-colors">
           <Eye className="w-5 h-5" />
-        </button>
-        <button className="text-[#0062FF] hover:bg-blue-50 p-1 transition-colors">
-          <Download className="w-5 h-5" />
-        </button>
+        </Link>
       </div>
     ),
   },
 ];
 
 export const RecentBookingTable = () => {
-  const { data: bookingData, isLoading } = useGetAllSubscriptionsQuery({ limit: 3 });
+  const { data: bookingData, isLoading } = useGetAllBookingsQuery({ limit: 3 });
 
-  const bookings: Booking[] = (bookingData?.data || []).map((sub: any) => ({
+  const bookings: Booking[] = (bookingData?.data?.data || []).map((sub: IBooking) => ({
     id: sub.id,
     customerName: sub.user?.fullName || `${sub.firstName} ${sub.lastName}`,
     customerEmail: sub.user?.email || sub.email,
     service: sub.plan?.category?.replace("_", " ").split(" ").map((w: string) => w.charAt(0) + w.slice(1).toLowerCase()).join(" ") || "N/A",
     amount: sub.totalAmount,
-    date: format(new Date(sub.startDate), "dd MMMM yyyy"),
+    date: format(new Date(sub.createdAt), "dd MMM yyyy"),
     status: sub.status,
   }));
 
@@ -86,7 +83,7 @@ export const RecentBookingTable = () => {
     <div className="bg-white border border-gray-100 rounded-none overflow-hidden">
       <div className="p-6 flex items-center justify-between border-b border-gray-100 bg-white">
         <h3 className="text-lg font-bold text-[#1A1A1A]">Recent Booking Service</h3>
-        <Link href="/dashboard/bookings" className="text-sm font-medium text-blue-600 hover:underline">
+        <Link href="/dashboard/booking" className="text-sm font-medium text-blue-600 hover:underline">
           View All
         </Link>
       </div>

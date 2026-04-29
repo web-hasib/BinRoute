@@ -11,6 +11,11 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/booking/details/StatusBadge";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { useGetAllBookingsQuery, IBooking } from "@/redux/api/adminDashboard/bookingApi";
+import { useGetDashboardStatsQuery } from "@/redux/api/adminDashboard/analysisApi";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface Booking {
   id: string;
@@ -82,57 +87,123 @@ const columns: ColumnDef<Booking>[] = [
 const BookingPage = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [activeService, setActiveService] = React.useState("Commercial Service");
-  const totalPages = 4; // Mock total pages
+  const [activeService, setActiveService] = React.useState("COMMERCIAL");
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // Filter bookings based on active service (mock)
-  const filteredBookings = bookings.map(b => ({ ...b, service: activeService }));
+  const { data: bookingData, isLoading, isError } = useGetAllBookingsQuery({
+    page: currentPage,
+    limit: rowsPerPage,
+    seachTerm: debouncedSearchTerm,
+    category: activeService === "All" ? undefined : activeService,
+  });
+
+  const { data: dashboardStats, isLoading: isStatsLoading } = useGetDashboardStatsQuery({ period: "weekly" });
+
+  const stats = dashboardStats?.data || {
+    totalRevenue: 0,
+    totalCustomers: 0,
+    totalDrivers: 0,
+    activeWork: 0
+  };
+
+  const bookings = bookingData?.data?.data || [];
+  const meta = bookingData?.data?.meta;
+
+  const columns: ColumnDef<IBooking>[] = [
+    {
+      header: "Order ID",
+      accessorKey: "id",
+      cell: (item) => <span className="font-bold text-[#1A1A1A]">#{item.id.slice(-6).toUpperCase()}</span>,
+    },
+    {
+      header: "Customer Name",
+      cell: (item) => (
+        <div>
+          <p className="font-bold text-[#1A1A1A]">{item.user?.fullName || "N/A"}</p>
+          <p className="text-xs text-[#999999] font-medium">{item.user?.email || "N/A"}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Service Type",
+      cell: (item) => (
+        <span className="font-medium text-gray-600">
+            {item.plan?.category?.replace("_", " ").toLowerCase().split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") || "N/A"}
+        </span>
+      )
+    },
+    {
+      header: "Amount",
+      cell: (item) => <span className="font-bold text-[#1A1A1A]">${item.totalAmount}</span>,
+    },
+    {
+      header: "Date",
+      cell: (item) => <span className="text-[#666666]">{format(new Date(item.createdAt), "dd MMM yyyy")}</span>,
+    },
+    {
+      header: "Status",
+      cell: (item) => (
+        <span className={cn(
+            "inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-none",
+            item.status === "ACTIVE" ? "bg-[#E8F5E9] text-[#4CAF50]" : "bg-red-50 text-red-500"
+        )}>
+          {item.status}
+        </span>
+      ),
+    },
+    {
+      header: "Action",
+      cell: (item) => (
+        <div className="flex items-center justify-end">
+          <Link href={`/dashboard/booking/${item.id}`} className="text-[#0062FF] hover:bg-blue-50 p-1 transition-colors">
+            <Eye className="w-5 h-5" />
+          </Link>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <Container>
-     
-      <PageHeader title="All Booking Service" actions={
-        <div className="flex items-center gap-2">
-          <Link href="/dashboard/booking/add">
-            <Button variant="primary" >
-              <Plus className="w-5 h-5" />
-              Add new Booking 
-            </Button>
-          </Link>
-        </div>
-      }/>
+      <PageHeader title="All Booking Service" />
+
        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
         <StatCard 
           label="Total Revenue" 
-          value="$12,3620" 
+          value={`$${stats.totalRevenue.toLocaleString()}`} 
           icon={TrendingUp} 
           iconBgColor="bg-green-50" 
           iconColor="text-green-600"
+          isLoading={isStatsLoading}
         />
         <StatCard 
           label="Total Customer" 
-          value="1200" 
+          value={stats.totalCustomers.toString()} 
           icon={Users} 
           iconBgColor="bg-blue-50" 
           iconColor="text-blue-600"
+          isLoading={isStatsLoading}
         />
         <StatCard 
           label="Total Driver" 
-          value="50" 
+          value={stats.totalDrivers.toString()} 
           icon={UserCheck} 
           iconBgColor="bg-purple-50" 
           iconColor="text-purple-600"
+          isLoading={isStatsLoading}
         />
         <StatCard 
           label="Active Work" 
-          value="20" 
+          value={stats.activeWork.toString()} 
           icon={Briefcase} 
           iconBgColor="bg-red-50" 
           iconColor="text-red-600"
+          isLoading={isStatsLoading}
         />
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-none overflow-hidden">
+      <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
         {/* Search and Filters */}
         <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-gray-100">
           <div className="relative w-full md:w-[320px]">
@@ -140,41 +211,36 @@ const BookingPage = () => {
             <input
               type="text"
               placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0062FF]"
             />
           </div>
 
           <div className="flex items-center bg-gray-50 p-1 rounded-none border border-gray-100">
-            <button 
-              onClick={() => setActiveService("Roll off Service")}
-              className={`px-6 py-2 text-sm font-medium transition-all ${
-                activeService === "Roll off Service" 
-                  ? "bg-[#0062FF] text-white rounded-none shadow-sm" 
-                  : "text-[#666666] hover:text-[#1A1A1A]"
-              }`}
-            >
-              Roll off Service
-            </button>
-            <button 
-              onClick={() => setActiveService("Commercial Service")}
-              className={`px-6 py-2 text-sm font-medium transition-all ${
-                activeService === "Commercial Service" 
-                  ? "bg-[#0062FF] text-white rounded-none shadow-sm" 
-                  : "text-[#666666] hover:text-[#1A1A1A]"
-              }`}
-            >
-              Commercial Service
-            </button>
+            {["ROLL_OFF", "COMMERCIAL"].map((category) => (
+                <button 
+                  key={category}
+                  onClick={() => setActiveService(category)}
+                  className={`px-6 py-2 text-sm font-bold transition-all ${
+                    activeService === category 
+                      ? "bg-[#0062FF] text-white rounded-none shadow-sm" 
+                      : "text-[#666666] hover:text-[#1A1A1A]"
+                  }`}
+                >
+                  {category.replace("_", " ").toLowerCase().split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} Service
+                </button>
+            ))}
           </div>
         </div>
 
         {/* Table */}
-        <DataTable columns={columns} data={filteredBookings} className="border-none" />
+        <DataTable columns={columns} data={bookings} isLoading={isLoading} className="border-none" />
 
         {/* Footer / Pagination */}
         <CustomPagination 
           currentPage={currentPage}
-          totalPages={totalPages}
+          totalPages={meta?.totalPages || 1}
           onPageChange={setCurrentPage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={setRowsPerPage}
