@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { setStep, updateContactInfo } from "@/feature/user/bookingSlice";
 import StepProgress from "./StepProgress";
@@ -15,6 +15,7 @@ import SuccessModal from "./SuccessModal";
 const BookingFlow = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   const currentStep = useSelector((state: RootState) => state.booking.currentStep);
   const bookingData = useSelector((state: RootState) => state.booking);
@@ -24,7 +25,9 @@ const BookingFlow = () => {
 
   const handleNextStep = () => {
     if (currentStep === 1 && !user) {
-      router.push("/login?callback=/services/booking");
+      const params = searchParams.toString();
+      const callbackUrl = `/services/booking${params ? `?${params}` : ""}`;
+      router.push(`/login?callback=${encodeURIComponent(callbackUrl)}`);
       return;
     }
     

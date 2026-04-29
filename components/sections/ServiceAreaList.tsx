@@ -53,9 +53,15 @@ const ServiceAreaList = () => {
   };
 
   const handleContinue = (locationId: string) => {
-    const service = selectedService[locationId];
-    if (!service) return;
-    router.push(`/services/booking?dumstar=${service}`);
+    const serviceId = selectedService[locationId];
+    if (!serviceId) return;
+    
+    const area = areas.find(a => a.id === locationId);
+    const areaPlan = area?.plans?.find(p => p.id === serviceId);
+    const category = areaPlan?.plan?.category;
+    const type = category === "ROLL_OFF" ? "roll-off" : "commercial";
+
+    router.push(`/services/booking?areaId=${locationId}&dumstar=${serviceId}&type=${type}`);
   };
 
   const areas = areasData?.data || [];
@@ -152,12 +158,12 @@ const ServiceAreaList = () => {
                             };
                             
                             const Icon = mapping.icon;
-                            const isSelected = selected === planInfo.id;
+                            const isSelected = selected === areaPlan.id;
 
                             return (
                               <button
-                                key={planInfo.id}
-                                onClick={() => handleServiceSelect(loc.id, planInfo.id)}
+                                key={areaPlan.id}
+                                onClick={() => handleServiceSelect(loc.id, areaPlan.id)}
                                 className="flex items-start gap-4 p-4 rounded-lg border text-left transition-all"
                                 style={{
                                   borderColor: isSelected ? "#2563eb" : "#e5e7eb",
