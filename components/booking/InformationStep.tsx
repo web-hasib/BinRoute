@@ -78,6 +78,16 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Left Column: Forms */}
       <div className="lg:col-span-8 space-y-6">
+        <button 
+          onClick={onBack}
+          className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-[#0265AF] transition-colors mb-4"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back to Service Selection
+        </button>
+
         {/* Schedule Details */}
         <div className="bg-white p-8 border border-gray-100 shadow-sm">
           <h3 className="text-xl font-bold text-[#0c243c] mb-8">Schedule Details</h3>
