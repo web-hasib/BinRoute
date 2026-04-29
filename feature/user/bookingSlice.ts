@@ -10,6 +10,9 @@ export interface BookingState {
   pickUpDate: string;
   businessType: string;
   wasteType: string;
+  serviceFrequency?: string;
+  serviceDays?: string[];
+  contractDuration?: string;
   contactInfo: {
     firstName: string;
     lastName: string;
@@ -36,6 +39,9 @@ const initialState: BookingState = {
   pickUpDate: "",
   businessType: "",
   wasteType: "",
+  serviceFrequency: "1x/week",
+  serviceDays: [],
+  contractDuration: "1 year",
   contactInfo: {
     firstName: "",
     lastName: "",

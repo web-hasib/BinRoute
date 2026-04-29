@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { setStep, updateContactInfo } from "@/feature/user/bookingSlice";
+import { setStep, updateContactInfo, setServiceType } from "@/feature/user/bookingSlice";
 import StepProgress from "./StepProgress";
 import ServiceSelectionStep from "./ServiceSelectionStep";
 import InformationStep from "./InformationStep";
@@ -22,6 +22,14 @@ const BookingFlow = () => {
   const user = useSelector((state: RootState) => state.user.user);
   
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Sync URL type to Redux
+  const typeParam = searchParams.get("type");
+  React.useEffect(() => {
+    if (typeParam && (typeParam === "roll-off" || typeParam === "commercial")) {
+      dispatch(setServiceType(typeParam));
+    }
+  }, [typeParam, dispatch]);
 
   const handleNextStep = () => {
     if (currentStep === 1 && !user) {
