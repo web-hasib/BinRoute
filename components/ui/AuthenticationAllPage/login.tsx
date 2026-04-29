@@ -84,8 +84,12 @@ export default function LoginForm() {
         Cookies.set("accessToken", accessToken);
         toast.success("Login successfully with Google");
 
-        if (role === "SUPERADMIN" || role === "ADMIN") {
+        if (role?.toUpperCase() === "SUPERADMIN" || role?.toUpperCase() === "SUPER_ADMIN" || role?.toUpperCase() === "ADMIN") {
           router.push("/dashboard");
+        } else if (role?.toUpperCase() === "DRIVER") {
+          router.push("/dashboard"); // or wherever drivers should go
+        } else if (role?.toUpperCase() === "USER") {
+          router.push("/dashboard/user");
         } else {
           const params = new URLSearchParams(window.location.search);
           const callback = params.get("callback") || "/";
@@ -130,10 +134,13 @@ export default function LoginForm() {
         toast.success("Login successfully");
 
         // Redirect logic
-        if (role === "SUPERADMIN" || role === "ADMIN") {
+        if (role?.toUpperCase() === "SUPERADMIN" || role?.toUpperCase() === "SUPER_ADMIN" || role?.toUpperCase() === "ADMIN") {
           router.push("/dashboard");
+        } else if (role?.toUpperCase() === "DRIVER") {
+          router.push("/dashboard"); // Adjust if drivers have a different path
+        } else if (role?.toUpperCase() === "USER") {
+          router.push("/dashboard/user");
         } else {
-          // Optional: redirect normal users somewhere else
           const params = new URLSearchParams(window.location.search);
           const callback = params.get("callback") || "/";
           router.push(callback);

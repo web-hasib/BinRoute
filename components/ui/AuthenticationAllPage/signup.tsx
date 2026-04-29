@@ -43,14 +43,14 @@ export default function SignupForm() {
     }
 
     try {
-      await register({
+      const res = await register({
         fullName: `${firstName} ${lastName}`,
         email,
         password,
       }).unwrap();
 
-      toast.success("Account created successfully!");
-      router.push("/login");
+      toast.success(res.message || "Account created successfully!");
+      router.push(`/verify-otp?userId=${res.data.id}&type=email`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errorMessage =
