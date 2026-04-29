@@ -73,15 +73,25 @@ export default function LoginForm() {
     try {
       const res = await googleLogin(response.credential).unwrap();
       if (res.success) {
-        const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = res.data;
+        const accessToken = res.accessToken || res.data?.accessToken;
+        const userData = res.data?.user || res.data;
+        const { id, fullName, email: userEmail, role } = userData;
+
         const user: UserProfile = {
-          id,
-          name: fullName,           // ← important mapping
-          email: userEmail,
-          role,
+          id: id || userData.id,
+          name: fullName || userData.fullName,
+          email: userEmail || userData.email,
+          role: role || userData.role,
         };
+
         dispatch(setCredentials({ user, accessToken }));
-        Cookies.set("accessToken", accessToken);
+
+        if (accessToken && accessToken !== "undefined") {
+          Cookies.set("accessToken", accessToken);
+        } else {
+          console.error("Token missing in Google login response:", res);
+        }
+
         toast.success("Login successfully with Google");
 
         if (role?.toUpperCase() === "SUPERADMIN" || role?.toUpperCase() === "SUPER_ADMIN" || role?.toUpperCase() === "ADMIN") {
@@ -117,19 +127,29 @@ export default function LoginForm() {
       const response = await signIn({ email, password }).unwrap();
 
       if (response.success) {
-        // FIXED: API returns user fields directly in data (not nested under "user")
-        const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = response.data;
+        // Handle token whether it's in the root or inside the data object
+        const accessToken = response.accessToken || response.data?.accessToken;
+        const refreshToken = response.refreshToken || response.data?.refreshToken;
 
-        // Map to your UserProfile shape (interface expects "name", not "fullName")
+        // Extract user info from data
+        const userData = response.data?.user || response.data;
+        const { id, fullName, email: userEmail, role } = userData;
+
+        // Map to your UserProfile shape
         const user: UserProfile = {
-          id,
-          name: fullName,           // ← important mapping
-          email: userEmail,
-          role,
+          id: id || userData.id,
+          name: fullName || userData.fullName,
+          email: userEmail || userData.email,
+          role: role || userData.role,
         };
 
         dispatch(setCredentials({ user, accessToken }));
-        Cookies.set("accessToken", accessToken);
+
+        if (accessToken && accessToken !== "undefined") {
+          Cookies.set("accessToken", accessToken);
+        } else {
+          console.error("Token missing in login response:", response);
+        }
 
         toast.success("Login successfully");
 
