@@ -77,7 +77,7 @@ const ScheduleTimeline = ({ activeTab, setActiveTab }: ScheduleTimelineProps) =>
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-none shadow-sm h-fit">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
                 <h2 className="text-2xl font-bold text-[#172C41]">Activity Timeline</h2>
 
                 {/* Service Toggle */}
@@ -118,14 +118,14 @@ const ScheduleTimeline = ({ activeTab, setActiveTab }: ScheduleTimelineProps) =>
                     </>
                 ) : jobs.length > 0 ? (
                     jobs.map((job: any) => (
-                        <div key={job.jobId} className="relative pl-8 border-l-2 border-blue-500 flex items-center justify-between group">
+                        <div key={job.jobId} className="relative pl-8 border-l-2 border-blue-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 group">
                             <div className="absolute left-[-9px] top-1.5 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm" />
                             <div>
                                 <p className="text-gray-400 text-sm font-medium mb-1 tracking-tight">{formatTime(job.scheduledDate)}</p>
-                                <h3 className="text-[#172C41] font-bold text-lg">{formatEventDate(job.scheduledDate, job.status)}</h3>
+                                <h3 className="text-[#172C41] font-bold text-lg leading-tight">{formatEventDate(job.scheduledDate, job.status)}</h3>
                             </div>
-                            <div className="text-right">
-                                <span className="text-[#172C41] font-bold text-lg tracking-tight">{formatJobType(job.jobType)}</span>
+                            <div className="sm:text-right">
+                                <span className="text-[#172C41] font-bold text-base sm:text-lg tracking-tight">{formatJobType(job.jobType)}</span>
                             </div>
                         </div>
                     ))

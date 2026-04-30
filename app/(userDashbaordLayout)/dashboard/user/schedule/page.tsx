@@ -11,7 +11,7 @@ export default function SchedulePage() {
         <main className="bg-gray-50/50 min-h-screen">
             <div className="flex flex-col gap-8">
                 <ScheduleTimeline activeTab={activeTab} setActiveTab={setActiveTab} />
-                <ScheduleCalendar />
+                <ScheduleCalendar category={activeTab === "roll" ? "ROLL_OFF" : "COMMERCIAL"} />
             </div>
         </main>
     );
