@@ -1,11 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-maps/api";
+
+const LIBRARIES: ("places")[] = ["places"];
 
 interface PricingSidebarProps {
   buttonText: string;
@@ -13,11 +16,45 @@ interface PricingSidebarProps {
 }
 
 const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
-  const { dumpsterSize, pricing, serviceType, serviceFrequency, quoteData } = useSelector((state: RootState) => state.booking);
+  const { dumpsterSize, pricing, serviceType, serviceFrequency, quoteData, dropoffLatitude, dropoffLongitude } = useSelector((state: RootState) => state.booking);
   const isCommercial = serviceType === "commercial";
 
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || "",
+    libraries: LIBRARIES
+  });
+
+  const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
+
+  const officeLocation = React.useMemo(() => ({
+    lat: Number(process.env.NEXT_PUBLIC_OFFICE_LATITUDE) ,
+    lng: Number(process.env.NEXT_PUBLIC_OFFICE_LONGITUDE) 
+  }), []);
+
+  useEffect(() => {
+    if (!isLoaded || !dropoffLatitude || !dropoffLongitude) return;
+
+    const directionsService = new window.google.maps.DirectionsService();
+
+    directionsService.route(
+      {
+        origin: officeLocation,
+        destination: { lat: dropoffLatitude, lng: dropoffLongitude },
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === window.google.maps.DirectionsStatus.OK && result) {
+          setDirectionsResponse(result);
+        } else {
+          console.error(`Error fetching directions ${result}`);
+        }
+      }
+    );
+  }, [isLoaded, dropoffLatitude, dropoffLongitude, officeLocation]);
+
   return (
-    <div className="space-y-6 sticky top-24">
+    <div className="space-y-4 sticky top-24">
       {/* Title Card */}
       <div className="bg-[#0c243c] p-6 text-white shadow-sm">
         <h3 className="text-xl font-bold">
@@ -28,24 +65,35 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
 
       {/* Map/Distance Card */}
       <div className="bg-white border border-gray-100 p-1 space-y-4 shadow-sm">
-        <div className="relative h-48 bg-gray-100 overflow-hidden">
-            {/* Mock Map Image */}
-            <Image src="/dummy.png" alt="Map" fill className="object-cover" />
-            
-            {/* Map Pin Overlay */}
-            <div className="absolute top-4 right-10 bg-white px-3 py-1.5 rounded-full shadow-md flex items-center gap-2 text-[10px] font-bold">
-              <MapPin className="w-3 h-3 text-[#0265AF]" />
-              <span>103 Creeper Rd</span>
-            </div>
-
-            {isCommercial && (
-               <div className="absolute top-20 left-10 bg-white px-3 py-1.5 rounded-full shadow-md flex items-center gap-2 text-[10px] font-bold border border-gray-100">
-                  <div className="w-4 h-4 bg-gray-200 rounded-full overflow-hidden">
-                    <Image src="/dummy.png" alt="avatar" width={16} height={16} />
-                  </div>
-                  <span>150 Cambridge</span>
-               </div>
-            )}
+        <div className="relative h-100 lg:h-70 bg-gray-100 overflow-hidden">
+           {isLoaded ? (
+              <GoogleMap
+                mapContainerStyle={{ width: "100%", height: "100%" }}
+                center={officeLocation}
+                zoom={10}
+                options={{
+                  disableDefaultUI: true,
+                  zoomControl: false,
+                }}
+              >
+                {directionsResponse && (
+                  <DirectionsRenderer
+                    directions={directionsResponse}
+                    options={{
+                      suppressMarkers: false,
+                      polylineOptions: {
+                        strokeColor: "#0265AF",
+                        strokeWeight: 4,
+                      }
+                    }}
+                  />
+                )}
+              </GoogleMap>
+           ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <span className="text-sm text-gray-500">Loading map...</span>
+              </div>
+           )}
         </div>
         <div className="flex items-center gap-3 p-4">
             <div className="p-2.5 bg-gray-50 rounded-sm">
