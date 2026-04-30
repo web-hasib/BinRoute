@@ -1,15 +1,18 @@
 "use client";
 
-import ChangeFrequencyModal from "@/components/sections/dashboard/service-requests/ChangeFrequencyModal";
-import ServiceRequestDetailModal from "@/components/sections/dashboard/service-requests/ServiceRequestDetailModal";
 import { Button } from "@/components/ui/button";
-import { CustomPagination } from "@/components/ui/CustomPagination";
-import ServiceSuccessModal from "@/components/ui/ServiceSuccessModal";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useGetMyServiceUpdateRequestsQuery } from "@/redux/api/subscription/subscriptionApi";
 import { AlertCircle, Calendar, ChevronDown, Eye, RefreshCw } from "lucide-react";
 import { useState } from "react";
+import ChangeFrequencyModal from "@/components/sections/dashboard/service-requests/ChangeFrequencyModal";
+import ReschedulePickupModal from "@/components/sections/dashboard/service-requests/ReschedulePickupModal";
+import ReportDamageModal from "@/components/sections/dashboard/service-requests/ReportDamageModal";
+import MissingScheduleModal from "@/components/sections/dashboard/service-requests/MissingScheduleModal";
+import ServiceSuccessModal from "@/components/ui/ServiceSuccessModal";
+import ServiceRequestDetailModal from "@/components/sections/dashboard/service-requests/ServiceRequestDetailModal";
+import { useGetMyServiceUpdateRequestsQuery } from "@/redux/api/subscription/subscriptionApi";
+import { CustomPagination } from "@/components/ui/CustomPagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 
@@ -26,7 +29,7 @@ const ServiceRequestsPage = () => {
   const [limit, setLimit] = useState(5);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
-
+  
   // Modal states
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<SuccessConfig | null>(null);
@@ -49,11 +52,26 @@ const ServiceRequestsPage = () => {
   const handleFormSubmitSuccess = (type: string, data?: any) => {
     handleCloseModal();
     const config: Record<string, SuccessConfig> = {
-      "frequency": {
-        title: "Change Frequency Submitted Successfully",
-        confirmationId: data?.id ? `CF-${data.id.slice(-6).toUpperCase()}` : "CF-882941",
-        message: "Your frequency update request has been received."
-      }
+      "frequency": { 
+        title: "Change Frequency Submitted Successfully", 
+        confirmationId: data?.id ? `CF-${data.id.slice(-6).toUpperCase()}` : "CF-882941", 
+        message: "Your frequency update request has been received." 
+      },
+      "reschedule": { 
+        title: "Reschedule Request Submitted Successfully", 
+        confirmationId: data?.id ? `RS-${data.id.slice(-6).toUpperCase()}` : "RS-882942", 
+        message: "Your pickup reschedule request has been received." 
+      },
+      "damage": { 
+        title: "Damage Report Submitted Successfully", 
+        confirmationId: data?.id ? `DR-${data.id.slice(-6).toUpperCase()}` : "DR-882943", 
+        message: "Your damage report has been received and is under review." 
+      },
+      "missing": { 
+        title: "Missing Schedule Report Submitted", 
+        confirmationId: data?.id ? `MS-${data.id.slice(-6).toUpperCase()}` : "MS-882944", 
+        message: "Your missing schedule report has been submitted for review." 
+      },
     };
     setSuccessData(config[type] || config.damage);
   };
@@ -68,26 +86,33 @@ const ServiceRequestsPage = () => {
             Manage and track your dumpster rental service operations.
           </p>
         </div>
-
+        <Button 
+          variant="outline" 
+          onClick={() => handleOpenModal("missing")}
+          className="text-[#0061AA] border-[#0061AA]/20 bg-[#E6F4FC] hover:bg-blue-100 rounded-none h-11 px-6 font-semibold"
+        >
+          Missing schedule report
+        </Button>
       </div>
 
       {/* Action Cards */}
-      <div className="w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {[
           { id: "frequency", title: "Change Frequency", icon: RefreshCw, desc: "Update weekly or bi-weekly cycles" },
-
+          { id: "reschedule", title: "Reschedule Pickup", icon: Calendar, desc: "Modify your existing pickup time" },
+          { id: "damage", title: "Report Damage", icon: AlertCircle, desc: "Container repair or replacement request" },
         ].map((action, idx) => (
-          <div key={idx} className="bg-white p-6 shadow-sm border border-gray-100 flex flex-col items-start ">
-            <div className="flex gap-2 w-full">
-              <div className="p-4 bg-gray-50 mb-4 border border-gray-50">
-                <action.icon className="size-5 md:size-4 lg:size-6 text-[#172C41]" />
-              </div>
-              <div className="flex justify-start px-4 items-start flex-col">
-                <h3 className=" md:text-[12px] lg:text-base font-bold text-[#172C41] mb-1">{action.title}</h3>
-                <p className="text-gray-400 md:text-[8px] lg:text-xs mb-6">{action.desc}</p>
-              </div>
+          <div key={idx} className="bg-white p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
+            <div className="flex gap-2">
+            <div className="p-4 bg-gray-50 mb-4 border border-gray-50">
+              <action.icon className="size-5 md:size-4 lg:size-6 text-[#172C41]" />
             </div>
-            <Button
+            <div className="flex flex-col">
+              <h3 className=" md:text-[12px] lg:text-base font-bold text-[#172C41] mb-1">{action.title}</h3>
+              <p className="text-gray-400 md:text-[8px] lg:text-xs mb-6 px-4">{action.desc}</p>
+            </div>
+            </div>
+            <Button 
               onClick={() => handleOpenModal(action.id)}
               className="w-full bg-[#E6F0F9] hover:bg-blue-100 text-[#0061AA] py-6 rounded-none font-bold border-none shadow-none"
             >
@@ -98,14 +123,32 @@ const ServiceRequestsPage = () => {
       </div>
 
       {/* Modals */}
-      <ChangeFrequencyModal
-        isOpen={activeModal === "frequency"}
+      <ChangeFrequencyModal 
+        isOpen={activeModal === "frequency"} 
         onClose={handleCloseModal}
         onSubmitSuccess={(data) => handleFormSubmitSuccess("frequency", data)}
       />
+      
+      <ReschedulePickupModal 
+        isOpen={activeModal === "reschedule"} 
+        onClose={handleCloseModal}
+        onSubmitSuccess={(data) => handleFormSubmitSuccess("reschedule", data)}
+      />
+
+      <ReportDamageModal 
+        isOpen={activeModal === "damage"} 
+        onClose={handleCloseModal}
+        onSubmitSuccess={(data) => handleFormSubmitSuccess("damage", data)}
+      />
+
+      <MissingScheduleModal 
+        isOpen={activeModal === "missing"} 
+        onClose={handleCloseModal}
+        onSubmitSuccess={(data) => handleFormSubmitSuccess("missing", data)}
+      />
 
       {successData && (
-        <ServiceSuccessModal
+        <ServiceSuccessModal 
           isOpen={!!successData}
           onClose={() => setSuccessData(null)}
           title={successData.title}
@@ -114,7 +157,7 @@ const ServiceRequestsPage = () => {
         />
       )}
 
-      <ServiceRequestDetailModal
+      <ServiceRequestDetailModal 
         isOpen={activeModal === "detail"}
         onClose={handleCloseModal}
         requestId={selectedRequestId}
@@ -128,18 +171,18 @@ const ServiceRequestsPage = () => {
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm font-medium">Status:</span>
               <div className="relative">
-                <button
+                <button 
                   onClick={() => setIsStatusOpen(!isStatusOpen)}
                   className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 border border-gray-100 cursor-pointer min-w-[120px] justify-between"
                 >
                   <span className="text-[#172C41] font-bold text-[10px] uppercase">{status}</span>
                   <ChevronDown className={cn("size-3 text-gray-500 transition-transform", isStatusOpen && "rotate-180")} />
                 </button>
-
+                
                 {isStatusOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-10"
+                    <div 
+                      className="fixed inset-0 z-10" 
                       onClick={() => setIsStatusOpen(false)}
                     />
                     <div className="absolute right-0 top-full mt-1 bg-white border border-gray-100 shadow-lg z-20 min-w-[140px]">
@@ -206,9 +249,9 @@ const ServiceRequestsPage = () => {
                     <td className="px-6 py-6 whitespace-nowrap">
                       <span className={cn(
                         "inline-block px-4 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-wider",
-                        req.status === "APPROVED" ? "bg-green-50 text-green-500" :
-                          req.status === "REJECTED" ? "bg-red-50 text-red-500" :
-                            "bg-orange-50 text-orange-400"
+                        req.status === "APPROVED" ? "bg-green-50 text-green-500" : 
+                        req.status === "REJECTED" ? "bg-red-50 text-red-500" : 
+                        "bg-orange-50 text-orange-400"
                       )}>
                         {req.status}
                       </span>
@@ -221,7 +264,7 @@ const ServiceRequestsPage = () => {
                       })}
                     </td>
                     <td className="px-6 py-6 whitespace-nowrap text-right">
-                      <button
+                      <button 
                         onClick={() => {
                           setSelectedRequestId(req.id);
                           handleOpenModal("detail");
@@ -247,7 +290,7 @@ const ServiceRequestsPage = () => {
         {/* Pagination */}
         {meta && meta.totalPage > 1 && (
           <div className="mt-8">
-            <CustomPagination
+            <CustomPagination 
               currentPage={currentPage}
               totalPages={meta.totalPage}
               onPageChange={setCurrentPage}

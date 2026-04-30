@@ -6,6 +6,7 @@ import SuccessModal from "@/components/ui/SuccessModal";
 import { logout } from "@/feature/user/userSlice";
 import { cn } from "@/lib/utils";
 import {
+  AlertCircle,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -53,6 +54,11 @@ const menuItems = [
     title: "Change Frequency",
     icon: FileText,
     href: "/dashboard/user/change-frequency",
+  },
+  {
+    title: "Report Damage",
+    icon: AlertCircle,
+    href: "/dashboard/user/report-damage",
   },
 ];
 
@@ -168,6 +174,7 @@ export function UserDashboardSidebar() {
             return (
               <li key={item.href}>
                 <Link
+                  title={item.title}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
