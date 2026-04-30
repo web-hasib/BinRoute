@@ -30,6 +30,7 @@ export const baseApi = createApi({
     "ServicePlan",
     "Subscription",
     "Job",
+    "Payment",
   ],
 });
 

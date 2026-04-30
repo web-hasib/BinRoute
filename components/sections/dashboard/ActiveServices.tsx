@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useGetMeQuery } from "@/redux/api/auth/authApi";
 import { useGetMySubscriptionsQuery } from "@/redux/api/subscription/subscriptionApi";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CustomPagination } from "@/components/ui/CustomPagination";
 
 const formatDate = (dateString?: string | null) => {
     if (!dateString) return "TBD";
@@ -69,7 +69,7 @@ const ServiceItem = ({ service }: { service: any }) => {
 
 const ActiveServices = () => {
     const [page, setPage] = useState(1);
-    const limit = 5;
+    const [limit, setLimit] = useState(5);
 
     const { data: userRes } = useGetMeQuery(undefined);
     const user = userRes?.data;
@@ -114,29 +114,18 @@ const ActiveServices = () => {
                 )}
             </div>
 
-            {meta && meta.totalPages > 1 && (
-                <div className="flex items-center justify-end gap-2 mt-6">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1 || isFetching}
-                        className="rounded-none border-gray-200"
-                    >
-                        <ChevronLeft className="w-4 h-4 mr-1" /> Previous
-                    </Button>
-                    <span className="text-sm text-gray-500 px-4">
-                        Page {page} of {meta.totalPages}
-                    </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
-                        disabled={page === meta.totalPages || isFetching}
-                        className="rounded-none border-gray-200"
-                    >
-                        Next <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
+            {meta && meta.totalPages > 0 && (
+                <div className="mt-6 border-t border-gray-100">
+                    <CustomPagination
+                        currentPage={page}
+                        totalPages={meta.totalPages}
+                        onPageChange={setPage}
+                        rowsPerPage={limit}
+                        onRowsPerPageChange={(rows) => {
+                            setLimit(rows);
+                            setPage(1);
+                        }}
+                    />
                 </div>
             )}
         </div>

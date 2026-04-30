@@ -3,8 +3,7 @@
 import React, { useState } from "react";
 import { useGetJobSchedulesQuery } from "@/redux/api/jobs/jobsApi";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CustomPagination } from "@/components/ui/CustomPagination";
 
 const formatJobType = (jobType: string) => {
     if (jobType === "DUMPSTER_PICK_UP") return "Dumpster Pick-up";
@@ -54,11 +53,11 @@ const TimelineSkeleton = () => (
 
 const ActivityTimeline = () => {
     const [page, setPage] = useState(1);
-    const [showAll, setShowAll] = useState(false);
+    const [limit, setLimit] = useState(5);
 
     const { data: response, isLoading, isFetching } = useGetJobSchedulesQuery({
         page,
-        limit: showAll ? 100 : 5,
+        limit,
         sortOrder: "desc",
         sortBy: "jobStartTime"
     });
@@ -75,19 +74,6 @@ const ActivityTimeline = () => {
                         <span className="text-gray-900 font-bold text-lg">{meta.total}</span>
                     )}
                 </div>
-                {meta && meta.total > 5 && (
-                    <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-[#0061AA] hover:text-[#004e89] hover:bg-transparent font-bold text-sm p-0"
-                        onClick={() => {
-                            setShowAll(!showAll);
-                            setPage(1);
-                        }}
-                    >
-                        {showAll ? "Show Less" : "Show All"}
-                    </Button>
-                )}
             </div>
 
             <div className="flex flex-col gap-6">
@@ -123,29 +109,18 @@ const ActivityTimeline = () => {
                 )}
             </div>
 
-            {meta && meta.totalPage > 1 && (
-                <div className="flex items-center justify-end gap-2 mt-8">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1 || isFetching}
-                        className="rounded-none border-gray-200"
-                    >
-                        <ChevronLeft className="w-4 h-4 mr-1" /> Previous
-                    </Button>
-                    <span className="text-sm text-gray-500 px-4">
-                        Page {page} of {meta.totalPage}
-                    </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.min(meta.totalPage, p + 1))}
-                        disabled={page === meta.totalPage || isFetching}
-                        className="rounded-none border-gray-200"
-                    >
-                        Next <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
+            {meta && meta.totalPage > 0 && (
+                <div className="mt-8 border-t border-gray-100">
+                    <CustomPagination
+                        currentPage={page}
+                        totalPages={meta.totalPage}
+                        onPageChange={setPage}
+                        rowsPerPage={limit}
+                        onRowsPerPageChange={(rows) => {
+                            setLimit(rows);
+                            setPage(1);
+                        }}
+                    />
                 </div>
             )}
         </div>

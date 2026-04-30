@@ -1,52 +1,62 @@
 "use client";
 
 import React, { useState } from "react";
-import { Download, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { useGetPaymentHistoryQuery } from "@/redux/api/payments/paymentsApi";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CustomPagination } from "@/components/ui/CustomPagination";
 
-// EXTENDED MOCK DATA for pagination testing
-const allPayments = Array.from({ length: 42 }, (_, i) => ({
-    id: `#INV-${88321 + i}`,
-    serviceType: i % 3 === 0 ? "Roll of Service" : "Commercial Service",
-    amount: `$${(245 + (i * 10)).toFixed(2)}`,
-    date: `3:46 PM - ${String(i + 1).padStart(2, '0')} march 2026`,
-    status: i % 5 === 0 ? "Pending" : "Paid"
-}));
+const formatServiceType = (type: string) => {
+    if (type === "ROLL_OFF") return "Roll of Service";
+    if (type === "COMMERCIAL") return "Commercial Service";
+    return type;
+};
 
-const ITEMS_PER_PAGE = 10;
+const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    
+    const formattedDate = date.toLocaleDateString("en-GB", { month: "long", year: "numeric", day: "2-digit" }).toLowerCase();
+    return `${hours}:${minutesStr} ${ampm} - ${formattedDate}`;
+};
+
+const TableSkeleton = () => (
+    <>
+        {[1, 2, 3, 4, 5].map((i) => (
+            <tr key={i} className="border-b border-gray-50">
+                <td className="px-6 py-6"><Skeleton className="h-4 w-32" /></td>
+                <td className="px-6 py-6"><Skeleton className="h-4 w-20" /></td>
+                <td className="px-6 py-6"><Skeleton className="h-4 w-40" /></td>
+                <td className="px-6 py-6"><Skeleton className="h-6 w-24 rounded-none" /></td>
+            </tr>
+        ))}
+    </>
+);
 
 const PaymentHistory = ({ title = "All Payment History" }) => {
     const [currentPage, setCurrentPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [sortOpen, setSortOpen] = useState(false);
     const [sortBy, setSortBy] = useState("All");
 
-    // Filter data based on sortBy status
-    const filteredPayments = allPayments.filter(payment => {
-        if (sortBy === "All") return true;
-        return payment.status.toLowerCase() === sortBy.toLowerCase();
+    const statusParam = sortBy === "All" ? undefined : sortBy === "Paid" ? "SUCCEEDED" : "PENDING";
+
+    const { data: response, isLoading, isFetching } = useGetPaymentHistoryQuery({
+        page: currentPage,
+        limit,
+        ...(statusParam ? { status: statusParam } : {})
     });
 
-    const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE);
-
-    // Slice data for current page
-    const currentPayments = filteredPayments.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-    );
-
-
-    const handleDownload = (invoiceId: string) => {
-        toast.info(`Starting download for ${invoiceId}...`, {
-            description: "Your invoice PDF is being generated.",
-            duration: 3000,
-        });
-
-        // Simulate a slight delay for realism
-        setTimeout(() => {
-            toast.success(`Success! ${invoiceId} has been downloaded.`);
-        }, 1500);
-    };
+    const payments = response?.data || [];
+    const meta = response?.meta;
+    const totalPages = meta?.totalPage || 1;
 
     return (
         <div className="bg-white p-4 md:p-6 rounded-none shadow-sm h-fit">
@@ -75,6 +85,7 @@ const PaymentHistory = ({ title = "All Payment History" }) => {
                                             key={option}
                                             onClick={() => {
                                                 setSortBy(option);
+                                                setCurrentPage(1); // Reset page on filter change
                                                 setSortOpen(false);
                                             }}
                                             className="w-full text-left px-4 py-2 text-xs font-bold text-[#172C41] hover:bg-gray-50 transition-colors uppercase"
@@ -93,80 +104,57 @@ const PaymentHistory = ({ title = "All Payment History" }) => {
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-gray-50/50 border-y border-gray-100">
-                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Invoice ID</th>
-                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Service Type</th>
-                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Amount</th>
-                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Date</th>
-                            <th className="px-6 py-4 whitespace-nowrap text-center text-gray-400 font-bold text-xs uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-4 whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider text-right">Action</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Service Type</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Amount</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-4 whitespace-nowrap text-gray-400 font-bold text-xs uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {currentPayments.map((payment, index) => (
-                            <tr key={payment.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="px-6 py-6 whitespace-nowrap text-[#172C41] font-bold text-sm">{payment.id}</td>
-                                <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{payment.serviceType}</td>
-                                <td className="px-6 py-6 whitespace-nowrap text-[#172C41] font-bold text-sm">{payment.amount}</td>
-                                <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{payment.date}</td>
-                                <td className="px-6 py-6 whitespace-nowrap">
-                                    <span className={cn(
-                                        "inline-block px-4 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-wider",
-                                        payment.status === "Paid" ? "bg-green-50 text-green-500" : "bg-amber-50 text-amber-500"
-                                    )}>
-                                        {payment.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-6 whitespace-nowrap text-right">
-                                    <button
-                                        onClick={() => handleDownload(payment.id)}
-                                        className="p-2 text-gray-400 hover:text-[#006CF9] transition-colors cursor-pointer"
-                                    >
-                                        <Download className="size-5" />
-                                    </button>
+                        {isLoading || isFetching ? (
+                            <TableSkeleton />
+                        ) : payments.length > 0 ? (
+                            payments.map((payment: any, index: number) => (
+                                <tr key={index} className="hover:bg-gray-50/50 transition-colors group">
+                                    <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{formatServiceType(payment.subscriptionType)}</td>
+                                    <td className="px-6 py-6 whitespace-nowrap text-[#172C41] font-bold text-sm">${Number(payment.amount).toFixed(2)}</td>
+                                    <td className="px-6 py-6 whitespace-nowrap text-gray-500 font-medium text-sm">{formatDate(payment.date)}</td>
+                                    <td className="px-6 py-6 whitespace-nowrap">
+                                        <span className={cn(
+                                            "inline-block px-4 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-wider",
+                                            payment.status === "SUCCEEDED" ? "bg-green-50 text-green-500" : "bg-amber-50 text-amber-500"
+                                        )}>
+                                            {payment.status === "SUCCEEDED" ? "Paid" : payment.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={4} className="px-6 py-12 text-center text-gray-500 font-medium">
+                                    No payment history found.
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>
 
             {/* Pagination */}
-            <div className="mt-12 flex justify-center items-center gap-2">
-                <button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    className="p-2 border border-gray-100 hover:bg-gray-50 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                >
-                    <ChevronLeft className="size-4" />
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={cn(
-                            "w-10 h-10 border font-bold text-sm transition-colors cursor-pointer",
-                            currentPage === page
-                                ? "border-[#0061AA] bg-[#0061AA] text-white"
-                                : "border-gray-100 hover:bg-gray-50 text-gray-500"
-                        )}
-                    >
-                        {page}
-                    </button>
-                ))}
-
-                <button
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    className="p-2 border border-gray-100 hover:bg-gray-50 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                >
-                    <ChevronRight className="size-4" />
-                </button>
-            </div>
-
-            <p className="mt-6 text-gray-400 text-[10px] italic">
-                * Note: Data is currently mocked. Structured for easy integration with RTK Query / real APIs.
-            </p>
+            {totalPages > 0 && (
+                <div className="mt-8 border-t border-gray-100">
+                    <CustomPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        rowsPerPage={limit}
+                        onRowsPerPageChange={(rows) => {
+                            setLimit(rows);
+                            setCurrentPage(1);
+                        }}
+                    />
+                </div>
+            )}
         </div>
     );
 };
