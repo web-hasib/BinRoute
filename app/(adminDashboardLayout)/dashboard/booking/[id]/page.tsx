@@ -11,6 +11,9 @@ import { Button } from '@/components/ui/button'
 import { useGetBookingByIdQuery } from '@/redux/api/adminDashboard/bookingApi'
 import { format } from 'date-fns'
 import { Skeleton } from '@/components/ui/skeleton'
+import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-maps/api";
+
+const LIBRARIES: ("places")[] = ["places"];
 
 const BookingDetailsPage = () => {
     const { id } = useParams() as { id: string }
@@ -18,6 +21,40 @@ const BookingDetailsPage = () => {
     
     const { data: bookingData, isLoading } = useGetBookingByIdQuery(id)
     const booking = bookingData?.data
+
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || "",
+        libraries: LIBRARIES
+    });
+
+    const [directionsResponse, setDirectionsResponse] = React.useState<google.maps.DirectionsResult | null>(null);
+
+    const officeLocation = React.useMemo(() => ({
+        lat: Number(process.env.NEXT_PUBLIC_OFFICE_LATITUDE),
+        lng: Number(process.env.NEXT_PUBLIC_OFFICE_LONGITUDE)
+    }), []);
+
+    React.useEffect(() => {
+        if (!isLoaded || !booking?.dropoffLatitude || !booking?.dropoffLongitude) return;
+
+        const directionsService = new window.google.maps.DirectionsService();
+
+        directionsService.route(
+            {
+                origin: officeLocation,
+                destination: { lat: booking.dropoffLatitude, lng: booking.dropoffLongitude },
+                travelMode: window.google.maps.TravelMode.DRIVING,
+            },
+            (result, status) => {
+                if (status === window.google.maps.DirectionsStatus.OK && result) {
+                    setDirectionsResponse(result);
+                } else {
+                    console.error(`Error fetching directions ${result}`);
+                }
+            }
+        );
+    }, [isLoaded, booking?.dropoffLatitude, booking?.dropoffLongitude, officeLocation]);
 
     if (isLoading) {
         return (
@@ -88,8 +125,36 @@ const BookingDetailsPage = () => {
                         <div className="px-6 py-5  border-gray-100  mt-4">
                             <h3 className="text-[20px] font-semibold text-[#515050]">Map view</h3>
                         </div>
-                        <div className="p-6 h-[400px] flex items-center justify-center bg-gray-50 border border-dashed border-gray-200 m-6 mb-8 text-[#666666] font-medium">
-                            Map view showing {booking.dropoffAddress}
+                        <div className="p-0 h-[400px] flex items-center justify-center bg-gray-50 border border-gray-100 m-6 mb-8 text-[#666666] font-medium overflow-hidden">
+                            {isLoaded ? (
+                                <GoogleMap
+                                    mapContainerStyle={{ width: "100%", height: "100%" }}
+                                    center={officeLocation}
+                                    zoom={12}
+                                    options={{
+                                        disableDefaultUI: true,
+                                        zoomControl: false,
+                                    }}
+                                >
+                                    {directionsResponse && (
+                                        <DirectionsRenderer
+                                            directions={directionsResponse}
+                                            options={{
+                                                suppressMarkers: false,
+                                                polylineOptions: {
+                                                    strokeColor: "#0265AF",
+                                                    strokeWeight: 4,
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                </GoogleMap>
+                            ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                    <Skeleton className="h-full w-full" />
+                                    <span className="text-xs text-gray-400 italic">Initializing map canvas...</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
