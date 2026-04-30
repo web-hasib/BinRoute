@@ -6,6 +6,8 @@ import { RootState } from "@/redux/store";
 import { CheckCircle2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resetBooking } from "@/feature/user/bookingSlice";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface SuccessModalProps {
   onClose: () => void;
@@ -23,6 +25,62 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
   };
 
   const shortId = subscriptionId ? subscriptionId.slice(-6).toUpperCase() : "882941";
+  
+  const handleDownloadInvoice = () => {
+    const doc = new jsPDF();
+    const invoiceId = `CF-${shortId}`;
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(12, 36, 60);
+    doc.text("INVOICE", 14, 22);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Confirmation #: ${invoiceId}`, 14, 32);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 38);
+
+    // Address
+    doc.setFontSize(12);
+    doc.setTextColor(12, 36, 60);
+    doc.text("Drop-Off Address", 14, 52);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    const splitAddress = doc.splitTextToSize(dropOffAddress || "N/A", 180);
+    doc.text(splitAddress, 14, 60);
+
+    // Details Table
+    autoTable(doc, {
+      startY: 75,
+      head: [["Service Description", "Details"]],
+      body: [
+        ["Service Type", serviceType === "commercial" ? "Commercial Dumpster" : "Roll-Off Dumpster"],
+        ["Dumpster Size", dumpsterSize ? dumpsterSize.replace("-", " ") : "N/A"],
+        ["Distance", displayDistance],
+        ["Rental Duration", rentalDuration],
+      ],
+      headStyles: { fillColor: [2, 101, 175] },
+    });
+
+    // Pricing Table
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 15,
+      head: [["Charges", "Amount"]],
+      body: [
+        ["Subtotal", `$${pricing.subtotal.toFixed(2)}`],
+        ["Environmental Tax (6%)", `$${pricing.tax.toFixed(2)}`],
+        ["Service Area Fee", `$${pricing.fee.toFixed(2)}`],
+      ],
+      foot: [
+        ["Total Amount", `$${pricing.total.toFixed(2)}`]
+      ],
+      headStyles: { fillColor: [12, 36, 60] },
+      footStyles: { fillColor: [12, 36, 60], textColor: 255, fontStyle: "bold" },
+    });
+
+    doc.save(`Invoice_${invoiceId}.pdf`);
+  };
   const displayDistance = distance ? `${distance.toFixed(1)} Miles` : "N/A";
   const rentalDuration = serviceType === "roll-off" ? "N/A" : contractDuration || "1 year";
 
@@ -120,7 +178,10 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
           >
             Back to Dashboard
           </Button>
-          <Button className="flex-1 bg-[#0265AF] hover:bg-[#004d85] text-white py-6 rounded-none font-bold flex gap-2">
+          <Button 
+            onClick={handleDownloadInvoice}
+            className="flex-1 bg-[#0265AF] hover:bg-[#004d85] text-white py-6 rounded-none font-bold flex gap-2"
+          >
             <Download className="w-4 h-4" />
             Download Invoice
           </Button>
