@@ -52,6 +52,14 @@ export const subscriptionApi = baseApi.injectEndpoints({
       }),
       providesTags: (result, error, id) => [{ type: "ServiceRequest", id }],
     }),
+    createServiceUpdateRequest: builder.mutation({
+      query: (data) => ({
+        url: "/service-update-requests",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ServiceRequest"],
+    }),
   }),
 });
 
@@ -63,4 +71,5 @@ export const {
   useUpdatePaymentMethodMutation,
   useGetMyServiceUpdateRequestsQuery,
   useGetServiceUpdateRequestByIdQuery,
+  useCreateServiceUpdateRequestMutation,
 } = subscriptionApi;

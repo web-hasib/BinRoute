@@ -50,13 +50,28 @@ const ServiceRequestsPage = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFormSubmitSuccess = (type: string, data?: any) => {
-    if (data) console.log(`Form submitted for ${type}:`, data);
     handleCloseModal();
     const config: Record<string, SuccessConfig> = {
-      "frequency": { title: "Change Frequency Submitted Successfully", confirmationId: "CF-882941", message: "Your frequency update request has been received." },
-      "reschedule": { title: "Reschedule Request Submitted Successfully", confirmationId: "RS-882942", message: "Your pickup reschedule request has been received." },
-      "damage": { title: "Damage Report Submitted Successfully", confirmationId: "DR-882943", message: "Your premium waste management solution has been successfully provisioned and is ready for operation." },
-      "missing": { title: "Missing Schedule Report Submitted", confirmationId: "MS-882944", message: "Your missing schedule report has been submitted for review." },
+      "frequency": { 
+        title: "Change Frequency Submitted Successfully", 
+        confirmationId: data?.id ? `CF-${data.id.slice(-6).toUpperCase()}` : "CF-882941", 
+        message: "Your frequency update request has been received." 
+      },
+      "reschedule": { 
+        title: "Reschedule Request Submitted Successfully", 
+        confirmationId: data?.id ? `RS-${data.id.slice(-6).toUpperCase()}` : "RS-882942", 
+        message: "Your pickup reschedule request has been received." 
+      },
+      "damage": { 
+        title: "Damage Report Submitted Successfully", 
+        confirmationId: data?.id ? `DR-${data.id.slice(-6).toUpperCase()}` : "DR-882943", 
+        message: "Your damage report has been received and is under review." 
+      },
+      "missing": { 
+        title: "Missing Schedule Report Submitted", 
+        confirmationId: data?.id ? `MS-${data.id.slice(-6).toUpperCase()}` : "MS-882944", 
+        message: "Your missing schedule report has been submitted for review." 
+      },
     };
     setSuccessData(config[type] || config.damage);
   };
