@@ -43,6 +43,18 @@ const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
   const editorInstanceRef = useRef<ClassicEditor | null>(null);
 
   useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      console.log("Clicked on element:", e.target);
+      if (e.target instanceof HTMLElement) {
+        console.log("Element classes:", e.target.className);
+        console.log("Element z-index:", window.getComputedStyle(e.target).zIndex);
+      }
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
+
+  useEffect(() => {
     if (!editorContainerRef.current) return;
 
     let isMounted = true;
@@ -142,9 +154,11 @@ const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
         // Focus the editor after a short delay
         setTimeout(() => {
           if (isMounted) {
+             console.log("Attempting to focus editor...");
              editor.editing.view.focus();
+             console.log("Editor focus attempted. Is ReadOnly?", editor.isReadOnly);
           }
-        }, 500);
+        }, 1000);
 
       } catch (error) {
         console.error("CKEditor Initialization Error:", error);
@@ -163,16 +177,37 @@ const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
     };
   }, []);
 
+  const handleManualUnlock = () => {
+    if (editorInstanceRef.current) {
+      console.log("Manual Unlock Attempted");
+      editorInstanceRef.current.enableReadOnlyMode('lock');
+      editorInstanceRef.current.disableReadOnlyMode('lock');
+      editorInstanceRef.current.editing.view.focus();
+      alert("Manual Unlock Attempted. Check if you can type now.");
+    } else {
+      alert("Editor instance not found!");
+    }
+  };
+
   return (
     <div 
       className="ck-editor-container" 
       style={{ 
         position: 'relative', 
-        zIndex: 50, 
+        zIndex: 100, 
         pointerEvents: 'auto',
-        minHeight: '400px'
+        minHeight: '400px',
+        border: '2px solid transparent'
       }}
     >
+      <div className="absolute top-[-40px] right-0 flex gap-2">
+        <button 
+          onClick={handleManualUnlock}
+          className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors z-[110]"
+        >
+          Diagnostic: Manual Unlock
+        </button>
+      </div>
       <style>{`
         .ck-editor-container .ck-editor__editable {
           min-height: 400px;
