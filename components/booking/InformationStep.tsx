@@ -245,7 +245,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       }
 
       // Basic validation
-      if (!contactInfo.firstName || !contactInfo.email || !booking.dropOffAddress) {
+      if (!contactInfo.firstName || !contactInfo.email || !contactInfo.phone || !contactInfo.companyName || !booking.dropOffAddress) {
         toast.error("Please fill in all required contact and schedule information.");
         return;
       }
@@ -603,6 +603,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
               <label className="text-sm font-semibold text-[#0c243c]">Phone Number</label>
               <input
                 type="text"
+                required
                 placeholder={isCommercial ? "(555) 123-4567" : "703 123 214"}
                 value={contactInfo.phone}
                 onChange={(e) => handleContactChange("phone", e.target.value)}
@@ -610,9 +611,10 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
               />
             </div>
             <div className="md:col-span-2 space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">Company Name (Optional)</label>
+              <label className="text-sm font-semibold text-[#0c243c]">Company Name</label>
               <input
                 type="text"
+                required
                 placeholder={isCommercial ? "Miller Construction LLC" : "Enter your company name..."}
                 value={contactInfo.companyName}
                 onChange={(e) => handleContactChange("companyName", e.target.value)}
