@@ -60,6 +60,21 @@ export const subscriptionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["ServiceRequest"],
     }),
+    getMyReports: builder.query({
+      query: (params) => ({
+        url: "/reports",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Report"],
+    }),
+    getReportById: builder.query({
+      query: (id) => ({
+        url: `/reports/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Report", id }],
+    }),
   }),
 });
 
@@ -72,4 +87,6 @@ export const {
   useGetMyServiceUpdateRequestsQuery,
   useGetServiceUpdateRequestByIdQuery,
   useCreateServiceUpdateRequestMutation,
+  useGetMyReportsQuery,
+  useGetReportByIdQuery,
 } = subscriptionApi;

@@ -32,6 +32,7 @@ export const baseApi = createApi({
     "Job",
     "Payment",
     "ServiceRequest",
+    "Report",
   ],
 });
 

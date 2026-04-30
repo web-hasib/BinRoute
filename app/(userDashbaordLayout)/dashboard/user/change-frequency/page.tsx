@@ -23,7 +23,7 @@ const ServiceRequestsPage = () => {
   const [sortBy, setSortBy] = useState("createdAt");
   const [status, setStatus] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(10);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
