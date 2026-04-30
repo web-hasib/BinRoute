@@ -6,6 +6,7 @@ import SuccessModal from "@/components/ui/SuccessModal";
 import { logout } from "@/feature/user/userSlice";
 import { cn } from "@/lib/utils";
 import {
+  AlertCircle,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -50,9 +51,14 @@ const menuItems = [
     href: "/dashboard/user/billing-payment",
   },
   {
-    title: "Service Requests",
+    title: "Change Frequency",
     icon: FileText,
-    href: "/dashboard/user/service-requests",
+    href: "/dashboard/user/change-frequency",
+  },
+  {
+    title: "Report Damage",
+    icon: AlertCircle,
+    href: "/dashboard/user/report-damage",
   },
 ];
 
@@ -168,6 +174,7 @@ export function UserDashboardSidebar() {
             return (
               <li key={item.href}>
                 <Link
+                  title={item.title}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
@@ -185,7 +192,7 @@ export function UserDashboardSidebar() {
                     )}
                   />
                   {/* Always show label on mobile; hide when collapsed on desktop */}
-                  <span className={cn("text-base", collapsed && "lg:hidden")}>
+                  <span className={cn("text-base md:text-sm xl:text-base whitespace-nowrap overflow-hidden", collapsed && "lg:hidden")}>
                     {item.title}
                   </span>
                 </Link>

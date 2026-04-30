@@ -10,6 +10,7 @@ interface CustomPaginationProps {
   rowsPerPage: number;
   onRowsPerPageChange: (rows: number) => void;
   className?: string;
+  hideRowsPerPage?: boolean;
 }
 
 export const CustomPagination = ({
@@ -19,6 +20,7 @@ export const CustomPagination = ({
   rowsPerPage,
   onRowsPerPageChange,
   className,
+  hideRowsPerPage = false,
 }: CustomPaginationProps) => {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
@@ -30,26 +32,30 @@ export const CustomPagination = ({
       )}
     >
       {/* Left: Rows per page */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-[#666666]">Rows per page</span>
-        <div className="relative">
-          <select
-            value={rowsPerPage}
-            onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
-            className="appearance-none bg-white border border-gray-200 text-[#1A1A1A] text-sm rounded-none pl-3 pr-8 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
-          >
-            {[10, 20, 50, 100].map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-[#666666] pointer-events-none"
-            size={14}
-          />
+      {!hideRowsPerPage ? (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[#666666]">Rows per page</span>
+          <div className="relative">
+            <select
+              value={rowsPerPage}
+              onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
+              className="appearance-none bg-white border border-gray-200 text-[#1A1A1A] text-sm rounded-none pl-3 pr-8 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
+            >
+              {[10, 20, 50, 100].map((val) => (
+                <option key={val} value={val}>
+                  {val}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#666666] pointer-events-none"
+              size={14}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div />
+      )}
 
       {/* Right: Navigation */}
       <div className="flex items-center gap-4">

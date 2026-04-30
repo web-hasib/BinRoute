@@ -7,11 +7,16 @@ import PaymentHistory from "@/components/sections/dashboard/PaymentHistory";
 import QuickPayModal from "@/components/sections/dashboard/billing/QuickPayModal";
 import EditPaymentMethodModal, { EditPaymentFormValues } from "@/components/sections/dashboard/billing/EditPaymentMethodModal";
 import BillingSuccessModal from "@/components/sections/dashboard/billing/BillingSuccessModal";
+import { useGetMyPaymentMethodQuery } from "@/redux/api/subscription/subscriptionApi";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const BillingPaymentPage = () => {
   const [showQuickPay, setShowQuickPay] = useState(false);
   const [showEditCard, setShowEditCard] = useState(false);
   const [successType, setSuccessType] = useState<"payment" | "update" | null>(null);
+
+  const { data: paymentMethodResponse, isLoading: isPaymentLoading } = useGetMyPaymentMethodQuery(undefined);
+  const paymentMethod = paymentMethodResponse?.data;
 
   const handlePaymentSuccess = () => {
     setShowQuickPay(false);
@@ -62,10 +67,27 @@ const BillingPaymentPage = () => {
           <div className="flex justify-between items-start mb-6">
             <div>
               <p className="text-sm font-bold text-[#172C41] mb-4">Payment Method</p>
-              <h2 className="text-2xl font-bold text-[#172C41] flex items-center gap-1">
-                **** **** **** <span className="text-[#0061AA]">1234</span>
+              <h2 className="text-2xl font-bold text-[#172C41] flex items-center gap-1 uppercase">
+                {isPaymentLoading ? (
+                  <Skeleton className="h-8 w-48" />
+                ) : paymentMethod ? (
+                  <>
+                    <span className="capitalize mr-2">{paymentMethod.brand}</span>
+                    **** **** **** <span className="text-[#0061AA]">{paymentMethod.last4}</span>
+                  </>
+                ) : (
+                  "No card linked"
+                )}
               </h2>
-              <p className="text-gray-400 text-xs mt-1">Expires 12/26</p>
+              <p className="text-gray-400 text-xs mt-1">
+                {isPaymentLoading ? (
+                  <Skeleton className="h-4 w-24 mt-2" />
+                ) : paymentMethod ? (
+                  `Expires ${String(paymentMethod.expMonth).padStart(2, '0')}/${paymentMethod.expYear.toString().slice(-2)}`
+                ) : (
+                  "Add a payment method to get started"
+                )}
+              </p>
             </div>
             <div className="p-3 bg-white shadow-sm">
               <CreditCard className="size-6 text-[#172C41]" />
