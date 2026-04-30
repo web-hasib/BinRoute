@@ -12,7 +12,7 @@ export const baseApi = createApi({
     credentials: "include",
     prepareHeaders: (headers) => {
       const accessToken = Cookies.get("accessToken");
-      if (accessToken && !headers.has("Authorization")) {
+      if (accessToken && accessToken !== "undefined" && !headers.has("Authorization")) {
         headers.set("Authorization", `Bearer ${accessToken}`);
       }
       return headers;
@@ -31,6 +31,9 @@ export const baseApi = createApi({
     "Subscription",
     "Job",
     "Payment",
+    "Driver",
+    "Booking",
+    "ServiceRequest"
   ],
 });
 

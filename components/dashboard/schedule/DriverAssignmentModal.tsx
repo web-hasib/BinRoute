@@ -1,22 +1,54 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { ISchedule, useAssignJobMutation } from "@/redux/api/adminDashboard/jobApi";
+import { useGetAllDriversQuery } from "@/redux/api/adminDashboard/driverApi";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface DriverAssignmentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  job: {
-    location: string;
-    serviceType: string;
-    status: string;
-    size: string;
-  } | null;
+  job: ISchedule | null;
 }
 
 const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalProps) => {
+  const [driverId, setDriverId] = useState("");
+  const [instructions, setInstructions] = useState("");
+  
+  // API Hooks
+  const { data: driversData, isLoading: isDriversLoading } = useGetAllDriversQuery({});
+  const [assignJob, { isLoading: isAssigning }] = useAssignJobMutation();
+
+  const drivers = driversData?.data?.data || [];
+
+  const handleAssign = async () => {
+    if (!job || !driverId) {
+        toast.error("Please select a driver");
+        return;
+    }
+
+    try {
+        await assignJob({
+            driverId,
+            jobId: job.jobId,
+            type: job.jobType,
+            jobStartTime: job.scheduledDate,
+            instructions
+        }).unwrap();
+        
+        toast.success("Job assigned successfully");
+        onClose();
+        setDriverId("");
+        setInstructions("");
+    } catch (error: any) {
+        toast.error(error?.data?.message || "Failed to assign job");
+    }
+  };
+
   if (!job) return null;
 
   return (
@@ -34,7 +66,7 @@ const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalPr
           <div className="space-y-3">
              <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium tracking-tight">Address</span>
-                <span className="font-bold text-[#172C41]">{job.location}</span>
+                <span className="font-bold text-[#172C41] truncate max-w-[300px]">{job.location}</span>
              </div>
              <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium tracking-tight">Service Name</span>
@@ -42,7 +74,7 @@ const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalPr
              </div>
              <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium tracking-tight">Service Type</span>
-                <span className="font-bold text-[#FF630B]">{job.status}</span>
+                <span className="font-bold text-[#FF630B]">{job.jobType.replace("_", " ")}</span>
              </div>
              <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-3">
                 <span className="text-gray-500 font-medium tracking-tight">Dumpster Size</span>
@@ -50,7 +82,7 @@ const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalPr
              </div>
              <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-500 font-medium tracking-tight">Date</span>
-                <span className="font-bold text-[#172C41]">12 June 2026</span>
+                <span className="font-bold text-[#172C41]">{format(new Date(job.scheduledDate), "dd MMM yyyy")}</span>
              </div>
           </div>
         </div>
@@ -59,10 +91,16 @@ const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalPr
         <div>
           <label className="block text-sm font-bold text-[#172C41] mb-2 tracking-tight">Select Driver</label>
           <div className="relative">
-            <select className="w-full px-4 py-3 bg-white border border-gray-100 rounded-none appearance-none focus:outline-none focus:ring-1 focus:ring-[#0265AF] text-[#172C41]">
-              <option value="">Choose a driver...</option>
-              <option value="driver1">John Doe</option>
-              <option value="driver2">Jane Smith</option>
+            <select 
+                value={driverId}
+                onChange={(e) => setDriverId(e.target.value)}
+                disabled={isDriversLoading}
+                className="w-full px-4 py-3 bg-white border border-gray-100 rounded-none appearance-none focus:outline-none focus:ring-1 focus:ring-[#0265AF] text-[#172C41] disabled:opacity-50"
+            >
+              <option value="">{isDriversLoading ? "Loading drivers..." : "Choose a driver..."}</option>
+              {drivers.map((driver: any) => (
+                  <option key={driver.id} value={driver.id}>{driver.fullName}</option>
+              ))}
             </select>
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -72,6 +110,8 @@ const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalPr
         <div>
           <label className="block text-sm font-bold text-[#172C41] mb-2 tracking-tight">Driver Instructions</label>
           <textarea 
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
             placeholder="e.g. Drop at the north gate, customer will meet on site..."
             className="w-full px-4 py-4 bg-white border border-gray-100 rounded-none h-32 focus:outline-none focus:ring-1 focus:ring-[#0265AF] placeholder:text-gray-400"
           ></textarea>
@@ -87,10 +127,12 @@ const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalPr
             Cancel
           </Button>
           <Button 
+            onClick={handleAssign}
+            disabled={isAssigning}
             className="flex-1"
             variant={"primary"}
           >
-            Assign Job
+            {isAssigning ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Assign Job"}
           </Button>
         </div>
 

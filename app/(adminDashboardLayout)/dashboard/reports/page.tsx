@@ -10,122 +10,40 @@ import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import ReportDetailsModal from "@/components/dashboard/reports/ReportDetailsModal";
 import { cn } from "@/lib/utils";
+import { useGetAllReportsQuery, useGetAllReportStatsQuery } from "@/redux/api/adminDashboard/reportApi";
+import { format } from "date-fns";
 
 interface Report {
   id: string;
+  reportId: string;
+  type: string;
+  status: string;
+  reportDescription: string;
+  createdAt: string;
+  user: {
+    fullName: string;
+    email: string;
+    phone: string;
+  };
+  subscription?: {
+    dropoffAddress: string;
+  };
+  damagePicture?: string | null;
+  missingScheduleDate?: string | null;
+}
+
+// Dummy data removed
+
+interface ReportModalData {
+  _id?: string;
+  id: string; // Internal or display ID
+  reportId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   requestType: "Reschedule Pickup" | "Report Damage" | "Missing schedule";
-  status: "Pending" | "Completed";
+  status: string;
   date: string;
-  reason: string;
-}
-
-const dummyReports: Report[] = [
-  {
-    id: "LD-8829",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Pending",
-    date: "21 May, 2026",
-    reason: "Please place the dumpster on the left side of the driveway, away from the power lines.",
-  },
-  {
-    id: "LD-8830",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Report Damage",
-    status: "Pending",
-    date: "21 May, 2026",
-    reason: "Large dent on the front panel of the dumpster.",
-  },
-  {
-    id: "LD-8831",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Missing schedule",
-    status: "Pending",
-    date: "21 May, 2026",
-    reason: "Expected delivery was yesterday but no one showed up.",
-  },
-  {
-    id: "LD-8832",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Pending",
-    date: "21 May, 2026",
-    reason: "Need to change pickup date due to ongoing construction work.",
-  },
-  {
-    id: "LD-8833",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Completed",
-    date: "21 May, 2026",
-    reason: "Rescheduling for a more convenient time.",
-  },
-  {
-    id: "LD-8834",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Completed",
-    date: "21 May, 2026",
-    reason: "Rescheduling for a more convenient time.",
-  },
-  {
-    id: "LD-8835",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Completed",
-    date: "21 May, 2026",
-    reason: "Rescheduling for a more convenient time.",
-  },
-  {
-    id: "LD-8836",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Completed",
-    date: "21 May, 2026",
-    reason: "Rescheduling for a more convenient time.",
-  },
-  {
-    id: "LD-8837",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Completed",
-    date: "21 May, 2026",
-    reason: "Rescheduling for a more convenient time.",
-  },
-  {
-    id: "LD-8838",
-    customerName: "Tomas Diko",
-    customerEmail: "tomas@diko.com",
-    customerPhone: "+1 (555) 123-4567",
-    requestType: "Reschedule Pickup",
-    status: "Completed",
-    date: "21 May, 2026",
-    reason: "Rescheduling for a more convenient time.",
-  },
-];
-
-interface ReportModalData extends Report {
   currentSchedule?: {
     category: string;
     dumpsterSize: string;
@@ -140,6 +58,7 @@ interface ReportModalData extends Report {
   };
   damageImage?: string;
   missingDate?: string;
+  reason: string;
 }
 
 const ReportsPage = () => {
@@ -149,76 +68,112 @@ const ReportsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<ReportModalData | null>(null);
 
-  const tabs = ["All", "Reschedule Pickup", "Report Damage", "Missing schedule"];
 
-  const filteredReports = dummyReports.filter((report) => 
-    selectedTab === "All" || report.requestType === selectedTab
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: reportsData, isLoading, error: reportsError } = useGetAllReportsQuery({
+    page: currentPage,
+    limit: rowsPerPage,
+    ...(searchTerm && { searchTerm }),
+  });
+
+  const { data: statsData, error: statsError } = useGetAllReportStatsQuery({});
+
+  if (reportsError) console.error("Reports API Error:", reportsError);
+  if (statsError) console.error("Stats API Error:", statsError);
+
+  const reports = reportsData?.data?.data || [];
+  const meta = reportsData?.data?.meta || { total: 0, page: 1, limit: 10, totalPage: 1 };
+
+  const tabs = ["All", "Report Damage", "Missing schedule"];
+
+  const typeMap: Record<string, string> = {
+    "RESCHEDULE_PICKUP": "Reschedule Pickup",
+    "REPORT_DAMAGE": "Report Damage",
+    "MISSING_SCHEDULE": "Missing schedule"
+  };
+
+  const filteredReports = reports.filter((report: Report) => 
+    selectedTab === "All" || typeMap[report.type] === selectedTab
   );
 
   const handleViewDetails = (report: Report) => {
-    // Enrich report data for modal
+    // Map backend data to modal requirements
     setSelectedReport({
-      ...report,
+      _id: report.id, // Database ID for API actions
+      id: report.id,
+      reportId: report.reportId, // Display ID
+      customerName: report.user.fullName,
+      customerEmail: report.user.email,
+      customerPhone: report.user.phone,
+      requestType: typeMap[report.type] as "Reschedule Pickup" | "Report Damage" | "Missing schedule",
+      status: report.status.charAt(0) + report.status.slice(1).toLowerCase(),
+      date: format(new Date(report.createdAt), "dd MMM, yyyy"),
+      reason: report.reportDescription,
       currentSchedule: {
         category: "Commercial",
         dumpsterSize: "2 Yard Dumpster",
         day: "Monday",
         frequency: "1x Per Month",
       },
-      newSchedule: report.requestType === "Reschedule Pickup" ? {
+      newSchedule: report.type === "RESCHEDULE_PICKUP" ? {
         category: "Commercial",
         dumpsterSize: "2 Yard Dumpster",
         day: "Monday",
         frequency: "1x Per Month",
       } : undefined,
-      damageImage: report.requestType === "Report Damage" ? "/blog/hero_bg.png" : undefined,
-      missingDate: report.requestType === "Missing schedule" ? "May 21, 2025" : undefined,
-    });
+      damageImage: report.damagePicture || undefined,
+      missingDate: report.missingScheduleDate ? format(new Date(report.missingScheduleDate), "MMMM dd, yyyy") : undefined,
+    } as ReportModalData);
     setIsModalOpen(true);
   };
 
   const columns: ColumnDef<Report>[] = [
     {
       header: "Reports ID",
-      accessorKey: "id",
-      cell: (row) => <span className="text-sm font-medium text-[#4B5563]">Rep#{row.id}</span>
+      accessorKey: "reportId",
+      cell: (row) => <span className="text-sm font-medium text-[#4B5563]">{row.reportId}</span>
     },
     {
       header: "Customer Name",
       cell: (row) => (
         <div className="py-1">
-          <p className="text-sm font-bold text-[#0A2540]">{row.customerName}</p>
-          <p className="text-xs text-gray-400">@{row.customerEmail}</p>
+          <p className="text-sm font-bold text-[#0A2540]">{row.user.fullName}</p>
+          <p className="text-xs text-gray-400">@{row.user.email}</p>
         </div>
       )
     },
     {
       header: "Request type",
-      accessorKey: "requestType",
-      cell: (row) => <span className="text-sm font-medium text-[#4B5563]">{row.requestType}</span>
+      accessorKey: "type",
+      cell: (row) => <span className="text-sm font-medium text-[#4B5563]">{typeMap[row.type] || row.type}</span>
     },
     {
       header: "Status",
       cell: (row) => (
         <span className={cn(
           "px-3 py-1 text-xs font-bold rounded-none inline-block min-w-[70px] text-center",
-          row.status === "Pending" ? "bg-[#F3F4F6] text-[#6B7280]" : "bg-[#DCFCE7] text-[#166534]"
+          row.status === "PENDING" && "bg-[#F3F4F6] text-[#6B7280]",
+          row.status === "UNDER_REVIEW" && "bg-[#FFF4E5] text-[#FF9500]",
+          row.status === "RESOLVED" && "bg-[#DCFCE7] text-[#166534]",
+          row.status === "DISMISSED" && "bg-[#FEE2E2] text-[#991B1B]"
         )}>
-          {row.status}
+          {row.status.replace("_", " ").split(" ").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" ")}
         </span>
       )
     },
     {
       header: "Date",
-      accessorKey: "date",
-      cell: (row) => <span className="text-sm font-medium text-[#4B5563]">{row.date}</span>
+      accessorKey: "createdAt",
+      cell: (row) => <span className="text-sm font-medium text-[#4B5563]">{format(new Date(row.createdAt), "dd MMM, yyyy")}</span>
     },
     {
       header: "Action",
       cell: (row) => (
-        <Button 
-          variant={"primary"} 
-          size="sm" 
+        <Button
+          variant={"primary"}
+          size="sm"
           onClick={() => handleViewDetails(row)}
           className="h-10 px-5 text-xs font-bold bg-[#0061AA] hover:bg-[#014e89] rounded-none transition-all shadow-sm"
         >
@@ -236,21 +191,21 @@ const ReportsPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           label="Total Reports" 
-          value="300" 
+          value={statsData?.data?.total?.toString() || "0"} 
           icon={BarChart3} 
           iconBgColor="bg-[#EAF6FF]" 
           iconColor="text-[#0061AA]" 
         />
         <StatCard 
           label="In progress" 
-          value="50" 
+          value={statsData?.data?.pending?.toString() || "0"} 
           icon={BarChart3} 
           iconBgColor="bg-[#FFF4E5]" 
           iconColor="text-[#FF9500]" 
         />
         <StatCard 
-          label="Completed" 
-          value="20" 
+          label="Resolved" 
+          value={statsData?.data?.resolved?.toString() || "0"} 
           icon={BarChart3} 
           iconBgColor="bg-[#E6F9EE]" 
           iconColor="text-[#22C55E]" 
@@ -265,6 +220,8 @@ const ReportsPage = () => {
             <input 
               type="text" 
               placeholder="Search" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-[#F4F7F9] border-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0061AA] text-[#0A2540] placeholder:text-gray-400 font-medium"
             />
           </div>
@@ -276,8 +233,8 @@ const ReportsPage = () => {
                 onClick={() => setSelectedTab(tab)}
                 className={cn(
                   "px-5 py-2.5 text-sm font-bold transition-all",
-                  selectedTab === tab 
-                    ? "bg-white text-[#0A2540] shadow-sm ring-1 ring-black/5" 
+                  selectedTab === tab
+                    ? "bg-white text-[#0A2540] shadow-sm ring-1 ring-black/5"
                     : "text-[#64748B] hover:text-[#0A2540]"
                 )}
               >
@@ -289,9 +246,9 @@ const ReportsPage = () => {
 
         {/* Table */}
         <div className="p-0">
-          <DataTable 
-            columns={columns} 
-            data={filteredReports} 
+          <DataTable
+            columns={columns}
+            data={filteredReports}
             className="border-none shadow-none"
           />
         </div>
@@ -299,7 +256,7 @@ const ReportsPage = () => {
         {/* Reusable Pagination */}
         <CustomPagination
           currentPage={currentPage}
-          totalPages={10}
+          totalPages={meta.totalPage}
           onPageChange={setCurrentPage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={setRowsPerPage}
@@ -307,9 +264,9 @@ const ReportsPage = () => {
         />
       </div>
 
-      <ReportDetailsModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <ReportDetailsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         report={selectedReport}
       />
     </Container>
