@@ -43,12 +43,15 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
     <div className="ck-editor-wrapper relative">
       <style>{`
         .ck-editor__editable {
-          min-height: 200px;
+          min-height: 300px;
           border-radius: 0 !important;
+          background-color: white !important;
+          color: black !important;
         }
         .ck-editor-wrapper .ck.ck-editor__main > .ck-editor__editable:focus {
           border-color: #0061AA !important;
           box-shadow: none !important;
+          background-color: white !important;
         }
         .ck-body {
           z-index: 9999 !important;
@@ -61,9 +64,18 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
         }
         .ck.ck-toolbar {
              border-radius: 0 !important;
+             background-color: #f8f9fa !important;
+        }
+        /* Fix for dimmed/disabled look in some production builds */
+        .ck.ck-editor__editable.ck-read-only {
+          background-color: #f4f4f4 !important;
+        }
+        .ck.ck-reset_all, .ck.ck-reset_all * {
+          opacity: 1 !important;
         }
       `}</style>
       <CKEditor
+        key="main-ckeditor"
         editor={ClassicEditor}
         config={{
           licenseKey: "GPL",
@@ -125,6 +137,7 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
               "alignment",
             ],
           },
+          placeholder: "Start typing here...",
           heading: {
             options: [
               { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
@@ -146,7 +159,10 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
               "tableProperties",
             ],
           },
-          initialData: title || "<p></p>",
+        }}
+        data={title || ""}
+        onReady={(editor) => {
+          console.log("CKEditor Ready");
         }}
         onChange={(event, editor) => {
           const data = editor.getData();
