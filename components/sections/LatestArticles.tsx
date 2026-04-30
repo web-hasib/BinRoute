@@ -4,8 +4,12 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useGetAllBlogsQuery } from "@/redux/api/blog/blogApi";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ArticleCardProps {
+  id: string;
   image: string;
   date: string;
   title: string;
@@ -14,6 +18,7 @@ interface ArticleCardProps {
 }
 
 const ArticleCard = ({
+  id,
   image,
   date,
   title,
@@ -28,6 +33,7 @@ const ArticleCard = ({
             src={image}
             alt={title}
             fill
+            unoptimized
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
@@ -42,7 +48,7 @@ const ArticleCard = ({
             </p>
           )}
           <Link
-            href="#"
+            href={`/blog/${id}`}
             className="text-blue-600 font-bold text-sm flex items-center gap-2 group/link"
           >
             Read more{" "}
@@ -54,12 +60,13 @@ const ArticleCard = ({
   }
 
   return (
-    <div className="flex gap-4 group">
+    <Link href={`/blog/${id}`} className="flex gap-4 group">
       <div className="relative size-24 md:size-32 shrink-0 overflow-hidden">
         <Image
           src={image}
           alt={title}
           fill
+          unoptimized
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
@@ -69,47 +76,36 @@ const ArticleCard = ({
           {title}
         </h3>
       </div>
-    </div>
+    </Link>
   );
 };
 
 const LatestArticles = () => {
-  const featuredArticles = [
-    {
-      image: "/dummy.png",
-      date: "March 25, 2026",
-      title: "Smart Waste Planning for Home Projects",
-      description:
-        "Managing business waste doesn't have to be complicated. With the right planning and tools, you can stay compliant while reducing costs.",
-      featured: true,
-    },
-    {
-      image: "/dummy.png",
-      date: "March 25, 2026",
-      title: "Commercial Waste Solutions Made Simple",
-      description:
-        "Managing business waste doesn't have to be complicated. With the right planning and tools, you can stay compliant while reducing costs.",
-      featured: true,
-    },
-  ];
+  const { data: blogsResponse, isLoading } = useGetAllBlogsQuery({ 
+    page: 1, 
+    limit: 5, 
+    sortBy: "createdAt",
+    sortOrder: "desc"
+  });
 
-  const sidebarArticles = [
-    {
-      image: "/dummy.png",
-      date: "March 25, 2026",
-      title: "When to Schedule a Dumpster Pickup",
-    },
-    {
-      image: "/dummy.png",
-      date: "March 25, 2026",
-      title: "Keeping Your Driveway Safe During Rentals",
-    },
-    {
-      image: "/dummy.png",
-      date: "March 25, 2026",
-      title: "Why Reliable Waste Service Matters",
-    },
-  ];
+  const blogs = blogsResponse?.data?.data || [];
+
+  const featuredArticles = blogs.slice(0, 2).map((blog: any) => ({
+    id: blog.id,
+    image: blog.coverPhoto,
+    date: format(new Date(blog.createdAt), "MMMM dd, yyyy"),
+    title: blog.title,
+    description: blog.shortDescription,
+    featured: true,
+  }));
+
+  const sidebarArticles = blogs.slice(2, 5).map((blog: any) => ({
+    id: blog.id,
+    image: blog.thumbnail || blog.coverPhoto,
+    date: format(new Date(blog.createdAt), "MMMM dd, yyyy"),
+    title: blog.title,
+    featured: false,
+  }));
 
   return (
     <section className="py-24 bg-white">
@@ -128,16 +124,39 @@ const LatestArticles = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Main Articles */}
           <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            {featuredArticles.map((article, index) => (
-              <ArticleCard key={index} {...article} />
-            ))}
+            {isLoading ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-4">
+                  <Skeleton className="aspect-4/3 w-full" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ))
+            ) : (
+              featuredArticles.map((article, index) => (
+                <ArticleCard key={index} {...article} />
+              ))
+            )}
           </div>
 
           {/* Sidebar Articles */}
           <div className="lg:col-span-4 flex flex-col gap-8 md:gap-10">
-            {sidebarArticles.map((article, index) => (
-              <ArticleCard key={index} {...article} />
-            ))}
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <Skeleton className="size-24 md:size-32 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              sidebarArticles.map((article, index) => (
+                <ArticleCard key={index} {...article} />
+              ))
+            )}
           </div>
         </div>
       </div>
