@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import {
   ClassicEditor,
   Essentials,
@@ -38,30 +38,82 @@ interface CustomEditorProps {
   onDataChange?: (data: string) => void;
 }
 
-const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
-  const editorContainerRef = useRef<HTMLDivElement>(null);
-  const editorInstanceRef = useRef<ClassicEditor | null>(null);
+function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
+  return (
+    <div className="ck-editor-wrapper relative">
+      <style>{`
+        .ck-editor__editable {
+          min-height: 400px;
+          border-radius: 0 !important;
+        }
+        
+        /* Styles to fix heading visibility */
+        .ck-content h1 {
+          display: block !important;
+          font-size: 2em !important;
+          font-weight: bold !important;
+          margin-top: 0.67em !important;
+          margin-bottom: 0.67em !important;
+        }
+        .ck-content h2 {
+          display: block !important;
+          font-size: 1.5em !important;
+          font-weight: bold !important;
+          margin-top: 0.83em !important;
+          margin-bottom: 0.83em !important;
+        }
+        .ck-content h3 {
+          display: block !important;
+          font-size: 1.17em !important;
+          font-weight: bold !important;
+          margin-top: 1em !important;
+          margin-bottom: 1em !important;
+        }
+        .ck-content h4 {
+          display: block !important;
+          font-size: 1em !important;
+          font-weight: bold !important;
+          margin-top: 1.33em !important;
+          margin-bottom: 1.33em !important;
+        }
+        .ck-content ul {
+          display: block !important;
+          list-style-type: disc !important;
+          margin-top: 1em !important;
+          margin-bottom: 1em !important;
+          padding-left: 40px !important;
+        }
+        .ck-content ol {
+          display: block !important;
+          list-style-type: decimal !important;
+          margin-top: 1em !important;
+          margin-bottom: 1em !important;
+          padding-left: 40px !important;
+        }
+        .ck-content strong, .ck-content b {
+          font-weight: bold !important;
+        }
 
-  useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      console.log("Clicked on element:", e.target);
-      if (e.target instanceof HTMLElement) {
-        console.log("Element classes:", e.target.className);
-        console.log("Element z-index:", window.getComputedStyle(e.target).zIndex);
-      }
-    };
-    window.addEventListener('click', handleGlobalClick);
-    return () => window.removeEventListener('click', handleGlobalClick);
-  }, []);
-
-  useEffect(() => {
-    if (!editorContainerRef.current) return;
-
-    let isMounted = true;
-
-    const initEditor = async () => {
-      try {
-        const editor = await ClassicEditor.create(editorContainerRef.current!, {
+        .ck-editor-wrapper .ck.ck-editor__main > .ck-editor__editable:focus {
+          border-color: #500A82 !important;
+          box-shadow: none !important;
+        }
+        .ck-body {
+          z-index: 9999 !important;
+        }
+        .ck-body-wrapper {
+          z-index: 10002 !important;
+        }
+        .ck.ck-dropdown__panel {
+          z-index: 10001 !important;
+        }
+        .ck.ck-toolbar {
+          border-radius: 0 !important;
+        }
+      `}</style>
+      <CKEditor
+        editor={ClassicEditor}
+        config={{
           licenseKey: "GPL",
           plugins: [
             Essentials,
@@ -130,122 +182,32 @@ const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
               { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' }
             ]
           },
-          initialData: title || "",
-          placeholder: "Start typing here...",
-        });
-
-        if (!isMounted) {
-          editor.destroy();
-          return;
-        }
-
-        editorInstanceRef.current = editor;
-
-        // Force enable
-        editor.enableReadOnlyMode('lock');
-        editor.disableReadOnlyMode('lock');
-
-        editor.model.document.on('change:data', () => {
+          fontSize: {
+            options: [9, 11, 13, "default", 17, 19, 21, 24, 28, 32],
+          },
+          table: {
+            contentToolbar: [
+              "tableColumn",
+              "tableRow",
+              "mergeTableCells",
+              "tableCellProperties",
+              "tableProperties",
+            ],
+          },
+          initialData: title || "<p></p>",
+        }}
+        onChange={(event, editor) => {
+          const data = editor.getData();
           if (onDataChange) {
-            onDataChange(editor.getData());
+            onDataChange(data);
           }
-        });
-
-        // Focus the editor after a short delay
-        setTimeout(() => {
-          if (isMounted) {
-             console.log("Attempting to focus editor...");
-             editor.editing.view.focus();
-             console.log("Editor focus attempted. Is ReadOnly?", editor.isReadOnly);
-          }
-        }, 1000);
-
-      } catch (error) {
-        console.error("CKEditor Initialization Error:", error);
-      }
-    };
-
-    initEditor();
-
-    return () => {
-      isMounted = false;
-      if (editorInstanceRef.current) {
-        editorInstanceRef.current.destroy().then(() => {
-          editorInstanceRef.current = null;
-        });
-      }
-    };
-  }, []);
-
-  const handleManualUnlock = () => {
-    if (editorInstanceRef.current) {
-      console.log("Manual Unlock Attempted");
-      editorInstanceRef.current.enableReadOnlyMode('lock');
-      editorInstanceRef.current.disableReadOnlyMode('lock');
-      editorInstanceRef.current.editing.view.focus();
-      alert("Manual Unlock Attempted. Check if you can type now.");
-    } else {
-      alert("Editor instance not found!");
-    }
-  };
-
-  return (
-    <div 
-      className="ck-editor-container" 
-      style={{ 
-        position: 'relative', 
-        zIndex: 100, 
-        pointerEvents: 'auto',
-        minHeight: '400px',
-        border: '2px solid transparent'
-      }}
-    >
-      <div className="absolute top-[-40px] right-0 flex gap-2">
-        <button 
-          onClick={handleManualUnlock}
-          className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors z-[110]"
-        >
-          Diagnostic: Manual Unlock
-        </button>
-      </div>
-      <style>{`
-        .ck-editor-container .ck-editor__editable {
-          min-height: 400px;
-          border-radius: 0 !important;
-          background-color: white !important;
-          cursor: text !important;
-          pointer-events: auto !important;
-        }
-        .ck-editor-container .ck.ck-editor__main > .ck-editor__editable:focus {
-          border-color: #0061AA !important;
-          box-shadow: none !important;
-        }
-        .ck-body {
-          z-index: 9999 !important;
-        }
-        .ck-body-wrapper {
-          z-index: 10002 !important;
-        }
-        .ck.ck-dropdown__panel {
-          z-index: 10001 !important;
-        }
-        .ck.ck-toolbar {
-          border-radius: 0 !important;
-          pointer-events: auto !important;
-        }
-        .ck.ck-editor__top {
-           pointer-events: auto !important;
-        }
-        .ck-content {
-           font-family: inherit;
-           line-height: 1.6;
-           color: black !important;
-           opacity: 1 !important;
-        }
-      `}</style>
-      <div ref={editorContainerRef} />
+        }}
+        onError={(error) => {
+          console.error("CKEditor Error:", error);
+        }}
+      />
     </div>
   );
-};
+}
 
 export default CustomEditor;
