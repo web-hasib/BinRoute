@@ -1,6 +1,6 @@
 "use client";
 
-import { CKEditor } from "@ckeditor/ckeditor5-react";
+import React, { useEffect, useRef } from "react";
 import {
   ClassicEditor,
   Essentials,
@@ -38,82 +38,18 @@ interface CustomEditorProps {
   onDataChange?: (data: string) => void;
 }
 
-function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
-  return (
-    <div className="ck-editor-wrapper relative">
-      <style>{`
-        .ck-editor__editable {
-          min-height: 400px;
-          border-radius: 0 !important;
-        }
-        
-        /* Styles to fix heading visibility */
-        .ck-content h1 {
-          display: block !important;
-          font-size: 2em !important;
-          font-weight: bold !important;
-          margin-top: 0.67em !important;
-          margin-bottom: 0.67em !important;
-        }
-        .ck-content h2 {
-          display: block !important;
-          font-size: 1.5em !important;
-          font-weight: bold !important;
-          margin-top: 0.83em !important;
-          margin-bottom: 0.83em !important;
-        }
-        .ck-content h3 {
-          display: block !important;
-          font-size: 1.17em !important;
-          font-weight: bold !important;
-          margin-top: 1em !important;
-          margin-bottom: 1em !important;
-        }
-        .ck-content h4 {
-          display: block !important;
-          font-size: 1em !important;
-          font-weight: bold !important;
-          margin-top: 1.33em !important;
-          margin-bottom: 1.33em !important;
-        }
-        .ck-content ul {
-          display: block !important;
-          list-style-type: disc !important;
-          margin-top: 1em !important;
-          margin-bottom: 1em !important;
-          padding-left: 40px !important;
-        }
-        .ck-content ol {
-          display: block !important;
-          list-style-type: decimal !important;
-          margin-top: 1em !important;
-          margin-bottom: 1em !important;
-          padding-left: 40px !important;
-        }
-        .ck-content strong, .ck-content b {
-          font-weight: bold !important;
-        }
+const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const editorInstanceRef = useRef<ClassicEditor | null>(null);
 
-        .ck-editor-wrapper .ck.ck-editor__main > .ck-editor__editable:focus {
-          border-color: #500A82 !important;
-          box-shadow: none !important;
-        }
-        .ck-body {
-          z-index: 9999 !important;
-        }
-        .ck-body-wrapper {
-          z-index: 10002 !important;
-        }
-        .ck.ck-dropdown__panel {
-          z-index: 10001 !important;
-        }
-        .ck.ck-toolbar {
-          border-radius: 0 !important;
-        }
-      `}</style>
-      <CKEditor
-        editor={ClassicEditor}
-        config={{
+  useEffect(() => {
+    if (!editorContainerRef.current) return;
+
+    let isMounted = true;
+
+    const initEditor = async () => {
+      try {
+        const editor = await ClassicEditor.create(editorContainerRef.current!, {
           licenseKey: "GPL",
           plugins: [
             Essentials,
@@ -182,32 +118,73 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
               { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' }
             ]
           },
-          fontSize: {
-            options: [9, 11, 13, "default", 17, 19, 21, 24, 28, 32],
-          },
-          table: {
-            contentToolbar: [
-              "tableColumn",
-              "tableRow",
-              "mergeTableCells",
-              "tableCellProperties",
-              "tableProperties",
-            ],
-          },
-          initialData: title || "<p></p>",
-        }}
-        onChange={(event, editor) => {
-          const data = editor.getData();
+          initialData: title || "",
+          placeholder: "Start typing here...",
+        });
+
+        if (!isMounted) {
+          editor.destroy();
+          return;
+        }
+
+        editorInstanceRef.current = editor;
+
+        editor.model.document.on('change:data', () => {
           if (onDataChange) {
-            onDataChange(data);
+            onDataChange(editor.getData());
           }
-        }}
-        onError={(error) => {
-          console.error("CKEditor Error:", error);
-        }}
-      />
+        });
+
+      } catch (error) {
+        console.error("CKEditor Initialization Error:", error);
+      }
+    };
+
+    initEditor();
+
+    return () => {
+      isMounted = false;
+      if (editorInstanceRef.current) {
+        editorInstanceRef.current.destroy().then(() => {
+          editorInstanceRef.current = null;
+        });
+      }
+    };
+  }, []); // Only run once on mount
+
+  return (
+    <div className="ck-editor-container">
+      <style>{`
+        .ck-editor-container .ck-editor__editable {
+          min-height: 400px;
+          border-radius: 0 !important;
+          background-color: white !important;
+        }
+        .ck-editor-container .ck.ck-editor__main > .ck-editor__editable:focus {
+          border-color: #0061AA !important;
+          box-shadow: none !important;
+        }
+        .ck-body {
+          z-index: 9999 !important;
+        }
+        .ck-body-wrapper {
+          z-index: 10002 !important;
+        }
+        .ck.ck-dropdown__panel {
+          z-index: 10001 !important;
+        }
+        .ck.ck-toolbar {
+          border-radius: 0 !important;
+        }
+        /* Ensure text visibility */
+        .ck-content {
+           font-family: inherit;
+           line-height: 1.6;
+        }
+      `}</style>
+      <div ref={editorContainerRef} />
     </div>
   );
-}
+};
 
 export default CustomEditor;
