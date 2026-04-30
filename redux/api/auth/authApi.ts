@@ -182,10 +182,11 @@ const authApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
-    toggleUserStatus: builder.mutation<IBaseResponse, string>({
-      query: (id) => ({
+    toggleUserStatus: builder.mutation<IBaseResponse, { id: string; status: "ACTIVE" | "BLOCKED" }>({
+      query: ({ id, status }) => ({
         url: `/users/status/${id}`,
         method: "PATCH",
+        body: { status },
       }),
       invalidatesTags: ["User"],
     }), forgotPassword: builder.mutation({

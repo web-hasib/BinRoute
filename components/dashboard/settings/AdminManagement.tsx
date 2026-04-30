@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useGetAdminsQuery, useToggleUserStatusMutation } from "@/redux/api/auth/authApi";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Loader2 } from "lucide-react";
 
 interface AdminUser {
   id: string;
@@ -23,15 +24,20 @@ const AdminManagement = () => {
     const { data: blockedAdminsData, isLoading: isBlockedLoading } = useGetAdminsQuery({ status: "BLOCKED" });
     const [toggleStatus, { isLoading: isToggling }] = useToggleUserStatusMutation();
 
-    const activeAdmins: AdminUser[] = activeAdminsData?.data?.data || [];
-    const blockedAdmins: AdminUser[] = blockedAdminsData?.data?.data || [];
+    const activeAdmins: AdminUser[] = activeAdminsData?.data || [];
+    const blockedAdmins: AdminUser[] = blockedAdminsData?.data || [];
 
-    const handleToggle = async (id: string, currentStatus: string) => {
+    const [loadingId, setLoadingId] = React.useState<string | null>(null);
+
+    const handleToggle = async (id: string, newStatus: "ACTIVE" | "BLOCKED") => {
+        setLoadingId(id);
         try {
-            await toggleStatus(id).unwrap();
-            toast.success(`Admin successfully ${currentStatus === 'ACTIVE' ? 'blocked' : 'unblocked'}`);
+            await toggleStatus({ id, status: newStatus }).unwrap();
+            toast.success(`Admin successfully ${newStatus === 'BLOCKED' ? 'blocked' : 'unblocked'}`);
         } catch (error: any) {
             toast.error(error?.data?.message || "Failed to update admin status");
+        } finally {
+            setLoadingId(null);
         }
     };
 
@@ -50,11 +56,11 @@ const AdminManagement = () => {
         header: "Action",
         cell: (item) => (
           <button 
-            onClick={() => handleToggle(item.id, "ACTIVE")}
-            disabled={isToggling}
-            className="bg-red-50 text-red-500 font-bold px-6 py-2 text-[11px] rounded-none hover:bg-red-100 transition-colors disabled:opacity-50"
+            onClick={() => handleToggle(item.id, "BLOCKED")}
+            disabled={isToggling || loadingId === item.id}
+            className="bg-red-50 text-red-500 font-bold w-20 h-8 flex items-center justify-center text-[11px] rounded-none hover:bg-red-100 transition-colors disabled:opacity-50"
           >
-            Block
+            {loadingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Block"}
           </button>
         )
       }
@@ -75,11 +81,11 @@ const AdminManagement = () => {
         header: "Action",
         cell: (item) => (
           <button 
-            onClick={() => handleToggle(item.id, "BLOCKED")}
-            disabled={isToggling}
-            className="bg-green-50 text-green-500 font-bold px-6 py-2 text-[11px] rounded-none hover:bg-green-100 transition-colors disabled:opacity-50"
+            onClick={() => handleToggle(item.id, "ACTIVE")}
+            disabled={isToggling || loadingId === item.id}
+            className="bg-green-50 text-green-500 font-bold w-20 h-8 flex items-center justify-center text-[11px] rounded-none hover:bg-green-100 transition-colors disabled:opacity-50"
           >
-            Unblock
+            {loadingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Unblock"}
           </button>
         )
       }
