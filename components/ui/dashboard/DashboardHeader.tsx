@@ -19,7 +19,7 @@ export function DashboardHeader() {
           {/* Left side - Can add breadcrumbs or title here */}
           <div className="flex-1">
             <h1 className="text-xl sm:text-xl ml-8 font-bold text-gray-900">
-             {user?.data?.name || "Dashboard"}
+              {user?.data?.fullName || user?.data?.name || "Dashboard"}
             </h1>
           </div>
 
@@ -35,7 +35,7 @@ export function DashboardHeader() {
               ) : (
                 <>
                   <p className="text-sm font-semibold text-gray-900 leading-tight">
-                    {user?.data?.name || "Admin"}
+                    {user?.data?.fullName || user?.data?.name || "Admin"}
                   </p>
                   <p className="text-xs font-medium text-gray-500 capitalize">
                     {user?.data?.role || "Administrator"}
@@ -47,12 +47,12 @@ export function DashboardHeader() {
             {/* Avatar */}
             <Avatar className="h-9 w-9 sm:h-10 sm:w-10 ring-2 ring-[#314B79] ring-offset-2 transition-transform hover:scale-105">
               <AvatarImage
-                src={user?.data?.profilePicture || ""}
-                alt={user?.data?.name || "Admin"}
+                src={user?.data?.image || user?.data?.profileImage || user?.data?.profilePicture || ""}
+                alt={user?.data?.fullName || user?.data?.name || "Admin"}
                 className="object-cover"
               />
               <AvatarFallback className="bg-gradient-to-br from-[#314B79] to-[#4A6FA5] text-white font-semibold text-sm sm:text-base">
-                {user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "A"}
+                {(user?.data?.fullName || user?.data?.name || "A").charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </div>

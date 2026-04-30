@@ -29,8 +29,8 @@ export const baseApi = createApi({
     "ServiceArea",
     "ServicePlan",
     "Driver",
-    "Booking"
-
+    "Booking",
+    "ServiceRequest"
   ],
 });
 
