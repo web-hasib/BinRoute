@@ -83,19 +83,19 @@ const ReportDamagePage = () => {
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="w-full">
                 {[
 
                     { id: "damage", title: "Report Damage", icon: AlertCircle, desc: "Container repair or replacement request" },
                 ].map((action, idx) => (
-                    <div key={idx} className="bg-white p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                    <div key={idx} className="bg-white p-6 shadow-sm border border-gray-100 flex flex-col">
                         <div className="flex gap-2">
                             <div className="p-4 bg-gray-50 mb-4 border border-gray-50">
                                 <action.icon className="size-5 md:size-4 lg:size-6 text-[#172C41]" />
                             </div>
                             <div className="flex flex-col">
                                 <h3 className=" md:text-[12px] lg:text-base font-bold text-[#172C41] mb-1">{action.title}</h3>
-                                <p className="text-gray-400 md:text-[8px] lg:text-xs mb-6 px-4">{action.desc}</p>
+                                <p className="text-gray-400 md:text-[8px] lg:text-xs mb-6">{action.desc}</p>
                             </div>
                         </div>
                         <Button
