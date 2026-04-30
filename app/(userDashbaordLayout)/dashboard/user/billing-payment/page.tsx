@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { CreditCard, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import PaymentHistory from "@/components/sections/dashboard/PaymentHistory";
 import QuickPayModal from "@/components/sections/dashboard/billing/QuickPayModal";
 import EditPaymentMethodModal, { EditPaymentFormValues } from "@/components/sections/dashboard/billing/EditPaymentMethodModal";
 import BillingSuccessModal from "@/components/sections/dashboard/billing/BillingSuccessModal";
-import { useGetMyPaymentMethodQuery } from "@/redux/api/subscription/subscriptionApi";
+import { useGetMyPaymentMethodQuery, useGetBillingInfoQuery } from "@/redux/api/subscription/subscriptionApi";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Info } from "lucide-react";
 
 const BillingPaymentPage = () => {
   const [showQuickPay, setShowQuickPay] = useState(false);
@@ -17,6 +19,9 @@ const BillingPaymentPage = () => {
 
   const { data: paymentMethodResponse, isLoading: isPaymentLoading } = useGetMyPaymentMethodQuery(undefined);
   const paymentMethod = paymentMethodResponse?.data;
+
+  const { data: billingInfoResponse, isLoading: isBillingLoading } = useGetBillingInfoQuery(undefined);
+  const billingInfo = billingInfoResponse?.data;
 
   const handlePaymentSuccess = () => {
     setShowQuickPay(false);
@@ -41,25 +46,48 @@ const BillingPaymentPage = () => {
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Quick Pay Card */}
-        <div className="bg-white p-4 md:p-8 shadow-sm flex flex-col justify-between border border-gray-100">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <p className="text-sm font-bold text-[#172C41] mb-4">Quick Pay</p>
-              <h2 className="text-3xl font-bold text-[#0061AA]">$563.63</h2>
-              <p className="text-gray-400 text-xs mt-1">Next payment due May, 2025</p>
+        {/* Automatic Billing Plan Card */}
+        <div className="bg-white p-6 md:p-10 shadow-sm flex flex-col justify-between border border-gray-100">
+          <div className="flex justify-between items-start mb-4">
+            <div className="space-y-1">
+              <p className="text-xl font-bold text-[#172C41] mb-6">Automatic Billing Plan</p>
+              
+              {isBillingLoading ? (
+                <>
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-4 w-48 mt-2" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-4xl font-bold text-[#0061AA]">
+                    ${billingInfo?.nextBillingInfo?.nextBillingAmount || "0.00"}
+                  </h2>
+                  <p className="text-gray-400 text-sm font-medium">
+                    Next processing date: {billingInfo?.nextBillingInfo?.nextBillingDate ? 
+                      new Date(billingInfo.nextBillingInfo.nextBillingDate).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric"
+                      }) : "N/A"}
+                  </p>
+                </>
+              )}
             </div>
-            <div className="p-2 bg-red-50 relative">
-               <AlertTriangle className="size-6 text-red-500" />
-               <div className="absolute top-0 right-0 size-2 bg-red-500 rounded-full border-2 border-white" />
+            <div className="p-4 bg-white shadow-[0_0_20px_rgba(0,0,0,0.05)] flex items-center justify-center">
+               <div className="relative">
+                <AlertTriangle className="size-8 text-[#FF4D4D] fill-[#FF4D4D]" />
+                <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">i</span>
+               </div>
             </div>
           </div>
-          <Button 
-            onClick={() => setShowQuickPay(true)}
-            className="w-full bg-[#0061AA] hover:bg-[#004e89] text-white py-6 rounded-none font-bold flex items-center justify-center gap-2 mt-4"
-          >
-            Pay now <ArrowRight className="size-4" />
-          </Button>
+          <Link href="/dashboard/user/billing-payment/manage-plans" className="w-full">
+            <Button 
+              variant="ghost"
+              className="w-full bg-[#E6F0F9] hover:bg-blue-100 text-[#0061AA] py-7 rounded-none font-bold text-base mt-8 shadow-none"
+            >
+              Manage Plan & Services
+            </Button>
+          </Link>
         </div>
 
         {/* Payment Method Card */}

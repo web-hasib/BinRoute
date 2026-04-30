@@ -83,6 +83,10 @@ export const subscriptionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Report"],
     }),
+    getBillingInfo: builder.query({
+      query: () => "/subscriptions/billing-info",
+      providesTags: ["Subscription"],
+    }),
   }),
 });
 
@@ -98,4 +102,5 @@ export const {
   useGetMyReportsQuery,
   useGetReportByIdQuery,
   useSubmitReportMutation,
+  useGetBillingInfoQuery,
 } = subscriptionApi;
