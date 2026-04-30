@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 
 interface StepProgressProps {
   currentStep: number;
@@ -15,34 +16,44 @@ const steps = [
 
 const StepProgress = ({ currentStep }: StepProgressProps) => {
   return (
-    <div className="w-full flex justify-center items-center">
+    <div className="w-full flex justify-center items-center py-6">
       <div className="flex items-center w-full max-w-2xl relative">
-        {/* Background line */}
-        <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gray-200 -translate-y-1/2 z-0" />
         
-        {/* Active progress line */}
-        <div 
-          className="absolute top-1/2 left-0 h-[2px] bg-[#0265AF] -translate-y-1/2 z-0 transition-all duration-300" 
-          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-        />
+        {/* Background line container */}
+        <div className="absolute top-[20px] left-[20px] right-[20px] h-[2px] bg-gray-200 z-0">
+          {/* Active progress line */}
+          <div 
+            className="h-full bg-[#0265AF] transition-all duration-500 ease-in-out" 
+            style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          />
+        </div>
 
         <div className="relative z-10 flex justify-between w-full">
           {steps.map((step) => {
-            const isActive = step.id <= currentStep;
+            const isCompleted = step.id < currentStep;
+            const isActive = step.id === currentStep;
+            const isUpcoming = step.id > currentStep;
+
             return (
-              <div key={step.id} className="flex flex-col items-center">
+              <div key={step.id} className="flex flex-col items-center relative group">
                 <div 
                   className={cn(
-                    "w-6 h-6 rounded-full mt-6 flex items-center justify-center transition-colors duration-300",
-                    isActive ? "bg-[#0265AF]" : "bg-gray-300"
+                    "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] bg-white",
+                    isCompleted ? "bg-[#0265AF] border-[#0265AF] text-white" : "",
+                    isActive ? "border-[#0265AF] text-[#0265AF] shadow-[0_0_0_4px_rgba(2,101,175,0.1)] scale-110" : "",
+                    isUpcoming ? "border-gray-200 text-gray-400" : ""
                   )}
                 >
-                  {/* The image shows a small dot inside or just a filled circle. It looks like a simple dot. */}
+                  {isCompleted ? (
+                    <Check className="w-5 h-5 stroke-[3]" />
+                  ) : (
+                    <span className="text-sm font-bold">{step.id}</span>
+                  )}
                 </div>
                 <span 
                   className={cn(
-                    "mt-2  text-sm font-medium transition-colors duration-300 whitespace-nowrap",
-                    isActive ? "text-[#0265AF]" : "text-gray-400"
+                    "absolute top-14 text-xs font-bold transition-all duration-300 whitespace-nowrap",
+                    isActive ? "text-[#0265AF]" : isCompleted ? "text-[#0c243c]" : "text-gray-400"
                   )}
                 >
                   {step.label}
@@ -57,3 +68,4 @@ const StepProgress = ({ currentStep }: StepProgressProps) => {
 };
 
 export default StepProgress;
+
