@@ -13,7 +13,7 @@ interface PricingSidebarProps {
 }
 
 const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
-  const { dumpsterSize, pricing, serviceType, serviceFrequency } = useSelector((state: RootState) => state.booking);
+  const { dumpsterSize, pricing, serviceType, serviceFrequency, quoteData } = useSelector((state: RootState) => state.booking);
   const isCommercial = serviceType === "commercial";
 
   return (
@@ -52,7 +52,9 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
               <MapPin className="w-5 h-5 text-[#0c243c]" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#0c243c]">{isCommercial ? "42.4 Miles" : "0.0 Miles"}</h4>
+              <h4 className="text-sm font-bold text-[#0c243c]">
+                {quoteData?.distanceInMiles !== undefined ? `${quoteData.distanceInMiles} Miles` : (isCommercial ? "42.4 Miles" : "0.0 Miles")}
+              </h4>
               <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tight">Calculated Distance</p>
             </div>
         </div>
@@ -86,25 +88,40 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
 
         {/* Separator if needed */}
         <div className="border-t border-gray-50 pt-3 space-y-3.5">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500 font-medium">Subtotal</span>
-            <span className="font-bold text-[#0c243c]">${pricing.subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500 font-medium">Environmental Tax (6%)</span>
-            <span className="font-bold text-[#0c243c]">${pricing.tax.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500 font-medium">Service Area Fee</span>
-            <span className="font-bold text-[#0c243c]">${pricing.fee.toFixed(2)}</span>
-          </div>
+          {quoteData?.breakdown ? (
+            quoteData.breakdown.map((item: any, idx: number) => (
+              <div key={idx} className="flex justify-between text-sm">
+                <span className="text-gray-500 font-medium">{item.label}</span>
+                <span className="font-bold text-[#0c243c]">
+                  {item.amount < 0 ? `-$${Math.abs(item.amount).toFixed(2)}` : `$${item.amount.toFixed(2)}`}
+                </span>
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 font-medium">Subtotal</span>
+                <span className="font-bold text-[#0c243c]">${pricing.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 font-medium">Environmental Tax (6%)</span>
+                <span className="font-bold text-[#0c243c]">${pricing.tax.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 font-medium">Service Area Fee</span>
+                <span className="font-bold text-[#0c243c]">${pricing.fee.toFixed(2)}</span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="pt-4 border-t border-dashed border-gray-200 flex justify-between items-center">
            <span className="text-lg font-bold text-[#0c243c]">
              Total amount
            </span>
-           <span className="text-lg font-bold text-[#0c243c]">${pricing.total.toFixed(2)}</span>
+           <span className="text-lg font-bold text-[#0c243c]">
+             ${quoteData ? quoteData.totalPrice.toFixed(2) : pricing.total.toFixed(2)}
+           </span>
         </div>
 
         <Button 

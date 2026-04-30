@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar, CreditCard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import PricingSidebar from "./PricingSidebar";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -22,8 +22,32 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleInputChange = (field: string, value: string) => {
-    setCardData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    let formattedValue = value;
+
+    if (field === "number") {
+      const digitsOnly = value.replace(/\D/g, "");
+      const truncated = digitsOnly.slice(0, 16);
+      formattedValue = truncated.replace(/(\d{4})/g, "$1 ").trim();
+    } else if (field === "expiry") {
+      const digitsOnly = value.replace(/\D/g, "");
+      if (digitsOnly.length > 2) {
+        formattedValue = `${digitsOnly.slice(0, 2)}/${digitsOnly.slice(2, 4)}`;
+      } else {
+        if (value.endsWith('/') && value.length === 3) {
+          formattedValue = digitsOnly + '/';
+        } else {
+          formattedValue = digitsOnly;
+        }
+      }
+    } else if (field === "cvc") {
+      const digitsOnly = value.replace(/\D/g, "");
+      formattedValue = digitsOnly.slice(0, 4);
+    }
+
+    e.target.value = formattedValue;
+    setCardData(prev => ({ ...prev, [field]: formattedValue }));
   };
   const handleCheckout = async () => {
     if (!clientSecret) {
@@ -33,6 +57,18 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
 
     if (!cardData.number || !cardData.expiry || !cardData.cvc) {
       toast.error("Please fill in all card details.");
+      return;
+    }
+
+    const cardNumberDigits = cardData.number.replace(/\D/g, "");
+    if (cardNumberDigits.length !== 16) {
+      toast.error("Card number must be 16 digits.");
+      return;
+    }
+
+    const cvcDigits = cardData.cvc.replace(/\D/g, "");
+    if (cvcDigits.length < 3 || cvcDigits.length > 4) {
+      toast.error("CVV must be 3 or 4 digits.");
       return;
     }
 
@@ -156,38 +192,32 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
                 type="text"
                 placeholder="Enter name"
                 value={cardData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
+                onChange={(e) => handleInputChange("name", e)}
                 className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Card Number</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="0000 0000 0000 0000"
-                  value={cardData.number}
-                  onChange={(e) => handleInputChange("number", e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
-                />
-                <CreditCard className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              </div>
+              <input
+                type="text"
+                placeholder="0000 0000 0000 0000"
+                value={cardData.number}
+                onChange={(e) => handleInputChange("number", e)}
+                className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Expiry Date</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    value={cardData.expiry}
-                    onChange={(e) => handleInputChange("expiry", e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
-                  />
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  value={cardData.expiry}
+                  onChange={(e) => handleInputChange("expiry", e)}
+                  className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">CVV</label>
@@ -195,7 +225,7 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
                   type="text"
                   placeholder="****"
                   value={cardData.cvc}
-                  onChange={(e) => handleInputChange("cvc", e.target.value)}
+                  onChange={(e) => handleInputChange("cvc", e)}
                   className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
                 />
               </div>

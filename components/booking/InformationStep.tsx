@@ -3,10 +3,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { MapPin, Calendar, ChevronDown, Search, Loader2 } from "lucide-react";
-import { updateBookingData, updateContactInfo, setSubscriptionData } from "@/feature/user/bookingSlice";
+import { updateBookingData, updateContactInfo, setSubscriptionData, setQuoteData } from "@/feature/user/bookingSlice";
 import PricingSidebar from "./PricingSidebar";
 import { cn } from "@/lib/utils";
-import { useCreateSubscriptionMutation } from "@/redux/api/subscription/subscriptionApi";
+import { useCreateSubscriptionMutation, useGetQuoteMutation } from "@/redux/api/subscription/subscriptionApi";
 import { useGetServiceAreaByIdQuery } from "@/redux/api/service-area/serviceAreaApi";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -82,8 +82,12 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
   const { contactInfo, serviceType, dumpsterSize } = booking;
   const isCommercial = serviceType === "commercial";
 
-  const { data: areaData } = useGetServiceAreaByIdQuery(areaId || "");
-  const [createSubscription, { isLoading }] = useCreateSubscriptionMutation();
+  const [createSubscription, { isLoading: isSubscribing }] = useCreateSubscriptionMutation();
+  const [getQuote, { isLoading: isGettingQuote }] = useGetQuoteMutation();
+  
+  const { data: areaData, isLoading: isLoadingArea } = useGetServiceAreaByIdQuery(areaId || "", {
+    skip: !areaId
+  });
 
   // Google Maps Logic
   const { isLoaded } = useJsApiLoader({
@@ -248,6 +252,12 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
 
       const validDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+      // If quoteData is missing, user needs to get a quote first
+      if (!booking.quoteData) {
+        toast.error("Please calculate your quote first.");
+        return;
+      }
+
       const payload: any = {
         planId,
         dropoffAddress: booking.dropOffAddress,
@@ -300,6 +310,51 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
     } catch (error: any) {
       console.error("Subscription Error:", error);
       toast.error(error?.data?.message || "Failed to initiate booking. Please try again.");
+    }
+  };
+
+  const handleGetQuote = async () => {
+    try {
+      // Find the actual planId from area data
+      const selectedPlan = areaData?.data?.plans?.find((p: any) => p.id === dumpsterSize);
+      const planId = selectedPlan?.planId;
+
+      if (!planId) {
+        toast.error("Please select a service plan first.");
+        return;
+      }
+
+      if (!booking.dropOffAddress || !booking.dropoffLatitude || !booking.dropoffLongitude) {
+        toast.error("Please provide a valid drop-off address.");
+        return;
+      }
+
+      const validDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      
+      const payload: any = {
+        planId,
+        dropoffLatitude: booking.dropoffLatitude,
+        dropoffLongitude: booking.dropoffLongitude,
+      };
+
+      if (isCommercial) {
+        payload.serviceFrequency = booking.serviceFrequency || "1x/week";
+        payload.contractDuration = booking.contractDuration || "1 year";
+        payload.serviceDays = (booking.serviceDays || []).filter(day => validDays.includes(day));
+        
+        if (payload.serviceDays.length === 0) {
+          payload.serviceDays = ["Monday"]; // Fallback
+        }
+      }
+
+      const response = await getQuote(payload).unwrap();
+      if (response.success && response.data) {
+        dispatch(setQuoteData(response.data));
+        toast.success("Quote calculated successfully!");
+      }
+    } catch (error: any) {
+      console.error("Quote Error:", error);
+      toast.error(error?.data?.message || "Failed to calculate quote. Please try again.");
     }
   };
 
@@ -578,15 +633,29 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
             </div>
           </div>
         </div>
+
+        {/* Get Quote Button */}
+        <div className="pt-4 flex justify-end">
+          <button
+            onClick={handleGetQuote}
+            disabled={isGettingQuote}
+            className="bg-[#0c243c] text-white px-8 py-3 rounded-none font-bold text-sm hover:bg-[#1a3857] transition-colors flex items-center gap-2 disabled:opacity-70"
+          >
+            {isGettingQuote && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isGettingQuote ? "Calculating..." : "Get Quote"}
+          </button>
+        </div>
       </div>
 
       {/* Right Column: Pricing Sidebar */}
-      <div className="lg:col-span-4">
-        <PricingSidebar 
-           buttonText={isLoading ? "Processing..." : (isCommercial ? "Continue Booking" : "Confirm Booking")}
-           onButtonClick={handleConfirmBooking}
-        />
-      </div>
+      {booking.quoteData && (
+        <div className="lg:col-span-4">
+          <PricingSidebar 
+             buttonText={isSubscribing ? "Processing..." : (isCommercial ? "Continue Booking" : "Confirm Booking")}
+             onButtonClick={handleConfirmBooking}
+          />
+        </div>
+      )}
     </div>
   );
 };

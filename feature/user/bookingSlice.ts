@@ -32,6 +32,16 @@ export interface BookingState {
   dropoffLatitude?: number;
   dropoffLongitude?: number;
   distance?: number;
+  quoteData?: {
+    serviceType: string;
+    billingType: string;
+    basePrice: number;
+    distanceInMiles: number;
+    distanceCharge: number;
+    loyaltyDiscount: number;
+    totalPrice: number;
+    breakdown: { label: string; amount: number }[];
+  } | null;
 }
 
 const initialState: BookingState = {
@@ -65,6 +75,7 @@ const initialState: BookingState = {
   subscriptionId: null,
   dropoffLatitude: 0,
   dropoffLongitude: 0,
+  quoteData: null,
 };
 
 const bookingSlice = createSlice({
@@ -99,6 +110,9 @@ const bookingSlice = createSlice({
          state.pricing.total = action.payload.totalAmount;
       }
     },
+    setQuoteData: (state, action: PayloadAction<any>) => {
+      state.quoteData = action.payload;
+    },
     resetBooking: () => initialState,
   },
 });
@@ -110,6 +124,7 @@ export const {
   updateBookingData, 
   updateContactInfo, 
   setSubscriptionData,
+  setQuoteData,
   resetBooking 
 } = bookingSlice.actions;
 

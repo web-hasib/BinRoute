@@ -9,7 +9,14 @@ export const subscriptionApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+    getQuote: builder.mutation({
+      query: (data) => ({
+        url: "/subscriptions/quote",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
-export const { useCreateSubscriptionMutation } = subscriptionApi;
+export const { useCreateSubscriptionMutation, useGetQuoteMutation } = subscriptionApi;
