@@ -75,6 +75,14 @@ export const subscriptionApi = baseApi.injectEndpoints({
       }),
       providesTags: (result, error, id) => [{ type: "Report", id }],
     }),
+    submitReport: builder.mutation({
+      query: (data) => ({
+        url: "/reports/submit",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Report"],
+    }),
   }),
 });
 
@@ -89,4 +97,5 @@ export const {
   useCreateServiceUpdateRequestMutation,
   useGetMyReportsQuery,
   useGetReportByIdQuery,
+  useSubmitReportMutation,
 } = subscriptionApi;

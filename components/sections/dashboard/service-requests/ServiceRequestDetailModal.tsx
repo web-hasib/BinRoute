@@ -162,6 +162,21 @@ const ServiceRequestDetailModal = ({
               </div>
             )}
 
+            {/* Damage Picture (For Reports) */}
+            {type === "REPORT" && data.damagePicture && (
+              <div className="w-full mb-8">
+                <h4 className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-3 text-left">Attached Damage Proof</h4>
+                <div className="w-full h-64 overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={data.damagePicture} 
+                    alt="Damage proof" 
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Rejection Reason (if applicable) */}
             {data.status === "REJECTED" && (
               <div className="w-full bg-red-50 border border-red-100 p-6 mb-8 flex gap-4 text-left">

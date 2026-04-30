@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Info, RefreshCw } from "lucide-react";
+import { CustomPagination } from "@/components/ui/CustomPagination";
 
 interface ChangeFrequencyFormValues {
   frequency: string;
@@ -25,6 +26,8 @@ interface ChangeFrequencyModalProps {
 
 const ChangeFrequencyModal = ({ isOpen, onClose, onSubmitSuccess }: ChangeFrequencyModalProps) => {
   const [selectedSubscriptionId, setSelectedSubscriptionId] = React.useState<string | null>(null);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const limit = 10;
 
   const { register, handleSubmit, watch, setValue, reset } = useForm<ChangeFrequencyFormValues>({
     defaultValues: {
@@ -86,9 +89,13 @@ const ChangeFrequencyModal = ({ isOpen, onClose, onSubmitSuccess }: ChangeFreque
   };
 
   const [createServiceRequest, { isLoading: isSubmitting }] = useCreateServiceUpdateRequestMutation();
-  const { data: subsResponse, isLoading: isLoadingSubs } = useGetMySubscriptionsQuery({ limit: 20 });
+  const { data: subsResponse, isLoading: isLoadingSubs } = useGetMySubscriptionsQuery({ 
+    page: currentPage, 
+    limit: limit 
+  });
   
   const subscriptions = (subsResponse?.data?.data || []).filter((sub: any) => sub.plan?.category === "COMMERCIAL");
+  const meta = subsResponse?.data?.meta;
   const selectedSubscription = subscriptions.find((sub: any) => sub.id === selectedSubscriptionId);
 
   const onSubmit = async (data: ChangeFrequencyFormValues) => {
@@ -186,6 +193,20 @@ const ChangeFrequencyModal = ({ isOpen, onClose, onSubmitSuccess }: ChangeFreque
             ) : (
               <div className="py-20 text-center bg-gray-50 border border-dashed border-gray-200">
                 <p className="text-gray-400">No active subscriptions found.</p>
+              </div>
+            )}
+
+            {/* Pagination for selection */}
+            {meta && (
+              <div className="mt-6 pt-6 border-t border-gray-50">
+                <CustomPagination
+                  currentPage={currentPage}
+                  totalPages={meta.totalPages || meta.totalPage || 1}
+                  onPageChange={setCurrentPage}
+                  rowsPerPage={limit}
+                  onRowsPerPageChange={() => {}} // Rows per page is fixed in selection
+                  hideRowsPerPage={true}
+                />
               </div>
             )}
           </div>

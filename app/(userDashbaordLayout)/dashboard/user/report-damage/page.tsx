@@ -261,7 +261,7 @@ const ReportDamagePage = () => {
                     <div className="mt-8">
                         <CustomPagination
                             currentPage={currentPage}
-                            totalPages={meta.totalPage}
+                            totalPages={meta.totalPages || meta.totalPage || 1}
                             onPageChange={setCurrentPage}
                             rowsPerPage={limit}
                             onRowsPerPageChange={setLimit}
