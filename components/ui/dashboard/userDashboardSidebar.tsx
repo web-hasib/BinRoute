@@ -22,6 +22,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { useGetMeQuery } from "@/redux/api/auth/authApi";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const menuItems = [
   {
@@ -61,6 +63,9 @@ export function UserDashboardSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const { data: userResponse, isLoading } = useGetMeQuery(undefined);
+  const user = userResponse?.data;
 
   useEffect(() => {
     const handleResize = () => {
@@ -119,23 +124,38 @@ export function UserDashboardSidebar() {
       </div>
       {!collapsed && (
         <div className="bg-white mb- p-8 rounded-none shadow-sm flex flex-col items-center text-center">
-          <div className="relative w-24 h-24 mb-4">
-            <Image
-              src="/dummy.png" // Using existing dummy image
-              alt="Tomas Diko"
-              fill
-              className="rounded-full object-cover"
-            />
-          </div>
-          <h2 className="text-xl font-bold text-[#172C41]">Tomas Diko</h2>
-          <p className="text-gray-500 text-sm mb-6">@tomasdiko</p>
-          <Button
-            variant="outline"
-            onClick={() => setShowEditModal(true)}
-            className="w-full rounded-none border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
-          >
-            Edit Profile
-          </Button>
+          {isLoading ? (
+            <>
+              <Skeleton className="w-24 h-24 rounded-full mb-4" />
+              <Skeleton className="h-6 w-32 mb-2" />
+              <Skeleton className="h-4 w-24 mb-6" />
+              <Skeleton className="h-10 w-full rounded-none" />
+            </>
+          ) : (
+            <>
+              <div className="relative w-24 h-24 mb-4">
+                <Image
+                  src={user?.image || "/dummy.png"}
+                  alt={user?.fullName || "User"}
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
+              <h2 className="text-xl font-bold text-[#172C41]">
+                {user?.fullName || "User"}
+              </h2>
+              <p className="text-gray-500 text-sm mb-6">
+                @{user?.fullName?.toLowerCase().replace(/\\s+/g, "") || "user"}
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => setShowEditModal(true)}
+                className="w-full rounded-none border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+              >
+                Edit Profile
+              </Button>
+            </>
+          )}
         </div>
       )}
 

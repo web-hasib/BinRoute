@@ -28,6 +28,8 @@ export const baseApi = createApi({
     "Blog",
     "ServiceArea",
     "ServicePlan",
+    "Subscription",
+    
   ],
 });
 

@@ -16,7 +16,19 @@ export const subscriptionApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+    getMySubscriptions: builder.query({
+      query: (params) => ({
+        url: "/subscriptions/my-subscriptions",
+        method: "GET",
+        params, // pass { page, limit } etc.
+      }),
+      providesTags: ["Subscription"],
+    }),
   }),
 });
 
-export const { useCreateSubscriptionMutation, useGetQuoteMutation } = subscriptionApi;
+export const {
+  useCreateSubscriptionMutation,
+  useGetQuoteMutation,
+  useGetMySubscriptionsQuery,
+} = subscriptionApi;

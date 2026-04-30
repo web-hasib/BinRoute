@@ -214,6 +214,14 @@ const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+    updateUserProfile: builder.mutation<IBaseResponse, FormData>({
+      query: (body) => ({
+        url: "/users/update-user-profile",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
     verifyOtp: builder.mutation({
       query: (body: IVerifyOTPPayload) => ({
         url: "/auth/verify-reset-password-otp",
@@ -262,6 +270,7 @@ export const {
   useVerifyOtpMutation,
   useGetAllResourceQuery,
   useUpdateProfileMutation,
+  useUpdateUserProfileMutation,
   useGoogleLoginMutation,
   useAddAdminMutation,
   useAddDriverMutation,
