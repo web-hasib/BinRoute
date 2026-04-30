@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { logout } from "@/feature/user/userSlice";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +16,14 @@ const Navbar = () => {
 
   const dispatch = useDispatch();
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useSelector((state: RootState) => state.user);
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    if (href.startsWith("/#")) return false; // Handle hash links separately if needed
+    return pathname.startsWith(href);
+  };
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -69,7 +76,7 @@ const Navbar = () => {
               <div key={link.name} className="relative group">
                 <Link
                   href={link.href}
-                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.name === "Home"
+                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${isActive(link.href)
                     ? "text-[#0056B3]"
                     : "text-[#4A4A4A] hover:text-[#0056B3]"
                     }`}
