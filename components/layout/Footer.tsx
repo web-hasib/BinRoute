@@ -91,7 +91,7 @@ const Footer = () => {
             <ul className="flex flex-col gap-4 text-sm">
               <li>
                 <Link
-                  href="#"
+                  href="/services/service-areas"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Commercial Service
@@ -99,7 +99,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/services/service-areas"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Residential Service
@@ -107,7 +107,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/services/service-areas"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Dumpster Sizes
