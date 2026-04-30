@@ -24,6 +24,19 @@ export const subscriptionApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Subscription"],
     }),
+    getMyPaymentMethod: builder.query({
+      query: () => ({
+        url: "/subscriptions/my-payment-method",
+        method: "GET",
+      }),
+    }),
+    updatePaymentMethod: builder.mutation({
+      query: (data) => ({
+        url: "/payments/update-payment-method",
+        method: "PATCH",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -31,4 +44,6 @@ export const {
   useCreateSubscriptionMutation,
   useGetQuoteMutation,
   useGetMySubscriptionsQuery,
+  useGetMyPaymentMethodQuery,
+  useUpdatePaymentMethodMutation,
 } = subscriptionApi;
