@@ -34,7 +34,7 @@ const CustomerList = () => {
     const { data: customersData, isLoading } = useGetAllCustomersQuery({
       page: currentPage,
       limit: rowsPerPage,
-      seachTerm: debouncedSearchTerm,
+      searchTerm: debouncedSearchTerm,
     });
 
     const { data: statsData } = useGetCustomerStatsQuery({});

@@ -128,7 +128,7 @@ const SchedulePage = () => {
   const { data: scheduleData, isLoading } = useGetAllSchedulesQuery({
     page: currentPage,
     limit: rowsPerPage,
-    seachTerm: debouncedSearchTerm,
+    searchTerm: debouncedSearchTerm,
     category: activeService
   });
 

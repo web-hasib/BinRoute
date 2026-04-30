@@ -1,10 +1,33 @@
 import baseApi from "../baseApi";
 
+export interface IDriverSummary {
+    online: number;
+    offline: number;
+    inRoute: number;
+    total: number;
+}
+
+export interface IDashboardDriver {
+    id: string;
+    fullName: string;
+    image: string | null;
+    driverStatus: string | null;
+}
+
 export interface IDashboardStats {
     totalRevenue: number;
     totalCustomers: number;
     totalDrivers: number;
     activeWork: number;
+    serviceBooking: {
+        totalOrders: number;
+        commercial: { count: number; percentage: number };
+        rollOff: { count: number; percentage: number };
+    };
+    driverStatus: {
+        drivers: IDashboardDriver[];
+        summary: IDriverSummary;
+    };
     period: string;
 }
 

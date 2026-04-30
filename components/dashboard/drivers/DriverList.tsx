@@ -22,7 +22,7 @@ const DriverList = () => {
     const { data: driversData, isLoading } = useGetAllDriversQuery({
         page: currentPage,
         limit: rowsPerPage,
-        seachTerm: debouncedSearchTerm,
+        searchTerm: debouncedSearchTerm,
         driverStatus: activeFilter === "All" ? undefined : activeFilter.toUpperCase().replace(" ", "_")
     });
 

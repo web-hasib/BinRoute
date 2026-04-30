@@ -9,121 +9,9 @@ import { CustomPagination } from "@/components/ui/CustomPagination";
 import { Button } from "@/components/ui/button";
 import JobCompletionModal from "@/components/dashboard/jobs/JobCompletionModal";
 
-interface Job {
-  id: string;
-  customer: { name: string; email: string };
-  driverName: string;
-  serviceType: string;
-  location: string;
-  size: string;
-  status: string;
-  isCompleted: boolean;
-}
 
-const mockJobs: Job[] = [
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Sofia Lin",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-off",
-    isCompleted: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Jasper Mendez",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-off",
-    isCompleted: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Amara Patel",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-off",
-    isCompleted: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Liam Chen",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Pickup",
-    isCompleted: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Rosa Martinez",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Pickup",
-    isCompleted: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Ethan Gallagher",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Pickup",
-    isCompleted: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Maya Thompson",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-off",
-    isCompleted: true,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Noah Kim",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-off",
-    isCompleted: true,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Zara Ali",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-off",
-    isCompleted: true,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    driverName: "Aiden Brooks",
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-off",
-    isCompleted: true,
-  },
-];
 
-import { useGetAllJobsQuery } from "@/redux/api/adminDashboard/jobApi";
+import { useGetAllSchedulesQuery } from "@/redux/api/adminDashboard/jobApi";
 import { format } from "date-fns";
 import { useDebounce } from "@/hooks/useDebounce";
 
@@ -136,10 +24,10 @@ const JobsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const { data: jobsData, isLoading } = useGetAllJobsQuery({
+  const { data: jobsData, isLoading } = useGetAllSchedulesQuery({
     page: currentPage,
     limit: rowsPerPage,
-    seachTerm: debouncedSearchTerm,
+    searchTerm: debouncedSearchTerm,
     category: activeService
   });
 
@@ -154,37 +42,36 @@ const JobsPage = () => {
   const columns: ColumnDef<any>[] = [
     {
       header: "Job ID",
-      accessorKey: "jobCode",
-      cell: (job) => <span className="font-bold text-[#172C41]">#{job.jobCode || job.id.slice(-6).toUpperCase()}</span>
+      cell: (job) => <span className="font-bold text-[#172C41]">#{job.jobId ? job.jobId.slice(-6).toUpperCase() : "N/A"}</span>
     },
     {
       header: "Customer Name",
       cell: (job) => (
         <div className="py-2">
-          <p className="font-bold text-[#172C41]">{job.subscription?.user?.fullName || "N/A"}</p>
+          <p className="font-bold text-[#172C41]">{job.customerName || "N/A"}</p>
           <p className="text-xs text-gray-400 font-medium">{job.subscription?.user?.email || "N/A"}</p>
         </div>
       ),
     },
     {
       header: "Driver Name",
-      cell: (job) => <span className="font-medium text-gray-600">{job.driver?.fullName || "Unassigned"}</span>,
+      cell: (job) => <span className="font-medium text-gray-600">{job.driverName || job.driver?.fullName || "Unassigned"}</span>,
     },
     {
       header: "Location",
       cell: (job) => (
-        <p className="text-sm text-gray-600 font-medium truncate max-w-[200px]">{job.subscription?.dropoffAddress || "N/A"}</p>
+        <p className="text-sm text-gray-600 font-medium truncate max-w-[200px]">{job.location || "N/A"}</p>
       )
     },
     {
       header: "Size",
-      cell: (job) => <span>{job.subscription?.plan?.dumpsterSize || "N/A"}</span>,
+      cell: (job) => <span>{job.size || job.subscription?.plan?.dumpsterSize || "N/A"}</span>,
     },
     {
       header: "Status",
       cell: (job) => (
         <span className="px-3 py-1.5 bg-[#F8FAFC] text-gray-500 text-[11px] font-bold tracking-tight rounded-none border border-gray-100/50 uppercase">
-          {job.status.replace("_", " ")}
+          {job.status?.replace(/_/g, " ") || "N/A"}
         </span>
       ),
     },

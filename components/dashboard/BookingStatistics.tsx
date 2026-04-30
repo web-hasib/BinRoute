@@ -2,13 +2,20 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-const data = [
-  { name: "Roll-off services", value: 20, color: "#F97316" },
-  { name: "Commercial services", value: 30, color: "#0062FF" },
-  { name: "Complete services", value: 50, color: "#22C55E" },
-];
+interface BookingStatsProps {
+  stats: {
+    totalOrders: number;
+    commercial: { count: number; percentage: number };
+    rollOff: { count: number; percentage: number };
+  };
+}
 
-export const BookingStatistics = () => {
+export const BookingStatistics = ({ stats }: BookingStatsProps) => {
+  const data = [
+    { name: "Roll-off services", value: stats?.rollOff?.percentage || 0, color: "#F97316" },
+    { name: "Commercial services", value: stats?.commercial?.percentage || 0, color: "#0062FF" },
+  ];
+
   return (
     <div className="bg-white p-6 rounded-none border border-gray-100">
       <h3 className="text-lg font-bold text-[#1A1A1A] mb-6">Service booking Statistics</h3>
@@ -22,7 +29,7 @@ export const BookingStatistics = () => {
                 style={{ backgroundColor: item.color }}
               />
               <div>
-                <p className="text-sm font-bold text-[#1A1A1A]">{item.value}%</p>
+                <p className="text-sm font-bold text-[#1A1A1A]">{item.value.toFixed(2)}%</p>
                 <p className="text-sm text-[#999999]">{item.name}</p>
               </div>
             </div>
@@ -48,7 +55,7 @@ export const BookingStatistics = () => {
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-bold text-[#1A1A1A]">1200</span>
+            <span className="text-2xl font-bold text-[#1A1A1A]">{stats?.totalOrders || 0}</span>
             <span className="text-[10px] text-[#999999] uppercase font-medium">Total Order</span>
           </div>
         </div>

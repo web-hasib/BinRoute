@@ -92,12 +92,23 @@ const bookingApi = baseApi.injectEndpoints({
             query: (id) => `/subscriptions/${id}`,
             providesTags: ["Booking"],
         }),
+
+        // payment admin history 
+
+        getAllPaymentHistory: builder.query<any, any>({
+            query: (params) => ({
+                url: "/payments/admin/history",
+                params,
+            }),
+            providesTags: ["Booking"],
+        }),
     }),
 });
 
 export const {
     useGetAllBookingsQuery,
     useGetBookingByIdQuery,
+    useGetAllPaymentHistoryQuery
 } = bookingApi;
 
 export default bookingApi;

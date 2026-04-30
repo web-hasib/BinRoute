@@ -2,7 +2,7 @@
 
 import React from "react";
 import Container from "@/components/ui/container";
-import { Search, ChevronLeft, ChevronRight, Eye, Download, Plus, TrendingUp, Users, UserCheck, Briefcase } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Eye, Download, Plus, TrendingUp, Users, UserCheck, Briefcase, CreditCard, Clock, XCircle } from "lucide-react";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { CustomPagination } from "@/components/ui/CustomPagination";
 import Link from "next/link";
@@ -11,8 +11,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/booking/details/StatusBadge";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { useGetAllBookingsQuery, IBooking } from "@/redux/api/adminDashboard/bookingApi";
-import { useGetDashboardStatsQuery } from "@/redux/api/adminDashboard/analysisApi";
+import { useGetAllBookingsQuery, IBooking, useGetAllPaymentHistoryQuery } from "@/redux/api/adminDashboard/bookingApi";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -94,17 +93,17 @@ const BookingPage = () => {
   const { data: bookingData, isLoading, isError } = useGetAllBookingsQuery({
     page: currentPage,
     limit: rowsPerPage,
-    seachTerm: debouncedSearchTerm,
+    searchTerm: debouncedSearchTerm,
     category: activeService === "All" ? undefined : activeService,
   });
 
-  const { data: dashboardStats, isLoading: isStatsLoading } = useGetDashboardStatsQuery({ period: "weekly" });
+  const { data: paymentHistoryData, isLoading: isStatsLoading } = useGetAllPaymentHistoryQuery({});
 
-  const stats = dashboardStats?.data || {
-    totalRevenue: 0,
-    totalCustomers: 0,
-    totalDrivers: 0,
-    activeWork: 0
+  const stats = paymentHistoryData?.data || {
+    totalPayments: 0,
+    pending: { count: 0, percentage: 0, totalAmount: 0 },
+    succeeded: { count: 0, percentage: 0, totalAmount: 0 },
+    failed: { count: 0, percentage: 0, totalAmount: 0 },
   };
 
   const bookings = bookingData?.data?.data || [];
@@ -129,7 +128,7 @@ const BookingPage = () => {
       header: "Service Type",
       cell: (item) => (
         <span className="font-medium text-gray-600">
-            {item.plan?.category?.replace("_", " ").toLowerCase().split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") || "N/A"}
+          {item.plan?.category?.replace("_", " ").toLowerCase().split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") || "N/A"}
         </span>
       )
     },
@@ -145,8 +144,8 @@ const BookingPage = () => {
       header: "Status",
       cell: (item) => (
         <span className={cn(
-            "inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-none",
-            item.status === "ACTIVE" ? "bg-[#E8F5E9] text-[#4CAF50]" : "bg-red-50 text-red-500"
+          "inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-none",
+          item.status === "ACTIVE" ? "bg-[#E8F5E9] text-[#4CAF50]" : "bg-red-50 text-red-500"
         )}>
           {item.status}
         </span>
@@ -168,36 +167,36 @@ const BookingPage = () => {
     <Container>
       <PageHeader title="All Booking Service" />
 
-       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
-        <StatCard 
-          label="Total Revenue" 
-          value={`$${stats.totalRevenue.toLocaleString()}`} 
-          icon={TrendingUp} 
-          iconBgColor="bg-green-50" 
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
+        <StatCard
+          label="Total Revenue"
+          value={`$${stats.succeeded.totalAmount.toLocaleString()}`}
+          icon={TrendingUp}
+          iconBgColor="bg-green-50"
           iconColor="text-green-600"
           isLoading={isStatsLoading}
         />
-        <StatCard 
-          label="Total Customer" 
-          value={stats.totalCustomers.toString()} 
-          icon={Users} 
-          iconBgColor="bg-blue-50" 
+        <StatCard
+          label="Total Payments"
+          value={stats.totalPayments.toString()}
+          icon={CreditCard}
+          iconBgColor="bg-blue-50"
           iconColor="text-blue-600"
           isLoading={isStatsLoading}
         />
-        <StatCard 
-          label="Total Driver" 
-          value={stats.totalDrivers.toString()} 
-          icon={UserCheck} 
-          iconBgColor="bg-purple-50" 
-          iconColor="text-purple-600"
+        <StatCard
+          label="Pending Payments"
+          value={stats.pending.count.toString()}
+          icon={Clock}
+          iconBgColor="bg-orange-50"
+          iconColor="text-orange-500"
           isLoading={isStatsLoading}
         />
-        <StatCard 
-          label="Active Work" 
-          value={stats.activeWork.toString()} 
-          icon={Briefcase} 
-          iconBgColor="bg-red-50" 
+        <StatCard
+          label="Failed Payments"
+          value={stats.failed.count.toString()}
+          icon={XCircle}
+          iconBgColor="bg-red-50"
           iconColor="text-red-600"
           isLoading={isStatsLoading}
         />
@@ -219,17 +218,16 @@ const BookingPage = () => {
 
           <div className="flex items-center bg-gray-50 p-1 rounded-none border border-gray-100">
             {["ROLL_OFF", "COMMERCIAL"].map((category) => (
-                <button 
-                  key={category}
-                  onClick={() => setActiveService(category)}
-                  className={`px-6 py-2 text-sm font-bold transition-all ${
-                    activeService === category 
-                      ? "bg-[#0062FF] text-white rounded-none shadow-sm" 
-                      : "text-[#666666] hover:text-[#1A1A1A]"
+              <button
+                key={category}
+                onClick={() => setActiveService(category)}
+                className={`px-6 py-2 text-sm font-bold transition-all ${activeService === category
+                  ? "bg-[#0062FF] text-white rounded-none shadow-sm"
+                  : "text-[#666666] hover:text-[#1A1A1A]"
                   }`}
-                >
-                  {category.replace("_", " ").toLowerCase().split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} Service
-                </button>
+              >
+                {category.replace("_", " ").toLowerCase().split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} Service
+              </button>
             ))}
           </div>
         </div>
@@ -238,7 +236,7 @@ const BookingPage = () => {
         <DataTable columns={columns} data={bookings} isLoading={isLoading} className="border-none" />
 
         {/* Footer / Pagination */}
-        <CustomPagination 
+        <CustomPagination
           currentPage={currentPage}
           totalPages={meta?.totalPages || 1}
           onPageChange={setCurrentPage}

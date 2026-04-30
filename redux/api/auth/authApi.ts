@@ -164,19 +164,31 @@ const authApi = baseApi.injectEndpoints({
     }),
 
     // get all resourse (user)
-    getAllResource: builder.query<IUserResponse, void>({
-      query: () => ({
+    getAllResource: builder.query<IUserResponse, any>({
+      query: (params) => ({
         url: `/users`,
         method: "GET",
+        params,
       }),
       providesTags: ["User"],
     }),
 
+    getAdmins: builder.query<any, { status?: string }>({
+      query: ({ status }) => ({
+        url: `/users`,
+        method: "GET",
+        params: { role: "ADMIN", ...(status ? { status } : {}) },
+      }),
+      providesTags: ["User"],
+    }),
 
-
-
-
-    forgotPassword: builder.mutation({
+    toggleUserStatus: builder.mutation<IBaseResponse, string>({
+      query: (id) => ({
+        url: `/users/status/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["User"],
+    }),    forgotPassword: builder.mutation({
       query: (body: IForgotPasswordPayload) => ({
         url: "/auth/forgot-password",
         method: "POST",
@@ -210,6 +222,14 @@ const authApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "/users/update-profile",
         method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
+    updateGeneralProfile: builder.mutation<IBaseResponse, FormData>({
+      query: (body) => ({
+        url: "/users/update-general-profile",
+        method: "PUT",
         body,
       }),
       invalidatesTags: ["User"],
@@ -265,4 +285,7 @@ export const {
   useGoogleLoginMutation,
   useAddAdminMutation,
   useAddDriverMutation,
+  useUpdateGeneralProfileMutation,
+  useGetAdminsQuery,
+  useToggleUserStatusMutation,
 } = authApi;

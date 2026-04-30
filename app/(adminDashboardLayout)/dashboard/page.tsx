@@ -19,7 +19,16 @@ export default function DashboardOverview() {
     totalRevenue: 0,
     totalCustomers: 0,
     totalDrivers: 0,
-    activeWork: 0
+    activeWork: 0,
+    serviceBooking: {
+      totalOrders: 0,
+      commercial: { count: 0, percentage: 0 },
+      rollOff: { count: 0, percentage: 0 }
+    },
+    driverStatus: {
+      drivers: [],
+      summary: { online: 0, offline: 0, inRoute: 0, total: 0 }
+    }
   };
 
   const periodOptions = [
@@ -93,8 +102,8 @@ export default function DashboardOverview() {
           <RevenueChart />
         </div>
         <div className="space-y-4">
-          <BookingStatistics />
-          <DriverStatus />
+          <BookingStatistics stats={stats.serviceBooking} />
+          <DriverStatus data={stats.driverStatus} />
         </div>
       </div>
 
