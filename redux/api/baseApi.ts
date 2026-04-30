@@ -31,6 +31,7 @@ export const baseApi = createApi({
     "Subscription",
     "Job",
     "Payment",
+    "ServiceRequest",
   ],
 });
 

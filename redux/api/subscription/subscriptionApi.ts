@@ -37,6 +37,21 @@ export const subscriptionApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+    getMyServiceUpdateRequests: builder.query({
+      query: (params) => ({
+        url: "/service-update-requests/my-requests",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["ServiceRequest"],
+    }),
+    getServiceUpdateRequestById: builder.query({
+      query: (id) => ({
+        url: `/service-update-requests/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "ServiceRequest", id }],
+    }),
   }),
 });
 
@@ -46,4 +61,6 @@ export const {
   useGetMySubscriptionsQuery,
   useGetMyPaymentMethodQuery,
   useUpdatePaymentMethodMutation,
+  useGetMyServiceUpdateRequestsQuery,
+  useGetServiceUpdateRequestByIdQuery,
 } = subscriptionApi;
