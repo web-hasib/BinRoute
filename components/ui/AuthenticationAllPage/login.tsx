@@ -88,7 +88,7 @@ export default function LoginForm() {
           router.push("/dashboard");
         } else {
           const params = new URLSearchParams(window.location.search);
-          const callback = params.get("callback") || "/";
+          const callback = params.get("callbackUrl") || params.get("callback") || "/dashboard/user";
           router.push(callback);
         }
         router.refresh();
@@ -133,9 +133,9 @@ export default function LoginForm() {
         if (role === "SUPERADMIN" || role === "ADMIN") {
           router.push("/dashboard");
         } else {
-          // Optional: redirect normal users somewhere else
+          // Redirect normal users to their intended page or dashboard
           const params = new URLSearchParams(window.location.search);
-          const callback = params.get("callback") || "/";
+          const callback = params.get("callbackUrl") || params.get("callback") || "/dashboard/user";
           router.push(callback);
         }
 
