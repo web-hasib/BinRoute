@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { resetBooking } from "@/feature/user/bookingSlice";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useSearchParams } from "next/navigation";
+import { useGetServiceAreaByIdQuery } from "@/redux/api/service-area/serviceAreaApi";
 
 interface SuccessModalProps {
   onClose: () => void;
@@ -18,6 +20,16 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
   const { serviceType, dumpsterSize, pricing, dropOffAddress, subscriptionId, distance, contractDuration } = useSelector(
     (state: RootState) => state.booking,
   );
+
+  const searchParams = useSearchParams();
+  const areaId = searchParams.get("areaId");
+
+  const { data: areaData } = useGetServiceAreaByIdQuery(areaId || "", {
+    skip: !areaId,
+  });
+
+  const selectedPlan = areaData?.data?.plans?.find((p: any) => p.id === dumpsterSize);
+  const dumpsterName = selectedPlan?.plan?.dumpsterSize ? `${selectedPlan.plan.dumpsterSize} Dumpster` : (dumpsterSize ? dumpsterSize.replace("-", " ") : "N/A");
 
   const handleBackToDashboard = () => {
     dispatch(resetBooking());
@@ -56,7 +68,7 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
       head: [["Service Description", "Details"]],
       body: [
         ["Service Type", serviceType === "commercial" ? "Commercial Dumpster" : "Roll-Off Dumpster"],
-        ["Dumpster Size", dumpsterSize ? dumpsterSize.replace("-", " ") : "N/A"],
+        ["Dumpster Size", dumpsterName],
         ["Distance", displayDistance],
         ["Rental Duration", rentalDuration],
       ],
@@ -123,7 +135,7 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
           />
           <DetailRow
             label="Dumpster Size"
-            value={(dumpsterSize || "").replace("-", " ") + " Roll Off"}
+            value={dumpsterName}
             isUpper
           />
           <DetailRow

@@ -7,6 +7,8 @@ import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-maps/api";
+import { useSearchParams } from "next/navigation";
+import { useGetServiceAreaByIdQuery } from "@/redux/api/service-area/serviceAreaApi";
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -18,6 +20,15 @@ interface PricingSidebarProps {
 const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
   const { dumpsterSize, pricing, serviceType, serviceFrequency, quoteData, dropoffLatitude, dropoffLongitude } = useSelector((state: RootState) => state.booking);
   const isCommercial = serviceType === "commercial";
+  const searchParams = useSearchParams();
+  const areaId = searchParams.get("areaId");
+
+  const { data: areaData } = useGetServiceAreaByIdQuery(areaId || "", {
+    skip: !areaId,
+  });
+
+  const selectedPlan = areaData?.data?.plans?.find((p: any) => p.id === dumpsterSize);
+  const dumpsterName = selectedPlan?.plan?.dumpsterSize ? `${selectedPlan.plan.dumpsterSize} Dumpster` : (dumpsterSize ? dumpsterSize.replace("-", " ") : "2 Yard Dumpster");
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -117,7 +128,7 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
       <div className="bg-white border border-gray-100 p-6 space-y-5 shadow-sm">
         <div className="flex justify-between items-center pb-2">
           <span className="text-xs text-gray-500 font-medium">Dumpster Size</span>
-          <span className="text-xs font-bold text-[#0c243c]">{dumpsterSize?.replace("-", " ") || "2 Yard Dumpster"}</span>
+          <span className="text-xs font-bold text-[#0c243c]">{dumpsterName}</span>
         </div>
 
         {isCommercial && (
