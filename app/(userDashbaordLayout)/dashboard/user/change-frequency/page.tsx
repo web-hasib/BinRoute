@@ -131,7 +131,7 @@ const ServiceRequestsPage = () => {
       {/* Request History Table */}
       <div className="bg-white p-4 md:p-8 rounded-none shadow-sm">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-[#172C41]">Request History</h2>
+          <h2 className="text-2xl font-bold text-[#172C41]">Service update requests</h2>
           <div className="flex items-center gap-2">
             <span className="text-gray-400 text-sm font-medium">Sort by :</span>
             <div className="relative group">

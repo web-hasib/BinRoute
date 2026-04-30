@@ -50,9 +50,9 @@ const menuItems = [
     href: "/dashboard/user/billing-payment",
   },
   {
-    title: "Service Requests",
+    title: "Change Frequency",
     icon: FileText,
-    href: "/dashboard/user/service-requests",
+    href: "/dashboard/user/change-frequency",
   },
 ];
 
@@ -185,7 +185,7 @@ export function UserDashboardSidebar() {
                     )}
                   />
                   {/* Always show label on mobile; hide when collapsed on desktop */}
-                  <span className={cn("text-base", collapsed && "lg:hidden")}>
+                  <span className={cn("text-base md:text-sm xl:text-base whitespace-nowrap overflow-hidden", collapsed && "lg:hidden")}>
                     {item.title}
                   </span>
                 </Link>
