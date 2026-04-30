@@ -10,6 +10,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useSearchParams } from "next/navigation";
 import { useGetServiceAreaByIdQuery } from "@/redux/api/service-area/serviceAreaApi";
+import Link from "next/link";
 
 interface SuccessModalProps {
   onClose: () => void;
@@ -183,13 +184,15 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
 
         {/* Actions */}
         <div className="mt-10 flex gap-4">
+          <Link href="/dashboard/user" className="flex-1 w-full">
           <Button
-            onClick={handleBackToDashboard}
+            // onClick={handleBackToDashboard}
             variant="ghost"
-            className="flex-1 bg-[#F1F1F1] hover:bg-gray-200 text-[#4A4A4A] py-6 rounded-none font-bold"
+            className="w-full bg-[#F1F1F1] hover:bg-gray-200 text-[#4A4A4A] py-6 rounded-none font-bold"
           >
             Back to Dashboard
           </Button>
+          </Link>
           <Button 
             onClick={handleDownloadInvoice}
             className="flex-1 bg-[#0265AF] hover:bg-[#004d85] text-white py-6 rounded-none font-bold flex gap-2"
