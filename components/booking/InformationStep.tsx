@@ -361,7 +361,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Left Column: Forms */}
-      <div className="lg:col-span-8 space-y-6">
+      <div className={cn("space-y-6 transition-all duration-300", booking.quoteData ? "lg:col-span-8" : "lg:col-span-12")}>
         <button 
           onClick={onBack}
           className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-[#0265AF] transition-colors mb-4"
