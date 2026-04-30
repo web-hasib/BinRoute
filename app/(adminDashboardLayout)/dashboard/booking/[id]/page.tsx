@@ -6,35 +6,45 @@ import { ArrowLeft } from 'lucide-react'
 import { DetailCard } from '@/components/booking/details/DetailCard'
 import { DetailRow } from '@/components/booking/details/DetailRow'
 import { StatusBadge } from '@/components/booking/details/StatusBadge'
+import { Button } from '@/components/ui/button'
+
+import { useGetBookingByIdQuery } from '@/redux/api/adminDashboard/bookingApi'
+import { format } from 'date-fns'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const BookingDetailsPage = () => {
-    const { id } = useParams()
+    const { id } = useParams() as { id: string }
     const router = useRouter()
+    
+    const { data: bookingData, isLoading } = useGetBookingByIdQuery(id)
+    const booking = bookingData?.data
 
-    const mockData = {
-        customer: {
-            name: "John Doe",
-            email: "[EMAIL_ADDRESS]",
-            company: "The Walt Disney Company",
-            phone: "+(555) 123-4567"
-        },
-        service: {
-            name: "Roll off Service",
-            distance: "42 miles from dispatch center"
-        },
-        delivery: {
-            instructions: "Please place the dumpster on the left side of the driveway, away from the power lines."
-        },
-        schedule: {
-            dropUpDate: "Nov 15, 2023",
-            wasteDropUpDate: "Nov 22, 2023"
-        },
-        financial: {
-            basePrice: "$650.00",
-            surcharge: "$100.00",
-            total: "$750.00",
-            status: "Paid"
-        }
+    if (isLoading) {
+        return (
+            <Container className="bg-[#F6F6F6] min-h-screen">
+                <div className="animate-pulse space-y-6">
+                    <div className="h-8 w-64 bg-gray-200" />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="h-[600px] bg-gray-200" />
+                        <div className="space-y-6">
+                            <div className="h-64 bg-gray-200" />
+                            <div className="h-48 bg-gray-200" />
+                        </div>
+                    </div>
+                </div>
+            </Container>
+        )
+    }
+
+    if (!booking) {
+        return (
+            <Container className="bg-[#F6F6F6] min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-500">Booking not found</h2>
+                    <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+                </div>
+            </Container>
+        )
     }
 
     return (
@@ -48,8 +58,12 @@ const BookingDetailsPage = () => {
                     <ArrowLeft className="w-6 h-6 text-[#1A1A1A]" />
                 </button>
                 <h1 className="text-2xl font-bold text-[#001D3D] flex items-center gap-3">
-                    Booking Details #INV-{id || "88321"}
-                    <StatusBadge status="Complete" type="green" className="font-normal" />
+                    Booking Details #{booking.id.slice(-6).toUpperCase()}
+                    <StatusBadge 
+                        status={booking.status} 
+                        type={booking.status === "ACTIVE" ? "green" : "red"} 
+                        className="font-normal" 
+                    />
                 </h1>
             </div>
 
@@ -64,10 +78,10 @@ const BookingDetailsPage = () => {
                         </div>
 
                         <div className="p-0 border border-gray-100">
-                            <DetailRow label="Name" value={mockData.customer.name} />
-                            <DetailRow label="Email Address" value={mockData.customer.email} />
-                            <DetailRow label="Company Name" value={mockData.customer.company} />
-                            <DetailRow label="Phone Number" value={mockData.customer.phone} isLast />
+                            <DetailRow label="Name" value={booking.user?.fullName || booking.firstName + " " + booking.lastName} />
+                            <DetailRow label="Email Address" value={booking.email} />
+                            <DetailRow label="Company Name" value={booking.companyName || "N/A"} />
+                            <DetailRow label="Phone Number" value={booking.phone} isLast />
                         </div>
                         </div>
                         
@@ -75,7 +89,7 @@ const BookingDetailsPage = () => {
                             <h3 className="text-[20px] font-semibold text-[#515050]">Map view</h3>
                         </div>
                         <div className="p-6 h-[400px] flex items-center justify-center bg-gray-50 border border-dashed border-gray-200 m-6 mb-8 text-[#666666] font-medium">
-                            map will be here
+                            Map view showing {booking.dropoffAddress}
                         </div>
                     </div>
                 </div>
@@ -87,35 +101,36 @@ const BookingDetailsPage = () => {
                         <div className="px-6 py-5 border-b border-gray-100 bg-white">
                             <h3 className="text-[20px] font-semibold text-[#515050]">Service Information</h3>
                         </div>
-                        <DetailRow label="Service Name" value={mockData.service.name} />
-                        <DetailRow label="Calculated Distance" value={mockData.service.distance} isLast />
+                        <DetailRow label="Service Name" value={booking.plan?.category.replace("_", " ") + " - " + booking.plan?.dumpsterSize} />
+                        <DetailRow label="Waste Type" value={booking.wasteType} />
+                        <DetailRow label="Container Count" value={booking.containerCount.toString()} isLast />
                         
                         <div className="px-6 py-5 border-y border-gray-100 bg-white mt-1">
                             <h3 className="text-[20px] font-semibold text-[#515050]">Delivery Instructions</h3>
                         </div>
                         <div className="p-6">
                             <p className="text-sm text-[#71717A] leading-relaxed italic border border-gray-100 p-4 rounded-none bg-gray-50">
-                                &quot;{mockData.delivery.instructions}&quot;
+                                &quot;{booking.deliveryInstructions || "No instructions provided"}&quot;
                             </p>
                         </div>
                     </div>
 
                     {/* Box 3: Schedule Details */}
                     <DetailCard title="Schedule Details">
-                        <DetailRow label="Dumpster Drop up date" value={mockData.schedule.dropUpDate} />
-                        <DetailRow label="Waste Drop up date" value={mockData.schedule.wasteDropUpDate} isLast />
+                        <DetailRow label="Dumpster Drop up date" value={format(new Date(booking.dropoffDate), "MMM dd, yyyy")} />
+                        <DetailRow label="Waste Pickup date" value={booking.pickupDate ? format(new Date(booking.pickupDate), "MMM dd, yyyy") : "N/A"} isLast />
                     </DetailCard>
 
                     {/* Box 4: Financial Summary */}
                     <DetailCard 
                         title="Financial Summary" 
-                        headerAction={<StatusBadge status={mockData.financial.status} type="green" />}
+                        headerAction={<StatusBadge status={booking.status === "ACTIVE" ? "Paid" : "Pending"} type={booking.status === "ACTIVE" ? "green" : "red"} />}
                     >
-                        <DetailRow label="Base Price" value={mockData.financial.basePrice} />
-                        <DetailRow label="Distance Surcharge" value={mockData.financial.surcharge} />
+                        <DetailRow label="Base Price" value={`$${booking.totalAmount - booking.serviceAreaFee}`} />
+                        <DetailRow label="Service Area Fee" value={`$${booking.serviceAreaFee}`} />
                         <DetailRow 
                             label="Total Amount" 
-                            value={mockData.financial.total} 
+                            value={`$${booking.totalAmount}`} 
                             isLast 
                             className="bg-gray-50/50" 
                             valueClassName="text-lg font-bold"

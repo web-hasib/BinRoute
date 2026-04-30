@@ -23,6 +23,10 @@ import {
   PanelLeft,
   ChevronsUpDown,
   Menu,
+  LogIn,
+  ArrowBigDown,
+  ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDispatch } from "react-redux";
@@ -40,6 +44,7 @@ const menuGroups = [
       { title: "Drivers", icon: Contact, href: "/dashboard/drivers" },
       { title: "Jobs", icon: Briefcase, href: "/dashboard/jobs" },
       { title: "Customers", icon: Users, href: "/dashboard/customers" },
+      { title: "Service Requests", icon: RefreshCw, href: "/dashboard/service-requests" },
     ],
   },
   {
@@ -193,36 +198,19 @@ export function DashboardSidebar() {
       </nav>
 
       {/* Profile Section */}
-      <div className="p-4 border-t bg-[#F2F2F2] mt-auto">
-        <div className={cn("flex items-center gap-3", collapsed && "lg:justify-center")}>
-          <div className="relative h-10 w-10 shrink-0">
-            <Image
-              src={userImage}
-              alt="Avatar"
-              fill
-              className="rounded-full object-cover"
-              onError={() => {
-                if (!userImage.includes("ui-avatars.com")) {
-                  setUserImage("https://ui-avatars.com/api/?name=Handymates&background=0061AA&color=fff");
-                }
-              }}
-            />
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0 pr-2">
-              <p className="text-[15px] font-bold text-[#1A202C] truncate">Handymates</p>
-              <p className="text-xs text-[#718096] truncate">@Handymates</p>
-            </div>
-          )}
-          {!collapsed && (
-            <button
-              onClick={handleLogout}
-              className="text-[#718096] hover:text-[#0061AA] transition-colors ml-auto"
-            >
-              <ChevronsUpDown className="h-6 w-6" />
-            </button>
-          )}
-        </div>
+      <div className="p-4 border-t bg-gray-100 mt-auto">
+
+
+        {!collapsed && (
+          <button
+            onClick={handleLogout}
+            className="bg-gray-300 px-20 text-red-600 hover:text-red-800 transition-colors  flex items-center gap-2 p-2"
+          >
+            <span>Logout</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        )}
+
       </div>
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {

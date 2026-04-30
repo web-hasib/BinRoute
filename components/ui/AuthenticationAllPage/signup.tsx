@@ -43,14 +43,14 @@ export default function SignupForm() {
     }
 
     try {
-      await register({
+      const res = await register({
         fullName: `${firstName} ${lastName}`,
         email,
         password,
       }).unwrap();
 
-      toast.success("Account created successfully!");
-      router.push("/login");
+      toast.success(res.message || "Account created successfully!");
+      router.push(`/verify-otp?userId=${res.data.id}&type=email`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errorMessage =
@@ -66,7 +66,7 @@ export default function SignupForm() {
       <div className="flex-1 flex items-center justify-center bg-white  px-6">
         <div className="w-full max-w-xl bg-white rounded-2xl px-10 py-12 flex flex-col items-center">
           <Image
-            src="/logoHome.png"
+            src="/LogoHome.png"
             alt="Logo"
             width={96}
             height={56}

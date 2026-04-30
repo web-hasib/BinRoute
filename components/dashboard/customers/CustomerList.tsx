@@ -10,29 +10,37 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { StatCard } from "@/components/dashboard/StatCard";
 
+import { useGetAllCustomersQuery, useGetCustomerStatsQuery } from "@/redux/api/adminDashboard/customerApi";
+import { useDebounce } from "@/hooks/useDebounce";
+
 export interface Customer {
   id: string;
-  name: string;
-  phoneNumber: string;
-  emailAddress: string;
+  fullName: string;
+  phone: string | null;
+  email: string;
   totalBooking: number;
-  totalSpent: string;
+  totalSpent: number;
+  status: string;
 }
-
-const mockCustomers: Customer[] = Array(10).fill({
-  id: "1",
-  name: "Tomas Diko",
-  phoneNumber: "888 012 145",
-  emailAddress: "null@gmail.com",
-  totalBooking: 12,
-  totalSpent: "$2,300.00",
-});
 
 const CustomerList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState("Filter");
+
+    const { data: customersData, isLoading } = useGetAllCustomersQuery({
+      page: currentPage,
+      limit: rowsPerPage,
+      searchTerm: debouncedSearchTerm,
+    });
+
+    const { data: statsData } = useGetCustomerStatsQuery({});
+
+    const customers = (customersData?.data || []) as Customer[];
+    const meta = customersData?.meta || { total: 0, page: 1, limit: 10, totalPage: 1 };
 
     const filterOptions = [
       "New Clients",
@@ -49,11 +57,11 @@ const CustomerList = () => {
     };
 
     const columns: ColumnDef<Customer>[] = [
-      { header: "Customer Name", accessorKey: "name" },
-      { header: "Phone Number", accessorKey: "phoneNumber" },
-      { header: "Email Address", accessorKey: "emailAddress" },
+      { header: "Customer Name", accessorKey: "fullName" },
+      { header: "Phone Number", accessorKey: "phone", cell: (row) => <span>{row.phone || "N/A"}</span> },
+      { header: "Email Address", accessorKey: "email" },
       { header: "Total Booking", accessorKey: "totalBooking" },
-      { header: "Total Spent", accessorKey: "totalSpent" },
+      { header: "Total Spent", accessorKey: "totalSpent", cell: (row) => <span>${row.totalSpent.toLocaleString()}</span> },
       {
         header: "Action",
         cell: (customer) => (
@@ -77,21 +85,21 @@ const CustomerList = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <StatCard 
               label="Total Customer" 
-              value="1200" 
+              value={statsData?.data?.totalCustomers?.toString() || "0"} 
               icon={Users} 
               iconBgColor="bg-blue-50" 
               iconColor="text-blue-600"
             />
             <StatCard 
               label="Active Work" 
-              value="20" 
+              value={statsData?.data?.activeSubscriptions?.toString() || "0"} 
               icon={Briefcase} 
               iconBgColor="bg-red-50" 
               iconColor="text-red-600"
             />
             <StatCard 
               label="Total Revenue" 
-              value="$12,3620" 
+              value={`$${statsData?.data?.totalRevenue?.toLocaleString() || "0"}`} 
               icon={TrendingUp} 
               iconBgColor="bg-green-50" 
               iconColor="text-green-600"
@@ -105,6 +113,8 @@ const CustomerList = () => {
               <input
                 type="text"
                 placeholder="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0265AF]"
               />
             </div>
@@ -143,11 +153,11 @@ const CustomerList = () => {
             </div>
           </div>
 
-          <DataTable columns={columns} data={mockCustomers} className="border-none" />
+          <DataTable columns={columns} data={customers} isLoading={isLoading} className="border-none" />
 
           <CustomPagination
             currentPage={currentPage}
-            totalPages={4}
+            totalPages={meta.totalPage}
             onPageChange={setCurrentPage}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={setRowsPerPage}

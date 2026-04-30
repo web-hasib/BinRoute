@@ -10,15 +10,19 @@ import {
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { useVerifyOtpMutation } from "@/redux/api/auth/authApi";
+import { useVerifyOtpMutation, useEmailVerifyOtpMutation } from "@/redux/api/auth/authApi";
 
 export default function VerifyOtpPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+  const [verifyOtp, { isLoading: isResetLoading }] = useVerifyOtpMutation();
+  const [emailVerifyOtp, { isLoading: isEmailLoading }] = useEmailVerifyOtpMutation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("userId");
+  const type = searchParams.get("type");
+
+  const isLoading = isResetLoading || isEmailLoading;
 
   useEffect(() => {
     inputRefs.current[0]?.focus();
@@ -61,15 +65,24 @@ export default function VerifyOtpPage() {
     }
 
     try {
-      const response = await verifyOtp({
-        userId: id || "",
-        otpCode: otpString,
-      }).unwrap();
-      const accessToken = response.data?.accessToken;
-      toast.success(response.message || "OTP verified successfully!");
-      router.push(
-        "/reset-password?accessToken=" + encodeURIComponent(accessToken || ""),
-      );
+      if (type === "email") {
+        const response = await emailVerifyOtp({
+          userId: id || "",
+          otpCode: otpString,
+        }).unwrap();
+        toast.success(response.message || "Email verified successfully!");
+        router.push("/login");
+      } else {
+        const response = await verifyOtp({
+          userId: id || "",
+          otpCode: otpString,
+        }).unwrap();
+        const accessToken = response.data?.accessToken;
+        toast.success(response.message || "OTP verified successfully!");
+        router.push(
+          "/reset-password?accessToken=" + encodeURIComponent(accessToken || ""),
+        );
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.data?.message || "Invalid OTP. Please try again.");
@@ -82,7 +95,7 @@ export default function VerifyOtpPage() {
       <div className="flex-1 border border-blue-200 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
         <div className="w-full max-w-xl bg-white border border-blue-300 rounded-2xl px-10 py-12 flex flex-col items-center">
           <Image
-            src="/logoHome.png"
+            src="/LogoHome.png"
             alt="Login illustration"
             width={96}
             height={56}

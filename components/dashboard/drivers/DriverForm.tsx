@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, User, Phone, Mail, MapPin, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useAddDriverMutation } from "@/redux/api/auth/authApi";
+import { useCreateDriverMutation, useGetDriverByIdQuery, useUpdateDriverMutation } from "@/redux/api/adminDashboard/driverApi";
 import { toast } from "sonner";
 
 interface DriverFormProps {
@@ -17,7 +17,13 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
     const router = useRouter();
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [addDriver, { isLoading: isAdding }] = useAddDriverMutation();
+    
+    // API Hooks
+    const [createDriver, { isLoading: isCreating }] = useCreateDriverMutation();
+    const [updateDriver, { isLoading: isUpdating }] = useUpdateDriverMutation();
+    const { data: driverData, isLoading: isFetching } = useGetDriverByIdQuery(id || "", {
+        skip: mode === "add" || !id
+    });
 
     // Form States
     const [fullName, setFullName] = useState("");
@@ -27,12 +33,23 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
     const [contactEmail, setContactEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    // Populate form in edit mode
+    useEffect(() => {
+        if (mode === "edit" && driverData?.data) {
+            const driver = driverData.data;
+            setFullName(driver.fullName);
+            setPhone(driver.phone);
+            setEmail(driver.email);
+            setAddress(driver.address);
+        }
+    }, [mode, driverData]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         if (mode === "add") {
             try {
-                await addDriver({
+                await createDriver({
                     fullName,
                     phone,
                     email,
@@ -44,11 +61,32 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
             } catch (error: any) {
                 toast.error(error?.data?.message || "Failed to add driver");
             }
-        } else {
-            // Edit logic would go here if implemented
-            router.back();
+        } else if (mode === "edit" && id) {
+            try {
+                await updateDriver({
+                    id,
+                    data: {
+                        fullName,
+                        phone,
+                        email,
+                        address
+                    }
+                }).unwrap();
+                toast.success("Driver updated successfully");
+                router.back();
+            } catch (error: any) {
+                toast.error(error?.data?.message || "Failed to update driver");
+            }
         }
     };
+
+    if (isFetching) {
+        return (
+            <div className="min-h-[400px] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-[#0265AF]" />
+            </div>
+        );
+    }
 
     if (isSubmitted) {
         return (
@@ -206,10 +244,10 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                 </Button>
                 <Button 
                     type="submit"
-                    disabled={isAdding}
+                    disabled={isCreating}
                     className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white font-bold px-8 py-3 h-auto rounded-none min-w-[200px]"
                 >
-                    {isAdding ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Save Driver Information and Send Credentials"}
+                    {isCreating ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Save Driver Information and Send Credentials"}
                 </Button>
               </div>
             </div>
@@ -228,9 +266,10 @@ const DriverForm = ({ mode, id }: DriverFormProps) => {
                 </Button>
                 <Button 
                     type="submit"
-                    className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white font-bold px-8 py-3 h-auto rounded-none"
+                    disabled={isUpdating}
+                    className="bg-[#0265AF] hover:bg-[#0265AF]/90 text-white font-bold px-8 py-3 h-auto rounded-none min-w-[150px]"
                 >
-                    Save Changes
+                    {isUpdating ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Save Changes"}
                 </Button>
             </div>
           )}

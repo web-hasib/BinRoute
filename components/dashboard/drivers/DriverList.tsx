@@ -8,48 +8,44 @@ import { Button } from "@/components/ui/button";
 import { Search, Eye, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-export interface Driver {
-  id: string;
-  name: string;
-  phoneNumber: string;
-  emailAddress: string;
-  completedTask: number;
-  addedOn: string;
-  status: "Online" | "Off-Line" | "In route" | "Offline";
-  address: string;
-}
-
-const mockDrivers: Driver[] = Array(10).fill({
-  id: "1",
-  name: "Tomas Diko",
-  phoneNumber: "888 012 145",
-  emailAddress: "null@gmail.com",
-  completedTask: 30,
-  addedOn: "01 march 2026",
-  status: "Online",
-  address: "450 Industrial Way, North Portland",
-});
+import { useGetAllDriversQuery, IDriver } from "@/redux/api/adminDashboard/driverApi";
+import { format } from "date-fns";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const DriverList = () => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
     const [activeFilter, setActiveFilter] = useState("All");
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    const columns: ColumnDef<Driver>[] = [
-      { header: "Driver Name", accessorKey: "name" },
-      { header: "Phone Number", accessorKey: "phoneNumber" },
-      { header: "Email Address", accessorKey: "emailAddress" },
-      { header: "Completed Task", accessorKey: "completedTask" },
-      { header: "Added On", accessorKey: "addedOn" },
+    const { data: driversData, isLoading } = useGetAllDriversQuery({
+        page: currentPage,
+        limit: rowsPerPage,
+        searchTerm: debouncedSearchTerm,
+        driverStatus: activeFilter === "All" ? undefined : activeFilter.toUpperCase().replace(" ", "_")
+    });
+
+    const drivers = driversData?.data.data || [];
+    const meta = driversData?.data.meta;
+
+    const columns: ColumnDef<IDriver>[] = [
+      { header: "Driver Name", accessorKey: "fullName" },
+      { header: "Phone Number", accessorKey: "phone" },
+      { header: "Email Address", accessorKey: "email" },
+      { header: "Completed Task", accessorKey: "totalCompletedJobs" },
+      { 
+        header: "Added On", 
+        cell: (driver) => format(new Date(driver.createdAt), "dd MMM yyyy")
+      },
       { 
         header: "Status", 
         cell: (driver) => (
           <span className={cn(
-            "px-3 py-1 text-[11px] font-bold tracking-tight rounded-none",
-            driver.status === "Online" ? "bg-[#F0FDF4] text-[#22C55E]" : "bg-[#F8FAFC] text-gray-400"
+            "px-3 py-1 text-[11px] font-bold tracking-tight rounded-none uppercase",
+            driver.driverStatus === "ONLINE" ? "bg-[#F0FDF4] text-[#22C55E]" : "bg-red-50 text-red-500"
           )}>
-            {driver.status}
+            {driver.driverStatus}
           </span>
         ) 
       },
@@ -83,6 +79,8 @@ const DriverList = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search"
                 className="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0265AF]"
               />
@@ -114,11 +112,16 @@ const DriverList = () => {
             </div>
           </div>
 
-          <DataTable columns={columns} data={mockDrivers} className="border-none" />
+          <DataTable 
+            columns={columns} 
+            data={drivers} 
+            isLoading={isLoading}
+            className="border-none" 
+          />
 
           <CustomPagination
             currentPage={currentPage}
-            totalPages={4}
+            totalPages={meta?.totalPage || 1}
             onPageChange={setCurrentPage}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={setRowsPerPage}
