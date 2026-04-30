@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Camera, User, Phone, Mail, MapPin, Edit, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useChangePasswordMutation, useGetMeQuery, useUpdateProfileMutation } from "@/redux/api/auth/authApi";
+import { useChangePasswordMutation, useGetMeQuery, useUpdateGeneralProfileMutation } from "@/redux/api/auth/authApi";
 import { toast } from "sonner";
 
 const AdminInfo = () => {
@@ -22,16 +22,21 @@ const AdminInfo = () => {
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
+    
+    // Image States
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const { data: userData, isLoading: isUserLoading } = useGetMeQuery(undefined);
     const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
-    const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+    const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateGeneralProfileMutation();
 
     useEffect(() => {
         if (userData?.data) {
-            setName(userData.data.name || "");
+            setName(userData.data.fullName || userData.data.name || "");
             setPhone(userData.data.phone || "");
-            setAddress(userData.data.location || "");
+            setAddress(userData.data.address || userData.data.location || "");
         }
     }, [userData]);
 
@@ -54,16 +59,31 @@ const AdminInfo = () => {
         }
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleProfileSubmit = async () => {
         const formData = new FormData();
-        formData.append("name", name);
-        formData.append("phone", phone);
-        formData.append("location", address);
+        const profileData = {
+            fullName: name,
+            phone: phone,
+            address: address
+        };
+        formData.append("data", JSON.stringify(profileData));
+        if (imageFile) {
+            formData.append("image", imageFile);
+        }
 
         try {
             await updateProfile(formData).unwrap();
             toast.success("Profile updated successfully");
             setIsEditing(false);
+            // Optionally refetch user data here if tags are not enough
         } catch (error: any) {
             toast.error(error?.data?.message || "Failed to update profile");
         }
@@ -95,12 +115,22 @@ const AdminInfo = () => {
             <div className="flex justify-between items-end -mt-16 mb-8 relative z-10">
               <div className="relative w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-md">
                 <Image 
-                  src={userData?.data?.profileImage || "/driver_profile_avatar_1775316560340.png"}
-                  alt={userData?.data?.name || "Admin"}
+                  src={imagePreview || userData?.data?.image || userData?.data?.profileImage || "/driver_profile_avatar_1775316560340.png"}
+                  alt={userData?.data?.fullName || userData?.data?.name || "Admin"}
                   fill
                   className="object-cover"
                 />
-                <button className="absolute bottom-2 right-2 p-2 bg-[#0265AF] text-white rounded-full border-2 border-white hover:bg-[#0265AF]/90 transition-colors shadow-lg">
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handleImageChange} 
+                />
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-2 right-2 p-2 bg-[#0265AF] text-white rounded-full border-2 border-white hover:bg-[#0265AF]/90 transition-colors shadow-lg"
+                >
                     <Camera className="w-5 h-5 text-white" />
                 </button>
               </div>
@@ -118,7 +148,7 @@ const AdminInfo = () => {
                   <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
                   <input
                     type="text"
-                    value={isEditing ? name : userData?.data?.name || ""}
+                    value={isEditing ? name : userData?.data?.fullName || userData?.data?.name || ""}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Write down your name"
                     className="w-full pl-14 pr-4 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF] placeholder:text-gray-300"
@@ -158,7 +188,7 @@ const AdminInfo = () => {
                   <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 font-light" />
                   <input
                     type="text"
-                    value={isEditing ? address : userData?.data?.location || ""}
+                    value={isEditing ? address : userData?.data?.address || userData?.data?.location || ""}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Write down your address"
                     className="w-full pl-14 pr-4 py-4 bg-[#F8FAFC] border-none text-sm text-[#172C41] font-medium rounded-none min-h-[56px] focus:ring-1 focus:ring-[#0265AF] placeholder:text-gray-300"
@@ -179,7 +209,11 @@ const AdminInfo = () => {
                 ) : (
                     <>
                         <Button 
-                            onClick={() => setIsEditing(false)}
+                            onClick={() => {
+                                setIsEditing(false);
+                                setImageFile(null);
+                                setImagePreview(null);
+                            }}
                             variant="outline"
                             className="px-10 border-[#0265AF] text-[#0265AF] hover:bg-blue-50 h-auto py-3.5 rounded-none font-bold"
                         >

@@ -3,123 +3,133 @@
 import React from "react";
 import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
+import { Loader2, X } from "lucide-react";
+import { useCompleteJobMutation } from "@/redux/api/adminDashboard/jobApi";
+import { toast } from "sonner";
+import { format } from "date-fns";
 import Image from "next/image";
-
-interface Job {
-  id: string;
-  location: string;
-  serviceType: string;
-  status: string;
-  size: string;
-}
 
 interface JobCompletionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  job: Job | null;
+  job: any | null;
 }
 
 const JobCompletionModal = ({ isOpen, onClose, job }: JobCompletionModalProps) => {
+  const [completeJob, { isLoading: isCompleting }] = useCompleteJobMutation();
+
+  const handleComplete = async () => {
+    if (!job?.jobId) {
+        toast.error("Job ID not found");
+        return;
+    }
+
+    try {
+        await completeJob(job.jobId).unwrap();
+        toast.success("Job marked as completed");
+        onClose();
+    } catch (error: any) {
+        toast.error(error?.data?.message || "Failed to complete job");
+    }
+  };
+
   if (!job) return null;
+
+  const displayId = job.jobId ? `#${job.jobId.slice(-6).toUpperCase()}` : "N/A";
 
   return (
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title="The driver just wrapped up the job!"
-      className="max-w-3xl"
+      title=""
+      className="max-w-2xl p-0 overflow-hidden rounded-none border-none"
+      showCloseButton={false}
     >
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left Side: Summaries */}
-          <div className="space-y-6">
-            {/* Job Summary */}
-            <div className="bg-gray-50/50 border border-gray-100 p-6 space-y-4">
-              <h4 className="text-sm font-bold text-[#172C41] mb-2 tracking-tight">Job Summary <span className="font-normal text-gray-400">({job.id})</span></h4>
-              
-              <div className="space-y-3">
-                 <div className="flex justify-between items-center text-[13px] border-b border-gray-100 pb-3">
-                    <span className="text-gray-500 font-medium tracking-tight">Location</span>
-                    <span className="font-bold text-[#172C41]">{job.location}</span>
-                 </div>
-                 <div className="flex justify-between items-center text-[13px] border-b border-gray-100 pb-3">
-                    <span className="text-gray-500 font-medium tracking-tight">Service Name</span>
-                    <span className="font-bold text-[#172C41]">{job.serviceType}</span>
-                 </div>
-                 <div className="flex justify-between items-center text-[13px] border-b border-gray-100 pb-3">
-                    <span className="text-gray-500 font-medium tracking-tight">Job Type</span>
-                    <span className={job.status.includes('Drop-off') ? "font-bold text-[#FF630B]" : "font-bold text-[#22C55E]"}>
-                      {job.status}
-                    </span>
-                 </div>
-                 <div className="flex justify-between items-center text-[13px] border-b border-gray-100 pb-3">
-                    <span className="text-gray-500 font-medium tracking-tight">Dumpster Size</span>
-                    <span className="font-bold text-[#172C41]">{job.size}</span>
-                 </div>
-                 <div className="flex justify-between items-center text-[13px] border-b border-gray-100 pb-3">
-                    <span className="text-gray-500 font-medium tracking-tight">Included Weight</span>
-                    <span className="font-bold text-[#172C41]">1 Ton</span>
-                 </div>
-                 <div className="flex justify-between items-center text-[13px]">
-                    <span className="text-gray-500 font-medium tracking-tight">Date</span>
-                    <span className="font-bold text-[#172C41]">12 June 2026</span>
-                 </div>
-              </div>
-            </div>
+      <div className="relative bg-white">
+        {/* Header */}
+        <div className="p-8 flex justify-between items-center border-b border-gray-50">
+          <h2 className="text-2xl font-bold text-[#172C41]">The driver just wrapped up the job!</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 transition-colors rounded-full">
+            <X className="w-6 h-6 text-gray-400" />
+          </button>
+        </div>
 
-            {/* Calculation Summary */}
-            <div className="bg-gray-50/50 border border-gray-100 p-6 space-y-4">
-              <h4 className="text-sm font-bold text-[#172C41] mb-2 tracking-tight">Calculation Summary</h4>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-[13px] border-b border-gray-100 pb-3">
-                  <span className="text-gray-500 font-medium tracking-tight">Overage</span>
-                  <span className="font-bold text-[#172C41]">0.8 Tons</span>
+        <div className="p-8 space-y-8">
+          {/* Job Summary Table */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-[#172C41]">Job Summary ({displayId})</h3>
+            <div className="border border-gray-100 rounded-none overflow-hidden">
+              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                <span className="text-gray-500 font-medium">Location</span>
+                <span className="text-right font-bold text-[#172C41] truncate">{job.location || "N/A"}</span>
+              </div>
+              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                <span className="text-gray-500 font-medium">Service Name</span>
+                <span className="text-right font-bold text-[#172C41]">{job.serviceType || "N/A"}</span>
+              </div>
+              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                <span className="text-gray-500 font-medium">Job Type</span>
+                <div className="flex justify-end">
+                  <span className="px-3 py-1 bg-[#FFF4E5] text-[#FF630B] text-xs font-bold rounded-none uppercase">
+                    {job.jobType?.replace(/_/g, " ") || "N/A"}
+                  </span>
                 </div>
-                <div className="flex justify-between items-center text-[15px] pt-1">
-                  <span className="text-[#172C41] font-bold">Total Overage Fee</span>
-                  <span className="font-extrabold text-[20px] text-[#172C41]">$111.00</span>
-                </div>
+              </div>
+              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                <span className="text-gray-500 font-medium">Dumpster Size</span>
+                <span className="text-right font-bold text-[#172C41]">{job.size || job.subscription?.plan?.dumpsterSize || "N/A"}</span>
+              </div>
+              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                <span className="text-gray-500 font-medium">Included Weight</span>
+                <span className="text-right font-bold text-[#172C41]">1 ton</span>
+              </div>
+              <div className="grid grid-cols-2 p-4 hover:bg-gray-50/50 transition-colors">
+                <span className="text-gray-500 font-medium">Date</span>
+                <span className="text-right font-bold text-[#172C41]">
+                  {job.scheduledDate ? format(new Date(job.scheduledDate), "dd MMMM yyyy") : "N/A"}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Right Side: Photo & Notes */}
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-sm font-bold text-[#172C41] mb-3 tracking-tight">Proof of Service photo</h4>
-              <div className="relative h-[200px] w-full bg-gray-50 border border-gray-100 overflow-hidden">
+          {/* Proof of Service & Notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-[#172C41]">Proof of Service photo</h3>
+              <div className="aspect-video relative bg-gray-100 border border-gray-200 overflow-hidden">
                 <Image 
-                  src="/dummy.png" 
-                  alt="Proof of Service" 
+                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80" 
+                  alt="Proof of service" 
                   fill 
                   className="object-cover"
                 />
               </div>
             </div>
-
-            <div>
-              <h4 className="text-sm font-bold text-[#172C41] mb-3 tracking-tight">Job Notes</h4>
-              <div className="bg-[#F8FAFC] border border-gray-100 p-5 min-h-[140px]">
-                <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                  &apos;Gate code is 4432. Container must be placed on the left side of the loading dock. Avoid blocking the fire hydrant. Driver must wear high-vis vest at all times.&apos;
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-[#172C41]">Job Notes</h3>
+              <div className="p-6 bg-gray-50/50 border border-gray-100 min-h-[140px]">
+                <p className="text-sm text-gray-600 leading-relaxed italic">
+                  "Gate code is 4492. Container must be placed on the left side of the loading dock. Avoid blocking the fire hydrant. Driver must wear high-vis vest at all times."
                 </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer Actions */}
-        <div className="space-y-4 pt-4 border-t border-gray-50">
-          <Button 
-            className="w-full py-8 text-lg font-bold"
-            variant="primary"
-          >
-            Mark as Complete
-          </Button>
-          
-          <p className="text-[10px] text-gray-400 text-center leading-relaxed font-medium">
-            The driver will receive an automated notification <br /> via the <span className="font-bold text-gray-400">Labonte Disposal</span> mobile app.
-          </p>
+          {/* Action */}
+          <div className="space-y-6 pt-4">
+            <Button 
+              onClick={handleComplete}
+              disabled={isCompleting || job.status === "COMPLETED"}
+              className="w-full py-7 text-lg font-bold rounded-none shadow-lg transition-transform active:scale-[0.98]"
+              variant={"primary"}
+            >
+              {isCompleting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Mark as Complete"}
+            </Button>
+            
+            <p className="text-sm text-gray-400 text-center leading-relaxed max-w-sm mx-auto font-medium">
+              The driver will receive an automated notification via the <span className="font-bold">Labonte Disposal</span> mobile app.
+            </p>
+          </div>
         </div>
       </div>
     </Modal>

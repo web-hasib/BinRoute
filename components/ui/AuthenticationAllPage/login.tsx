@@ -73,19 +73,33 @@ export default function LoginForm() {
     try {
       const res = await googleLogin(response.credential).unwrap();
       if (res.success) {
-        const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = res.data;
+        const accessToken = res.accessToken || res.data?.accessToken;
+        const userData = res.data?.user || res.data;
+        const { id, fullName, email: userEmail, role } = userData;
+
         const user: UserProfile = {
-          id,
-          name: fullName,           // ← important mapping
-          email: userEmail,
-          role,
+          id: id || userData.id,
+          name: fullName || userData.fullName,
+          email: userEmail || userData.email,
+          role: role || userData.role,
         };
+
         dispatch(setCredentials({ user, accessToken }));
-        Cookies.set("accessToken", accessToken);
+
+        if (accessToken && accessToken !== "undefined") {
+          Cookies.set("accessToken", accessToken);
+        } else {
+          console.error("Token missing in Google login response:", res);
+        }
+
         toast.success("Login successfully with Google");
 
-        if (role === "SUPERADMIN" || role === "ADMIN") {
+        if (role?.toUpperCase() === "SUPERADMIN" || role?.toUpperCase() === "SUPER_ADMIN" || role?.toUpperCase() === "ADMIN") {
           router.push("/dashboard");
+        } else if (role?.toUpperCase() === "DRIVER") {
+          router.push("/dashboard"); // or wherever drivers should go
+        } else if (role?.toUpperCase() === "USER") {
+          router.push("/dashboard/user");
         } else {
           const params = new URLSearchParams(window.location.search);
           const callback = params.get("callbackUrl") || params.get("callback") || "/dashboard/user";
@@ -113,27 +127,40 @@ export default function LoginForm() {
       const response = await signIn({ email, password }).unwrap();
 
       if (response.success) {
-        // FIXED: API returns user fields directly in data (not nested under "user")
-        const { accessToken, refreshToken, id, fullName, email: userEmail, role, image, status } = response.data;
+        // Handle token whether it's in the root or inside the data object
+        const accessToken = response.accessToken || response.data?.accessToken;
+        const refreshToken = response.refreshToken || response.data?.refreshToken;
 
-        // Map to your UserProfile shape (interface expects "name", not "fullName")
+        // Extract user info from data
+        const userData = response.data?.user || response.data;
+        const { id, fullName, email: userEmail, role } = userData;
+
+        // Map to your UserProfile shape
         const user: UserProfile = {
-          id,
-          name: fullName,           // ← important mapping
-          email: userEmail,
-          role,
+          id: id || userData.id,
+          name: fullName || userData.fullName,
+          email: userEmail || userData.email,
+          role: role || userData.role,
         };
 
         dispatch(setCredentials({ user, accessToken }));
-        Cookies.set("accessToken", accessToken);
+
+        if (accessToken && accessToken !== "undefined") {
+          Cookies.set("accessToken", accessToken);
+        } else {
+          console.error("Token missing in login response:", response);
+        }
 
         toast.success("Login successfully");
 
         // Redirect logic
-        if (role === "SUPERADMIN" || role === "ADMIN") {
+        if (role?.toUpperCase() === "SUPERADMIN" || role?.toUpperCase() === "SUPER_ADMIN" || role?.toUpperCase() === "ADMIN") {
           router.push("/dashboard");
+        } else if (role?.toUpperCase() === "DRIVER") {
+          router.push("/dashboard"); // Adjust if drivers have a different path
+        } else if (role?.toUpperCase() === "USER") {
+          router.push("/dashboard/user");
         } else {
-          // Redirect normal users to their intended page or dashboard
           const params = new URLSearchParams(window.location.search);
           const callback = params.get("callbackUrl") || params.get("callback") || "/dashboard/user";
           router.push(callback);
@@ -156,7 +183,7 @@ export default function LoginForm() {
       <div className="flex-1 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
         <div className="w-full max-w-xl bg-white  rounded-2xl px-10 py-12 flex flex-col items-center">
           <Image
-            src="/logoHome.png"
+            src="/LogoHome.png"
             alt="Login illustration"
             width={96}
             height={56}

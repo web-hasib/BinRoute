@@ -37,7 +37,7 @@ export default function ForgetPasswordPage() {
       <div className="flex-1 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
         <div className="w-full max-w-xl bg-white rounded-2xl px-10 py-12 flex flex-col items-center">
           <Image
-            src="/logoHome.png"
+            src="/LogoHome.png"
             alt="Logo"
             width={96}
             height={56}

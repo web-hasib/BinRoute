@@ -70,8 +70,8 @@ const Navbar = () => {
                 <Link
                   href={link.href}
                   className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.name === "Home"
-                      ? "text-[#0056B3]"
-                      : "text-[#4A4A4A] hover:text-[#0056B3]"
+                    ? "text-[#0056B3]"
+                    : "text-[#4A4A4A] hover:text-[#0056B3]"
                     }`}
                 >
                   {link.name}
