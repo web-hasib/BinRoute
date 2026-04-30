@@ -94,7 +94,7 @@ const ServiceOverview = () => {
                 />
               ))}
             </div>
-            <Link href="/services/booking">
+            <Link href="/services/service-areas">
               <Button 
                 variant={"primary"}
                 onClick={() => handleBookNow("commercial")}
@@ -117,7 +117,7 @@ const ServiceOverview = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           <div className="lg:col-span-6 relative h-[450px] md:h-[650px]">
             <Image
-              src="/dummy.png"
+              src="/home-1.png"
               alt="Residential Waste Management"
               fill
               className="object-cover shadow-none"
@@ -138,7 +138,7 @@ const ServiceOverview = () => {
               ))}
             </div>
             <div className="flex justify-end">
-              <Link href="/services/booking">
+              <Link href="/services/service-areas">
                 <Button 
                   variant={"primary"}
                   onClick={() => handleBookNow("roll-off")}

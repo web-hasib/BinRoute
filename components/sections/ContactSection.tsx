@@ -9,6 +9,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useSubmitContactMutation } from "@/redux/api/contact/contactApi";
+import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
+
+const LIBRARIES: ("places")[] = ["places"];
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -21,6 +24,17 @@ type ContactFormData = z.infer<typeof contactSchema>;
 
 const ContactSection = () => {
   const [submitContact, { isLoading }] = useSubmitContactMutation();
+
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || "",
+    libraries: LIBRARIES
+  });
+
+  const officeLocation = React.useMemo(() => ({
+    lat: Number(process.env.NEXT_PUBLIC_OFFICE_LATITUDE),
+    lng: Number(process.env.NEXT_PUBLIC_OFFICE_LONGITUDE)
+  }), []);
 
   const {
     register,
@@ -169,19 +183,33 @@ const ContactSection = () => {
               </div>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="relative aspect-video w-full overflow-hidden shadow-lg">
-              <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-                <p className="transform -rotate-30 text-2xl font-bold text-black/50 text-center px-4 drop-shadow-md">
-                  here will be Dynamic map later
-                </p>
-              </div>
-              <Image
-                src="/contact/map.png"
-                alt="Worcester Map"
-                fill
-                className="object-cover"
-              />
+            {/* Dynamic Map */}
+            <div className="relative aspect-video w-full overflow-hidden shadow-lg bg-gray-100 border border-gray-100">
+               {isLoaded ? (
+                  <GoogleMap
+                    mapContainerStyle={{ width: "100%", height: "100%" }}
+                    center={officeLocation}
+                    zoom={15}
+                    options={{
+                      disableDefaultUI: true,
+                      zoomControl: true,
+                      styles: [
+                        {
+                          featureType: "all",
+                          elementType: "geometry.fill",
+                          stylers: [{ weight: "2.00" }],
+                        },
+                      ]
+                    }}
+                  >
+                    <MarkerF position={officeLocation} />
+                  </GoogleMap>
+               ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                    <Loader2 className="size-8 text-[#0061AA] animate-spin" />
+                    <span className="text-sm text-gray-400 font-medium">Loading map...</span>
+                  </div>
+               )}
             </div>
           </div>
         </div>

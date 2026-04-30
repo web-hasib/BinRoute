@@ -74,7 +74,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/services"
+                  href="/services/service-areas"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Service Areas

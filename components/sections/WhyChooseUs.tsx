@@ -42,7 +42,7 @@ const WhyChooseUs = () => {
           {/* Left Column: Image */}
           <div className="lg:col-span-4 relative min-h-[400px]">
             <Image
-              src="/dummy.png"
+              src="/home-2.png"
               alt="Why Choose Us"
               fill
               className="object-cover"
