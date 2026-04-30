@@ -4,8 +4,20 @@ import React from "react";
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const Hero = () => {
+  const [searchValue, setSearchValue] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (searchValue.trim()) {
+      router.push(`/services/service-areas?search=${encodeURIComponent(searchValue.trim())}`);
+    }
+  };
+
   return (
     <section className="relative h-[450px] sm:h-[550px] lg:h-[calc(90vh-100px)] w-full overflow-hidden flex items-center justify-center">
       {/* Background Image */}
@@ -34,19 +46,27 @@ const Hero = () => {
         </p>
 
         {/* Search Bar - Exactly like image */}
-        <div className="max-w-lg mx-auto flex flex-col sm:flex-row bg-white rounded-none overflow-hidden shadow-sm">
+        <form 
+          onSubmit={handleSearch}
+          className="max-w-lg mx-auto flex flex-col sm:flex-row bg-white rounded-none overflow-hidden shadow-sm"
+        >
           <div className="flex items-center flex-1 px-4 py-4 md:py-0 border-b md:border-b-0">
             <MapPin className="text-[#1f74ba] size-5 mr-3 shrink-0" />
             <input
               type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Enter your address..."
               className="w-full bg-transparent border-none outline-none text-gray-800 placeholder:text-gray-500 font-normal text-sm"
             />
           </div>
-          <Button className="bg-linear-to-t from-[#0061AA] to-[#279CF5] h-12 hover:bg-[#279CF5] text-white font-semibold rounded-none px-6 py-7 md:py-0 text-md transition-colors">
+          <Button 
+            type="submit"
+            className="bg-linear-to-t from-[#0061AA] to-[#279CF5] h-12 hover:bg-[#279CF5] text-white font-semibold rounded-none px-6 py-7 md:py-0 text-md transition-colors"
+          >
             Search
           </Button>
-        </div>
+        </form>
       </div>
     </section>
   );

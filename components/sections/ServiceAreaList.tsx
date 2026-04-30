@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, ArrowRight, ArrowDown, Search, Building2, Wrench, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useGetServiceAreasQuery } from "@/redux/api/service-area/serviceAreaApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJsApiLoader } from "@react-google-maps/api";
@@ -54,9 +54,12 @@ const ServiceAreaSkeleton = () => (
 );
 
 const ServiceAreaList = () => {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<Record<string, string>>({});
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
   const router = useRouter();
 
   // Google Maps Logic
@@ -66,7 +69,7 @@ const ServiceAreaList = () => {
     libraries: LIBRARIES
   })
 
-  const [addressInput, setAddressInput] = useState("")
+  const [addressInput, setAddressInput] = useState(initialSearch)
   const [suggestions, setSuggestions] = useState<GoogleAutocompleteSuggestion[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
