@@ -129,11 +129,22 @@ const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
 
         editorInstanceRef.current = editor;
 
+        // Force enable
+        editor.enableReadOnlyMode('lock');
+        editor.disableReadOnlyMode('lock');
+
         editor.model.document.on('change:data', () => {
           if (onDataChange) {
             onDataChange(editor.getData());
           }
         });
+
+        // Focus the editor after a short delay
+        setTimeout(() => {
+          if (isMounted) {
+             editor.editing.view.focus();
+          }
+        }, 500);
 
       } catch (error) {
         console.error("CKEditor Initialization Error:", error);
@@ -150,15 +161,25 @@ const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
         });
       }
     };
-  }, []); // Only run once on mount
+  }, []);
 
   return (
-    <div className="ck-editor-container">
+    <div 
+      className="ck-editor-container" 
+      style={{ 
+        position: 'relative', 
+        zIndex: 50, 
+        pointerEvents: 'auto',
+        minHeight: '400px'
+      }}
+    >
       <style>{`
         .ck-editor-container .ck-editor__editable {
           min-height: 400px;
           border-radius: 0 !important;
           background-color: white !important;
+          cursor: text !important;
+          pointer-events: auto !important;
         }
         .ck-editor-container .ck.ck-editor__main > .ck-editor__editable:focus {
           border-color: #0061AA !important;
@@ -175,11 +196,16 @@ const CustomEditor = ({ title = "", onDataChange }: CustomEditorProps) => {
         }
         .ck.ck-toolbar {
           border-radius: 0 !important;
+          pointer-events: auto !important;
         }
-        /* Ensure text visibility */
+        .ck.ck-editor__top {
+           pointer-events: auto !important;
+        }
         .ck-content {
            font-family: inherit;
            line-height: 1.6;
+           color: black !important;
+           opacity: 1 !important;
         }
       `}</style>
       <div ref={editorContainerRef} />
