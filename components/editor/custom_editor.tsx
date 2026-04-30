@@ -43,39 +43,75 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
     <div className="ck-editor-wrapper relative">
       <style>{`
         .ck-editor__editable {
-          min-height: 300px;
+          min-height: 400px;
           border-radius: 0 !important;
-          background-color: white !important;
-          color: black !important;
         }
+        
+        /* Styles to fix heading visibility */
+        .ck-content h1 {
+          display: block !important;
+          font-size: 2em !important;
+          font-weight: bold !important;
+          margin-top: 0.67em !important;
+          margin-bottom: 0.67em !important;
+        }
+        .ck-content h2 {
+          display: block !important;
+          font-size: 1.5em !important;
+          font-weight: bold !important;
+          margin-top: 0.83em !important;
+          margin-bottom: 0.83em !important;
+        }
+        .ck-content h3 {
+          display: block !important;
+          font-size: 1.17em !important;
+          font-weight: bold !important;
+          margin-top: 1em !important;
+          margin-bottom: 1em !important;
+        }
+        .ck-content h4 {
+          display: block !important;
+          font-size: 1em !important;
+          font-weight: bold !important;
+          margin-top: 1.33em !important;
+          margin-bottom: 1.33em !important;
+        }
+        .ck-content ul {
+          display: block !important;
+          list-style-type: disc !important;
+          margin-top: 1em !important;
+          margin-bottom: 1em !important;
+          padding-left: 40px !important;
+        }
+        .ck-content ol {
+          display: block !important;
+          list-style-type: decimal !important;
+          margin-top: 1em !important;
+          margin-bottom: 1em !important;
+          padding-left: 40px !important;
+        }
+        .ck-content strong, .ck-content b {
+          font-weight: bold !important;
+        }
+
         .ck-editor-wrapper .ck.ck-editor__main > .ck-editor__editable:focus {
-          border-color: #0061AA !important;
+          border-color: #500A82 !important;
           box-shadow: none !important;
-          background-color: white !important;
         }
         .ck-body {
           z-index: 9999 !important;
         }
         .ck-body-wrapper {
-             z-index: 10002 !important;
+          z-index: 10002 !important;
         }
         .ck.ck-dropdown__panel {
-             z-index: 10001 !important;
+          z-index: 10001 !important;
         }
         .ck.ck-toolbar {
-             border-radius: 0 !important;
-             background-color: #f8f9fa !important;
-        }
-        /* Fix for dimmed/disabled look in some production builds */
-        .ck.ck-editor__editable.ck-read-only {
-          background-color: #f4f4f4 !important;
-        }
-        .ck.ck-reset_all, .ck.ck-reset_all * {
-          opacity: 1 !important;
+          border-radius: 0 !important;
         }
       `}</style>
       <CKEditor
-        key="main-ckeditor"
         editor={ClassicEditor}
         config={{
           licenseKey: "GPL",
@@ -137,7 +173,6 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
               "alignment",
             ],
           },
-          placeholder: "Start typing here...",
           heading: {
             options: [
               { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
@@ -159,10 +194,7 @@ function CustomEditor({ title = "", onDataChange }: CustomEditorProps) {
               "tableProperties",
             ],
           },
-        }}
-        data={title || ""}
-        onReady={(editor) => {
-          console.log("CKEditor Ready");
+          initialData: title || "<p></p>",
         }}
         onChange={(event, editor) => {
           const data = editor.getData();
