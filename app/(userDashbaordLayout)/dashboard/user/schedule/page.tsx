@@ -1,15 +1,16 @@
-import UserSidebar from "@/components/sections/dashboard/UserSidebar";
+"use client";
+
+import React, { useState } from "react";
 import ScheduleTimeline from "@/components/sections/dashboard/ScheduleTimeline";
 import ScheduleCalendar from "@/components/sections/dashboard/ScheduleCalendar";
 
 export default function SchedulePage() {
+    const [activeTab, setActiveTab] = useState("roll");
+
     return (
         <main className="bg-gray-50/50 min-h-screen">
             <div className="flex flex-col gap-8">
-                {/* Activity Timeline with Toggle */}
-                <ScheduleTimeline />
-
-                {/* Schedule Calendar Grid */}
+                <ScheduleTimeline activeTab={activeTab} setActiveTab={setActiveTab} />
                 <ScheduleCalendar />
             </div>
         </main>
