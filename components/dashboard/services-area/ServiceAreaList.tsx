@@ -129,7 +129,7 @@ export const ServiceAreaList = () => {
           <Link href="/dashboard/services-area/add">
             <Button variant={"primary"} className="px-6 py-2.5 h-auto flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              Add New Services Area
+              Add Services Area
             </Button>
           </Link>
         </div>

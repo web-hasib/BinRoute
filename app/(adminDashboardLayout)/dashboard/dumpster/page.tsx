@@ -37,7 +37,7 @@ const DumpsterPage = () => {
         <Link href="/dashboard/dumpster/add">
           <Button className="h-10 px-6 flex items-center gap-2 bg-[#0062AA] text-white hover:bg-[#004e89] transition-colors rounded-none">
             <Plus className="size-4" />
-            Add New Dumpster
+            Add Dumpster
           </Button>
         </Link>
       </div>
@@ -110,4 +110,4 @@ const DumpsterPage = () => {
   );
 };
 
-export default DumpsterPage;
+export default DumpsterPage;

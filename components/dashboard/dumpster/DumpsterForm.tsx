@@ -177,7 +177,7 @@ const DumpsterForm = ({ initialData, mode }: DumpsterFormProps) => {
             disabled={isCreating}
             className="h-10 px-8 bg-[#0062AA] hover:bg-[#004e89] text-white font-bold rounded-none shadow-md transition-all active:scale-[0.98] disabled:opacity-70"
           >
-            {isCreating ? "Saving..." : (mode === "add" ? "Add Dumpster" : "Save New Changes")}
+            {isCreating ? "Saving..." : (mode === "add" ? "Save Dumpster" : "Save Changes")}
           </Button>
         </div>
       </div>
