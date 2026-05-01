@@ -12,7 +12,7 @@ Welcome to the **Tlabonte Frontend** project, a professional-grade Next.js dashb
 
 ## 📖 Developer Onboarding
 
-If you are a new developer joining the team, please **read the Development Guide** before making any changes:
+If you are a new developer joining the team, part of our onboarding process please **read the Development Guide** before making any changes:
 
 ### 👉 [**DEVELOPMENT_GUIDE.md**](./DEVELOPMENT_GUIDE.md)
 
