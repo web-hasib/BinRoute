@@ -68,7 +68,7 @@ const PrivacyPolicyPage = () => {
             <div className="border border-gray-200 shadow-sm overflow-hidden min-h-[500px]">
               <EditorClient 
                 key={privacyData?.data?.content}
-                title={editorContent}
+                initialData={privacyData?.data?.content || ""}
                 onDataChange={(val) => setEditorContent(val)}
               />
             </div>

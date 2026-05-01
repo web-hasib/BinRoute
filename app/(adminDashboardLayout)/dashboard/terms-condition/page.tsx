@@ -67,7 +67,7 @@ const TermsConditionPage = () => {
             <div className="border border-gray-200 shadow-sm overflow-hidden min-h-[500px]">
               <EditorClient 
                 key={termsData?.data?.content}
-                title={editorContent}
+                initialData={termsData?.data?.content || ""}
                 onDataChange={(val) => setEditorContent(val)}
               />
             </div>

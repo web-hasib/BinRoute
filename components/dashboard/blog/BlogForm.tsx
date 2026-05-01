@@ -5,7 +5,7 @@ import { ArrowLeft, X, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Container from "@/components/ui/container";
 import { useRouter } from "next/navigation";
-import CustomEditor from "@/components/editor/custom_editor";
+import EditorClient from "@/components/editor/EditorClient";
 import BlogSuccessModal from "./BlogSuccessModal";
 import { useCreateBlogMutation, useUpdateBlogMutation, IBlog } from "@/redux/api/blog/blogApi";
 import { toast } from "sonner";
@@ -291,9 +291,10 @@ const BlogForm: React.FC<BlogFormProps> = ({ mode, id, initialData }) => {
         <div className="space-y-2">
           <label className="text-sm font-bold text-[#0A2540]">Full Blog Content</label>
           <div className="bg-white overflow-hidden border border-gray-100">
-            <CustomEditor
+            <EditorClient
+              key={initialData?.id || "new-blog"}
               onDataChange={(data) => setContent(data)}
-              title={content}
+              initialData={initialData?.fullContent || ""}
             />
           </div>
         </div>

@@ -8,10 +8,10 @@ const Editor = dynamic(() => import("./custom_editor"), {
 });
 
 interface EditorClientProps {
-  title?: string;
+  initialData?: string;
   onDataChange?: (data: string) => void;
 }
 
-export default function EditorClient({ title = "My Editor", onDataChange }: EditorClientProps) {
-  return <Editor title={title} onDataChange={onDataChange} />;
+export default function EditorClient({ initialData = "", onDataChange }: EditorClientProps) {
+  return <Editor initialData={initialData} onDataChange={onDataChange} />;
 }
