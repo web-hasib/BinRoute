@@ -48,7 +48,7 @@ const ServiceItem = ({ service }: { service: any }) => {
             <div className="flex items-center gap-6">
                 <div className="relative w-24 h-16 bg-white rounded-none p-2 border border-gray-100">
                     <Image
-                        src="/dummy.png" // Using project dummy image
+                        src={service.plan?.image || "/dummy.png"}
                         alt={title}
                         fill
                         className="object-contain"
@@ -60,16 +60,16 @@ const ServiceItem = ({ service }: { service: any }) => {
                     <p className="text-gray-400 text-xs mt-0.5">{duration}</p>
                 </div>
             </div>
-            <Button className="bg-[#0061AA] hover:bg-[#003865] text-white font-semibold rounded-none px-8 py-6">
+            {/* <Button className="bg-[#0061AA] hover:bg-[#003865] text-white font-semibold rounded-none px-8 py-6">
                 View Schedule
-            </Button>
+            </Button> */}
         </div>
     );
 };
 
 const ActiveServices = () => {
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(5);
+    const [limit, setLimit] = useState(3);
 
     const { data: userRes } = useGetMeQuery(undefined);
     const user = userRes?.data;
