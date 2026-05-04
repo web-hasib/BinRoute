@@ -11,6 +11,7 @@ import { useGetServiceAreaByIdQuery } from "@/redux/api/service-area/serviceArea
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useJsApiLoader } from "@react-google-maps/api";
+import { z } from "zod";
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -35,18 +36,22 @@ interface InformationStepProps {
   onBack: () => void;
 }
 
-const businessTypes = [
-  "Commercial Office Building",
-  "Schools",
-  "Supermarkets",
-  "Manufacturing",
-  "Medical Facilities",
-  "Restaurants Full Service",
-  "Warehouse",
-  "Other",
-];
+const businessTypeEnum = z.enum([
+  'warehouse',
+  'commercial_office_building',
+  'medical_facilities',
+  'schools',
+  'supermarkets',
+  'manufacturing',
+  'restaurants',
+  'other',
+]);
 
-const wasteTypes = ["Trash", "Recycle"];
+const wasteTypeEnum = z.enum(['trash', 'recycle']);
+
+const formatLabel = (val: string) => {
+  return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
 
 const serviceFrequencies = [
   "1x/week",
@@ -250,6 +255,11 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         return;
       }
 
+      if (!isCommercial && (!booking.dropOffDate || !booking.pickUpDate)) {
+        toast.error("Please select both Drop-off Date and Pick-up Date for Roll-Off plans.");
+        return;
+      }
+
       const validDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
       // If quoteData is missing, user needs to get a quote first
@@ -264,8 +274,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         dropoffDate: new Date(booking.dropOffDate || Date.now()).toISOString(),
         dropoffLatitude: booking.dropoffLatitude || 23.8,
         dropoffLongitude: booking.dropoffLongitude || 90.42,
-        businessType: booking.businessType || "Other",
-        wasteType: booking.wasteType || "Trash",
+        businessType: booking.businessType || "other",
+        wasteType: booking.wasteType || "trash",
         firstName: contactInfo.firstName,
         lastName: contactInfo.lastName,
         email: contactInfo.email,
@@ -285,7 +295,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
           payload.serviceDays = ["Monday"]; // Fallback to at least one day
         }
       } else {
-        payload.pickupDate = booking.pickUpDate ? new Date(booking.pickUpDate).toISOString() : null;
+        payload.pickupDate = new Date(booking.pickUpDate).toISOString();
         payload.rentalDuration = "0"; // As per roll-off example
       }
 
@@ -309,7 +319,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       }
     } catch (error: any) {
       console.error("Subscription Error:", error);
-      toast.error(error?.data?.message || "Failed to initiate booking. Please try again.");
+      const msg = error?.data?.message || error?.data?.error || error?.message || error?.error;
+      toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
     }
   };
 
@@ -329,6 +340,11 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         return;
       }
 
+      if (!isCommercial && (!booking.dropOffDate || !booking.pickUpDate)) {
+        toast.error("Please select both Drop-off Date and Pick-up Date for Roll-Off plans.");
+        return;
+      }
+
       const validDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
       
       const payload: any = {
@@ -345,6 +361,9 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         if (payload.serviceDays.length === 0) {
           payload.serviceDays = ["Monday"]; // Fallback
         }
+      } else {
+        payload.dropoffDate = new Date(booking.dropOffDate).toISOString();
+        payload.pickupDate = new Date(booking.pickUpDate).toISOString();
       }
 
       const response = await getQuote(payload).unwrap();
@@ -354,7 +373,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       }
     } catch (error: any) {
       console.error("Quote Error:", error);
-      toast.error(error?.data?.message || "Failed to calculate quote. Please try again.");
+      const msg = error?.data?.message || error?.data?.error || error?.message || error?.error;
+      toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
     }
   };
 
@@ -467,8 +487,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
                   className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none appearance-none"
                 >
                   <option value="">Select Business Type</option>
-                  {businessTypes.map((type) => (
-                    <option key={type} value={type}>{type}</option>
+                  {businessTypeEnum.options.map((type) => (
+                    <option key={type} value={type}>{formatLabel(type)}</option>
                   ))}
                 </select>
                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -484,8 +504,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
                   className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none appearance-none"
                 >
                   <option value="">Select Waste Type</option>
-                  {wasteTypes.map((type) => (
-                    <option key={type} value={type}>{type}</option>
+                  {wasteTypeEnum.options.map((type) => (
+                    <option key={type} value={type}>{formatLabel(type)}</option>
                   ))}
                 </select>
                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
