@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
-import { MapPin, Calendar, ChevronDown, Search, Loader2 } from "lucide-react";
+import { MapPin, Calendar, ChevronDown, Search, Loader2, LocateFixed } from "lucide-react";
 import { updateBookingData, updateContactInfo, setSubscriptionData, setQuoteData } from "@/feature/user/bookingSlice";
 import PricingSidebar from "./PricingSidebar";
 import { cn } from "@/lib/utils";
@@ -169,36 +169,149 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       { placeId: suggestion.place_id, fields: ['geometry', 'formatted_address', 'address_components'] },
       (place, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
-          const postalCode = place.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
-          const allowedPostalCodes = areaData?.data?.postalCodes || [];
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          let postalCode = place.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
 
-          // Validation: Ensure the selected address is within the service area's allowed postal codes
-          if (allowedPostalCodes.length > 0) {
-            if (!postalCode || !allowedPostalCodes.includes(postalCode)) {
-              toast.error(
-                `The selected address (Zip: ${postalCode || "N/A"}) is outside the service area for ${areaData?.data?.name || "this location"}. Allowed Zips: ${allowedPostalCodes.join(", ")}`
-              );
-              setAddressInput("");
-              return;
+          const checkAndSetAddress = (finalPostalCode: string | undefined) => {
+            const allowedPostalCodes = areaData?.data?.postalCodes || [];
+            const areaName = areaData?.data?.name || "";
+            
+            const getComponent = (types: string[]) => place.address_components?.find((c: any) => c.types.some((t: string) => types.includes(t)))?.long_name;
+            const placeCity = getComponent(["locality", "sublocality", "administrative_area_level_3"]);
+            const placeState = getComponent(["administrative_area_level_1"]);
+            const areaCity = areaData?.data?.locationInfo?.city;
+            const areaState = areaData?.data?.locationInfo?.state;
+
+            const isCityMatch = Boolean(areaCity && placeCity && areaCity.toLowerCase() === placeCity.toLowerCase() && (!areaState || !placeState || areaState.toLowerCase() === placeState.toLowerCase()));
+
+            const serviceAreaDisplay = areaCity ? `${areaCity}${areaState ? `, ${areaState}` : ""}` : areaName;
+
+            // Validation: Ensure the selected address is within the service area's allowed postal codes or the city/state matches
+            if (allowedPostalCodes.length > 0 && !isCityMatch) {
+              if (!finalPostalCode || !allowedPostalCodes.includes(finalPostalCode)) {
+                toast.error(
+                  `The selected address is outside the service area for ${serviceAreaDisplay}.`
+                );
+                setAddressInput("");
+                return;
+              }
             }
+
+            setAddressInput(place.formatted_address || suggestion.description);
+            setShouldSearch(false);
+            setShowDropdown(false);
+
+            dispatch(updateBookingData({
+              dropOffAddress: place.formatted_address || suggestion.description,
+              dropoffLatitude: lat,
+              dropoffLongitude: lng
+            }));
+          };
+
+          if (!postalCode) {
+            // Fallback 1: Try to extract from text
+            const addressText = place.formatted_address || suggestion.description;
+            const zipMatch = addressText.match(/\b\d{5}\b/);
+            
+            if (zipMatch) {
+              checkAndSetAddress(zipMatch[0]);
+            } else {
+              // Fallback 2: Reverse Geocode to find missing zip
+              const geocoder = new window.google.maps.Geocoder();
+              geocoder.geocode({ location: { lat, lng } }, (results, geoStatus) => {
+                let foundZip = postalCode;
+                if (geoStatus === "OK" && results && results.length > 0) {
+                  for (const result of results) {
+                    const pc = result.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+                    if (pc) {
+                      foundZip = pc;
+                      break;
+                    }
+                  }
+                }
+                checkAndSetAddress(foundZip);
+              });
+            }
+          } else {
+            checkAndSetAddress(postalCode);
           }
-
-          const lat = place.geometry.location.lat()
-          const lng = place.geometry.location.lng()
-          
-          setAddressInput(place.formatted_address || suggestion.description)
-          setShouldSearch(false)
-          setShowDropdown(false)
-
-          dispatch(updateBookingData({
-            dropOffAddress: place.formatted_address || suggestion.description,
-            dropoffLatitude: lat,
-            dropoffLongitude: lng
-          }))
         }
       }
     )
   }
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsSearching(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, geoStatus) => {
+          setIsSearching(false);
+          if (geoStatus === "OK" && results && results.length > 0) {
+            const place = results[0];
+            
+            let postalCode = place.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+            const addressText = place.formatted_address;
+            
+            if (!postalCode) {
+              const zipMatch = addressText.match(/\b\d{5}\b/);
+              if (zipMatch) {
+                postalCode = zipMatch[0];
+              }
+            }
+
+            const allowedPostalCodes = areaData?.data?.postalCodes || [];
+            const areaName = areaData?.data?.name || "";
+            
+            const getComponent = (types: string[]) => place.address_components?.find((c: any) => c.types.some((t: string) => types.includes(t)))?.long_name;
+            const placeCity = getComponent(["locality", "sublocality", "administrative_area_level_3"]);
+            const placeState = getComponent(["administrative_area_level_1"]);
+            const areaCity = areaData?.data?.locationInfo?.city;
+            const areaState = areaData?.data?.locationInfo?.state;
+
+            const isCityMatch = Boolean(areaCity && placeCity && areaCity.toLowerCase() === placeCity.toLowerCase() && (!areaState || !placeState || areaState.toLowerCase() === placeState.toLowerCase()));
+
+            const serviceAreaDisplay = areaCity ? `${areaCity}${areaState ? `, ${areaState}` : ""}` : areaName;
+
+            if (allowedPostalCodes.length > 0 && !isCityMatch) {
+              if (!postalCode || !allowedPostalCodes.includes(postalCode)) {
+                toast.error(
+                  `Your current location is outside the service area for ${serviceAreaDisplay}.`
+                );
+                return;
+              }
+            }
+
+            setAddressInput(addressText);
+            setShouldSearch(false);
+            
+            dispatch(updateBookingData({
+              dropOffAddress: addressText,
+              dropoffLatitude: lat,
+              dropoffLongitude: lng
+            }));
+            
+            toast.success("Current location set successfully!");
+          } else {
+            toast.error("Could not determine address from your location.");
+          }
+        });
+      },
+      (error) => {
+        setIsSearching(false);
+        toast.error("Failed to get your location. Please check browser permissions.");
+      }
+    );
+  };
 
   const handleInputChange = (field: string, value: any) => {
     dispatch(updateBookingData({ [field]: value }));
@@ -412,9 +525,17 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
                   onFocus={() => {
                     if (suggestions.length > 0) setShowDropdown(true)
                   }}
-                  className="w-full pl-12 pr-12 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                  className="w-full pl-12 pr-20 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <button 
+                    type="button"
+                    onClick={handleGetCurrentLocation}
+                    className="text-[#0265AF] hover:text-[#1a3857] transition-colors p-1.5 bg-white rounded-md shadow-sm border border-gray-200 flex items-center justify-center group"
+                    title="Use current location"
+                  >
+                    <LocateFixed className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  </button>
                   {isSearching ? (
                     <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                   ) : (
@@ -443,7 +564,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
             {/* Dates */}
             <div className={cn("space-y-2", isCommercial && "md:col-span-2")}>
               <label className="text-sm font-semibold text-[#0c243c]">
-                Dempster Drop-off Date
+                Dumpster Drop-off Date
               </label>
               <div className="relative">
                 <input
