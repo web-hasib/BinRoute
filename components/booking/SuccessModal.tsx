@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { CheckCircle2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { resetBooking } from "@/feature/user/bookingSlice";
+import { clearServiceData } from "@/feature/user/bookingSlice";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useSearchParams } from "next/navigation";
@@ -33,7 +33,7 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
   const dumpsterName = selectedPlan?.plan?.dumpsterSize ? `${selectedPlan.plan.dumpsterSize} Dumpster` : (dumpsterSize ? dumpsterSize.replace("-", " ") : "N/A");
 
   const handleBackToDashboard = () => {
-    dispatch(resetBooking());
+    dispatch(clearServiceData());
     onClose();
   };
 
@@ -186,7 +186,7 @@ const SuccessModal = ({ onClose }: SuccessModalProps) => {
         <div className="mt-10 flex gap-4">
           <Link href="/dashboard/user" className="flex-1 w-full">
           <Button
-            // onClick={handleBackToDashboard}
+            onClick={handleBackToDashboard}
             variant="ghost"
             className="w-full bg-[#F1F1F1] hover:bg-gray-200 text-[#4A4A4A] py-6 rounded-none font-bold"
           >

@@ -113,6 +113,14 @@ const bookingSlice = createSlice({
     setQuoteData: (state, action: PayloadAction<any>) => {
       state.quoteData = action.payload;
     },
+    clearServiceData: (state) => {
+      // Keep contactInfo, reset everything else to initialState
+      const savedContactInfo = state.contactInfo;
+      return {
+        ...initialState,
+        contactInfo: savedContactInfo
+      };
+    },
     resetBooking: () => initialState,
   },
 });
@@ -125,6 +133,7 @@ export const {
   updateContactInfo, 
   setSubscriptionData,
   setQuoteData,
+  clearServiceData,
   resetBooking 
 } = bookingSlice.actions;
 

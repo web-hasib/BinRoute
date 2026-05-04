@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
-import { Wrench, Building2, CheckCircle2, Loader2 } from "lucide-react";
+import { Wrench, Building2, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -164,12 +164,12 @@ const ServiceSelectionStep = ({ onNext }: ServiceSelectionStepProps) => {
                   </p>
                 </div>
                 {isSelected && (
-                  <div className="absolute top-4 right-4 text-[#0265AF]">
-                    <CheckCircle2 className="w-5 h-5 fill-current text-white bg-[#0265AF] rounded-full" />
+                  <div className="absolute top-4 right-4 w-5 h-5 bg-[#0265AF] rounded-sm flex items-center justify-center">
+                    <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
                   </div>
                 )}
                 {!isSelected && (
-                  <div className="absolute top-4 right-4 w-5 h-5 border-2 border-gray-200 rounded-sm" />
+                  <div className="absolute top-4 right-4 w-5 h-5 border-2 border-gray-200 rounded-sm transition-colors hover:border-[#0265AF]" />
                 )}
               </div>
             );
@@ -224,12 +224,12 @@ const ServiceSelectionStep = ({ onNext }: ServiceSelectionStepProps) => {
                       <p className="text-[10px] text-gray-400 mt-2">Delivery and rental fees may apply.</p>
                     </div>
                     {isSelected && (
-                      <div className="absolute top-4 right-4 text-[#0265AF]">
-                        <CheckCircle2 className="w-5 h-5 fill-current text-white bg-[#0265AF] rounded-full" />
+                      <div className="absolute top-4 right-4 w-5 h-5 bg-[#0265AF] rounded-sm flex items-center justify-center">
+                        <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
                       </div>
                     )}
                     {!isSelected && (
-                      <div className="absolute top-4 right-4 w-5 h-5 border-2 border-gray-200 rounded-sm" />
+                      <div className="absolute top-4 right-4 w-5 h-5 border-2 border-gray-200 rounded-sm transition-colors hover:border-[#0265AF]" />
                     )}
                   </div>
                 );
