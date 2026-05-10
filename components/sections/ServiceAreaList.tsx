@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { MapPin, ArrowRight, ArrowDown, Search, Building2, Wrench, Loader2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useGetServiceAreasQuery } from "@/redux/api/service-area/serviceAreaApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJsApiLoader } from "@react-google-maps/api";
+import { ArrowDown, ArrowRight, Building2, Loader2, MapPin, Search, Wrench } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { CustomPagination } from "@/components/ui/CustomPagination";
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -60,7 +61,18 @@ const ServiceAreaList = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<Record<string, string>>({});
   const [search, setSearch] = useState(initialSearch);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const router = useRouter();
+
+  // Sync search state from URL parameters (safe, no infinite loop)
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    if (urlSearch !== search) {
+      setSearch(urlSearch);
+      setAddressInput(urlSearch);
+    }
+  }, [searchParams, search]);
 
   // Google Maps Logic
   const { isLoaded } = useJsApiLoader({
@@ -104,7 +116,10 @@ const ServiceAreaList = () => {
     const delayDebounce = setTimeout(() => {
       setIsSearching(true)
       autocompleteService.current?.getPlacePredictions(
-        { input: addressInput },
+        { 
+          input: addressInput,
+          componentRestrictions: { country: "us" }
+        },
         (predictions, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
             setSuggestions(predictions.slice(0, 5))
@@ -120,6 +135,18 @@ const ServiceAreaList = () => {
     return () => clearTimeout(delayDebounce)
   }, [addressInput, isLoaded, shouldSearch])
 
+  const updateUrl = (searchValue: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchValue) {
+      params.set("search", searchValue);
+    } else {
+      params.delete("search");
+    }
+    // Reset page to 1 on new search
+    setPage(1);
+    router.replace(`/services/service-areas?${params.toString()}`, { scroll: false });
+  };
+
   const handleSuggestionClick = (suggestion: GoogleAutocompleteSuggestion) => {
     setAddressInput(suggestion.description)
     setShouldSearch(false)
@@ -133,23 +160,40 @@ const ServiceAreaList = () => {
     placesService.current.getDetails(
       { placeId: suggestion.place_id, fields: ['address_components', 'formatted_address'] },
       (place, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.address_components) {
-          const postalCode = place.address_components.find(c => c.types.includes("postal_code"))?.long_name
+        if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place?.address_components) return;
+
+        const components = place.address_components;
+        const streetNumber = components.find(c => c.types.includes("street_number"))?.long_name || "";
+        const route = components.find(c => c.types.includes("route"))?.short_name || "";
+        const city = components.find(c => c.types.includes("neighborhood"))?.long_name ||
+          components.find(c => c.types.includes("sublocality"))?.long_name ||
+          components.find(c => c.types.includes("locality"))?.long_name || "";
+        const state = components.find(c => c.types.includes("administrative_area_level_1"))?.short_name || "";
+        const zip = components.find(c => c.types.includes("postal_code"))?.long_name || "";
+
+          const street = streetNumber && route ? `${streetNumber} ${route}` : (route || streetNumber);
           
-          if (postalCode) {
-            setSearch(postalCode)
-          } else {
-            // Fallback to formatted address or first part of address if no postal code
-            setSearch(suggestion.description)
-          }
-        }
+          let finalSearch = "";
+          if (street) finalSearch += `${street}, `;
+          if (city) finalSearch += `${city}, `;
+          if (state) finalSearch += `${state} `;
+          if (zip) finalSearch += zip;
+          
+          finalSearch = finalSearch.trim().replace(/,$/, "");
+          setSearch(finalSearch);
+          updateUrl(finalSearch);
       }
     )
   }
 
+  // Extract zip code from search string for backend API call (under the hood)
+  const backendSearchTerm = search.match(/\b\d{5}\b/)?.[0] || search;
+
   const { data: areasData, isLoading } = useGetServiceAreasQuery({
     isActive: true,
-    searchTerm: search,
+    searchTerm: backendSearchTerm,
+    page,
+    limit,
   });
 
   const handleToggle = (id: string) => {
@@ -205,7 +249,7 @@ const ServiceAreaList = () => {
                 onFocus={() => {
                   if (suggestions.length > 0) setShowDropdown(true)
                 }}
-                placeholder="Enter your address..."
+                placeholder="1114 Blue Hill Avenue, Dorchester Center, MA 02124"
                 className="w-full pl-10 pr-10 py-3 text-sm text-gray-700 bg-white rounded-md outline-none focus:ring-2 focus:ring-blue-400"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -230,10 +274,15 @@ const ServiceAreaList = () => {
             </div>
             <button
               onClick={() => {
-                if (addressInput) {
-                  setSearch(addressInput)
-                  setShowDropdown(false)
+                if (suggestions.length > 0 && addressInput.trim() !== "") {
+                  // Use the first suggestion to get the formatted address (street, city, state, zip)
+                  handleSuggestionClick(suggestions[0]);
+                } else {
+                  // If input is empty or no suggestions, search with raw input (empty string will show all)
+                  setSearch(addressInput);
+                  updateUrl(addressInput);
                 }
+                setShowDropdown(false);
               }}
               className="px-6 py-3 text-white text-sm font-semibold rounded-md transition hover:bg-blue-600 disabled:opacity-50"
               style={{ background: "#2563eb" }}
@@ -369,6 +418,21 @@ const ServiceAreaList = () => {
                 );
               })
             )}
+          </div>
+        )}
+        {/* Pagination */}
+        {!isLoading && areas.length > 0 && areasData?.meta && areasData.meta.totalPage > 1 && (
+          <div className="mt-8">
+            <CustomPagination
+              currentPage={page}
+              totalPages={areasData.meta.totalPage || 1}
+              onPageChange={(newPage) => setPage(newPage)}
+              rowsPerPage={limit}
+              onRowsPerPageChange={(newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              }}
+            />
           </div>
         )}
       </div>
