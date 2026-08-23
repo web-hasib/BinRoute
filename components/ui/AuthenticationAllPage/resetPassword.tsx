@@ -1,15 +1,13 @@
-// app/reset-password/page.tsx
 "use client";
 
 import Image from "next/image";
 import { useState, FormEvent } from "react";
-
 import { useSearchParams, useRouter } from "next/navigation";
-
 import { toast } from "sonner";
-
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { useResetPasswordMutation } from "@/redux/api/auth/authApi";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +42,7 @@ export default function ResetPasswordPage() {
         newPassword: Password,
       }).unwrap();
 
-      toast.success("Password reset successfully!");
+      toast.success("Password reset successfully! Redirecting to login...");
       setTimeout(() => router.push("/login"), 1800);
     } catch (err: any) {
       const errors = err?.data?.errors || err?.data?.message || [];
@@ -62,140 +60,140 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="">
-      <div className="flex h-screen w-full overflow-hidden font-sans ">
-
-
-        <div className="flex-1 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
-          <div className="w-full max-w-xl bg-white rounded-2xl px-10 py-12 flex flex-col items-center">
-            <Image
-              src="/LogoHome.png"
-              alt="Logo"
-              width={96}
-              height={56}
-              className="object-cover mb-6"
-            />
-
-            {/* Heading */}
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight text-center">
-              Enter new password
+    <div className="flex min-h-screen w-full font-sans bg-[#f8fafc]">
+      {/* Left: Form Panel */}
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6">
+        <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-xs p-8 sm:p-10 shadow-2xs">
+          <div className="flex flex-col items-center mb-8">
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Bin Route "
+                width={100}
+                height={40}
+                className="h-12 w-auto object-contain mb-4"
+              />
+            </Link>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">
+              Create New Password
             </h1>
-            <p className="text-sm text-gray-500 mb-8 text-center max-w-xs leading-relaxed">
-              Please create a new password to continue.
+            <p className="text-xs text-slate-500 text-center max-w-xs">
+              Please enter and confirm your new secure password below.
             </p>
+          </div>
 
-            <form onSubmit={handleSubmit} className="w-full space-y-5">
-              {/* New Password */}
-              <div>
-                <label
-                  htmlFor="newPassword"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* New Password */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="newPassword"
+                className="block text-xs font-semibold text-slate-700"
+              >
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="newPassword"
+                  value={Password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  required
+                  className="w-full px-3.5 py-2.5 pr-10 bg-[#f8fafc] border border-slate-200 rounded-xs text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#0061AA] focus:bg-white transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition"
                 >
-                  New Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="newPassword"
-                    value={Password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Please enter new password"
-                    required
-                    className="w-full px-4 py-3 text-gray-700 bg-gray-100 border-none focus:ring-2 focus:ring-blue-500 outline-none transition text-sm placeholder-gray-400 font-sans"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-300 hover:text-gray-500 transition"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {backendErrors.password && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {backendErrors.password}
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+              {backendErrors.password && (
+                <p className="text-[11px] text-red-500">
+                  {backendErrors.password}
+                </p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-xs font-semibold text-slate-700"
+              >
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  required
+                  className="w-full px-3.5 py-2.5 pr-10 bg-[#f8fafc] border border-slate-200 rounded-xs text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#0061AA] focus:bg-white transition-colors"
+                />
+              </div>
+              {backendErrors.confirmPassword && (
+                <p className="text-[11px] text-red-500">
+                  {backendErrors.confirmPassword}
+                </p>
+              )}
+              {Password &&
+                confirmPassword &&
+                Password !== confirmPassword && (
+                  <p className="text-[11px] text-red-500">
+                    Passwords do not match
                   </p>
                 )}
-              </div>
+            </div>
 
-              {/* Confirm Password */}
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
-                >
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="confirmPassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Please confirm password"
-                    required
-                    className="w-full px-4 py-3 text-gray-700 bg-gray-100 border-none focus:ring-2 focus:ring-blue-500 outline-none transition text-sm placeholder-gray-400 font-sans"
-                  />
-                </div>
-                {backendErrors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {backendErrors.confirmPassword}
-                  </p>
-                )}
-                {Password &&
-                  confirmPassword &&
-                  Password !== confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">
-                      Passwords do not match
-                    </p>
-                  )}
-              </div>
+            {/* Reset Button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="primary"
+              className="w-full py-2.5 mt-2"
+            >
+              {isLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+              <span>{isLoading ? "Updating Password..." : "Update Password"}</span>
+            </Button>
+          </form>
 
-              {/* Reset Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full text-white font-semibold py-3.5 px-4 cursor-pointer transition disabled:opacity-70 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 rounded-none"
-                style={{
-                  background: "#0061AA",
-                }}
-              >
-                {isLoading ? "Resetting..." : "Reset Password"}
-              </button>
-            </form>
-
-            {/* Divider line */}
-            <div className="w-full h-px bg-gray-100 my-6" />
-
-            {/* Back to Login */}
-            <p className="text-sm text-gray-500">
-              Remember your password?{" "}
-              <a
-                href="/login"
-                className="text-blue-700 font-semibold hover:text-blue-700 transition"
-              >
-                Back to Login
-              </a>
-            </p>
+          {/* Back to Login */}
+          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
+            <a
+              href="/login"
+              className="inline-flex items-center gap-1.5 text-xs text-[#0061AA] font-semibold hover:underline"
+            >
+              <ArrowLeft className="size-3" />
+              <span>Back to Login</span>
+            </a>
           </div>
         </div>
+      </div>
 
-        {/* Right: Login Panel — scrollable, centered */}
-        <div className="hidden md:block relative w-1/2  flex-shrink-0">
-          <Image
-            src="/hero.png"
-            alt="Login illustration"
-            fill
-            priority
-            className=""
-          />
-          {/* Dark Branded Overlay */}
-          <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
-            <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
-            <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
-              Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
-            </p>
-          </div>
+      {/* Right Hero Visual */}
+      <div className="hidden lg:block relative w-1/2 bg-slate-950">
+        <Image
+          src="/hero.png"
+          alt="Bin Route  Fleet"
+          fill
+          priority
+          className="object-cover opacity-40 filter brightness-90"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent" />
+        <div className="absolute bottom-12 left-12 right-12 text-white">
+          <span className="block text-xs font-bold uppercase tracking-wider text-sky-400 mb-2">
+            Password Update
+          </span>
+          <h2 className="text-2xl font-bold mb-2 text-white leading-snug">
+            Your Account Security Matters
+          </h2>
+          <p className="text-xs text-slate-300 leading-relaxed max-w-md">
+            Choose a strong password with a mix of letters, numbers, and symbols to protect your account.
+          </p>
         </div>
       </div>
     </div>

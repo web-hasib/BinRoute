@@ -2,81 +2,68 @@
 
 import React from "react";
 import Image from "next/image";
+import SectionHeader from "@/components/ui/SectionHeader";
 
 const AboutPartner = () => {
     return (
-        <section className="py-16 md:py-24 bg-[#F8FAFC]">
-            <div className="container mx-auto px-4">
+        <section className="py-20 md:py-24 bg-white">
+            <div className="container mx-auto max-w-6xl px-4">
                 {/* Top Badge and Header */}
-                <div className="text-center mb-16 flex flex-col items-center">
-                    <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wider text-[#0061AA] uppercase bg-[#E6F0F7] rounded-sm">
-                        What we are
-                    </span>
-                    <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] max-w-3xl leading-tight">
-                        Your Trusted Waste Management Partner
-                    </h2>
-                </div>
+                <SectionHeader
+                    badge="Who We Are"
+                    title="Your Direct Worcester Waste Management Partner"
+                    subtitle="With a deep commitment to customer satisfaction, our team ensures every delivery, swap, and haul-away is completed with care."
+                />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                     {/* Left Column: Text Content */}
-                    <div className="space-y-8">
-                        <h3 className="text-2xl md:text-3xl font-bold text-[#0A2540]">
-                            About Labonte Disposal
+                    <div className="lg:col-span-6 space-y-4">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-snug">
+                            Locally Grounded, Customer Focused
                         </h3>
-                        <div className="space-y-6 text-gray-600 leading-relaxed md:text-lg">
+                        <div className="space-y-3 text-slate-600 leading-relaxed text-xs sm:text-sm">
                             <p>
-                                At Labonte Disposal, we are committed to delivering dependable
-                                and efficient waste management solutions for both residential
-                                and commercial customers. With a strong focus on reliability
-                                and customer satisfaction, our team works diligently to ensure
-                                every delivery, pickup, and service request is handled with
-                                professionalism and care.
+                                At Bin Route , we are committed to delivering dependable and efficient waste management solutions for both residential and commercial customers. With a strong focus on reliability and clear communication, our team works diligently to ensure every service request is handled with professionalism and care.
                             </p>
                             <p>
-                                We understand that effective waste removal plays a critical role
-                                in keeping projects organized and businesses running smoothly.
-                                That's why we prioritize timely service, transparent pricing,
-                                and clear communication at every step. From small home
-                                cleanouts to large commercial operations, we provide solutions
-                                designed to meet diverse needs while maintaining consistent
-                                service standards.
+                                We understand that effective waste removal plays a critical role in keeping home cleanouts organized and construction projects running smoothly. That is why we prioritize on-time delivery, transparent flat-rate pricing, and dedicated local support every step of the way.
                             </p>
                         </div>
                     </div>
 
                     {/* Right Column: Image Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-4">
-                            <div className="relative aspect-[4/3] overflow-hidden shadow-md">
+                    <div className="lg:col-span-6 grid grid-cols-2 gap-3">
+                        <div className="space-y-3">
+                            <div className="relative aspect-4/3 overflow-hidden rounded-[2px] border border-slate-300 shadow-2xs">
                                 <Image
                                     src="/about/partner_grid_1.png"
-                                    alt="Service scene 1"
+                                    alt="Dumpster rental operation"
                                     fill
                                     className="object-cover"
                                 />
                             </div>
-                            <div className="relative aspect-square overflow-hidden shadow-md">
+                            <div className="relative aspect-square overflow-hidden rounded-[2px] border border-slate-300 shadow-2xs">
                                 <Image
                                     src="/about/partner_grid_2.png"
-                                    alt="Service scene 2"
+                                    alt="Residential cleanup"
                                     fill
                                     className="object-cover"
                                 />
                             </div>
                         </div>
-                        <div className="space-y-4 pt-8">
-                            <div className="relative aspect-[3/4] overflow-hidden shadow-md">
+                        <div className="space-y-3 pt-5">
+                            <div className="relative aspect-3/4 overflow-hidden rounded-[2px] border border-slate-300 shadow-2xs">
                                 <Image
                                     src="/about/partner_grid_3.png"
-                                    alt="Service scene 3"
+                                    alt="Commercial disposal equipment"
                                     fill
                                     className="object-cover"
                                 />
                             </div>
-                            <div className="relative aspect-[4/3] overflow-hidden shadow-md">
+                            <div className="relative aspect-4/3 overflow-hidden rounded-[2px] border border-slate-300 shadow-2xs">
                                 <Image
                                     src="/about/partner_grid_4.png"
-                                    alt="Service scene 4"
+                                    alt="Driver and delivery truck"
                                     fill
                                     className="object-cover"
                                 />

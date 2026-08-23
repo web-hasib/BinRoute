@@ -18,7 +18,6 @@ const BlogGrid = () => {
     const [activeCategory, setActiveCategory] = useState("All");
     const [page, setPage] = useState(1);
     
-    // Add sorting state if needed, here keeping it simple
     const limit = 6;
     const searchTerm = activeCategory === "All" ? "" : activeCategory;
 
@@ -34,7 +33,6 @@ const BlogGrid = () => {
     const meta = blogsResponse?.data?.meta;
     const totalPages = meta?.totalPage || 1;
 
-    // Build pagination array
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
     const handlePrevious = () => {
@@ -46,64 +44,59 @@ const BlogGrid = () => {
     };
 
     return (
-        <section className="py-16 md:py-24 bg-white">
-            <div className="container mx-auto px-4">
+        <section className="py-16 md:py-20 bg-white">
+            <div className="container mx-auto max-w-6xl px-4">
                 {/* Header */}
-                <div className="mb-12">
-                    <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] mb-4">
-                        Latest blogs
+                <div className="mb-8">
+                    <span className="block text-xs font-bold uppercase tracking-wider text-[#0060AF] mb-2">
+                        Resource Center
+                    </span>
+                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 mb-2">
+                        Waste Management Resources & Guides
                     </h2>
-                    <p className="text-gray-600 max-w-3xl">
-                        Here, we share Dumpster rental services tips, destination guides,
-                        and stories that inspire your next booking
+                    <p className="text-slate-600 text-xs sm:text-sm max-w-2xl">
+                        Explore practical disposal advice, dumpster sizing charts, permit tips, and recycling best practices for Worcester County projects.
                     </p>
                 </div>
 
                 {/* Filters and Sort */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-3 border-b border-slate-100">
                     <div className="flex flex-wrap gap-2">
                         {categories.map((cat) => (
                             <button
                                 key={cat}
                                 onClick={() => {
                                     setActiveCategory(cat);
-                                    setPage(1); // Reset page on category change
+                                    setPage(1);
                                 }}
-                                className={`px-5 py-2 text-sm font-semibold transition-colors duration-300 ${activeCategory === cat
-                                        ? "bg-[#0061AA] text-white"
-                                        : "text-gray-600 hover:text-[#0061AA]"
-                                    }`}
+                                className={`px-3.5 py-1.5 text-xs font-bold rounded-[2px] border transition-all cursor-pointer ${
+                                    activeCategory === cat
+                                        ? "bg-[#0060AF] text-white border-[#0060AF] shadow-xs"
+                                        : "bg-white text-slate-700 border-slate-300 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                                }`}
                             >
                                 {cat}
                             </button>
                         ))}
-                    </div>
-
-                    <div className="flex items-center gap-3 self-end md:self-auto">
-                        <span className="text-sm font-medium text-gray-500">Sort by :</span>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-sm font-semibold text-[#0A2540] border border-gray-100">
-                            Newest
-                            <ChevronDown className="size-4" />
-                        </button>
                     </div>
                 </div>
 
                 {/* Grid */}
                 {isLoading ? (
                     <div className="flex justify-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0061AA]"></div>
+                        <div className="size-7 rounded-full border-2 border-[#0060AF] border-t-transparent animate-spin"></div>
                     </div>
                 ) : (
                     <>
                         {blogs.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                                {blogs.map((post) => (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+                                {blogs.map((post: any) => (
                                     <BlogCard 
                                         key={post.id} 
                                         id={post.id}
-                                        category={post.category}
+                                        category={post.category || "Guide"}
                                         date={post.createdAt ? format(new Date(post.createdAt), "MMM dd, yyyy") : ""}
-                                        readTime={`${post.readingTime} minutes`}
+                                        readTime={`${post.readingTime || 5} min read`}
                                         title={post.title}
                                         excerpt={post.shortDescription}
                                         image={post.thumbnail || post.coverPhoto || "/blog/hero_bg.png"}
@@ -111,29 +104,30 @@ const BlogGrid = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-16 text-gray-500 text-lg">
-                                No blogs found for this category.
+                            <div className="text-center py-14 text-slate-500 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-[2px]">
+                                No articles found for this category.
                             </div>
                         )}
                         
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="flex items-center justify-center gap-2 mt-8">
+                            <div className="flex items-center justify-center gap-1.5 mt-8">
                                 <button 
                                     onClick={handlePrevious}
                                     disabled={page === 1}
-                                    className="p-2 border border-gray-200 text-gray-400 hover:text-[#0061AA] hover:border-[#0061AA] transition-all disabled:opacity-50 disabled:hover:text-gray-400 disabled:hover:border-gray-200"
+                                    className="p-2 border border-slate-300 rounded-[2px] text-slate-500 hover:text-[#0060AF] hover:border-[#0060AF] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                                 >
-                                    <ChevronLeft className="size-5" />
+                                    <ChevronLeft className="size-4" />
                                 </button>
                                 {pages.map((num) => (
                                     <button
                                         key={num}
                                         onClick={() => setPage(num)}
-                                        className={`w-10 h-10 flex items-center justify-center font-bold transition-all ${num === page
-                                                ? "bg-[#0061AA] text-white"
-                                                : "text-gray-600 hover:text-[#0061AA]"
-                                            }`}
+                                        className={`size-8 rounded-[2px] text-xs font-bold border transition-all cursor-pointer ${
+                                            num === page
+                                                ? "bg-[#0060AF] text-white border-[#0060AF] shadow-xs"
+                                                : "bg-white text-slate-700 border-slate-300 hover:border-slate-400 hover:text-slate-900"
+                                        }`}
                                     >
                                         {num}
                                     </button>
@@ -141,9 +135,9 @@ const BlogGrid = () => {
                                 <button 
                                     onClick={handleNext}
                                     disabled={page === totalPages}
-                                    className="p-2 border border-gray-200 text-gray-400 hover:text-[#0061AA] hover:border-[#0061AA] transition-all disabled:opacity-50 disabled:hover:text-gray-400 disabled:hover:border-gray-200"
+                                    className="p-2 border border-slate-300 rounded-[2px] text-slate-500 hover:text-[#0060AF] hover:border-[#0060AF] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                                 >
-                                    <ChevronRight className="size-5" />
+                                    <ChevronRight className="size-4" />
                                 </button>
                             </div>
                         )}

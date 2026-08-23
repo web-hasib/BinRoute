@@ -1,9 +1,12 @@
+"use client";
+
 import React, { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft, ShieldCheck, Lock, CreditCard } from "lucide-react";
 import PricingSidebar from "./PricingSidebar";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -49,6 +52,7 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
     e.target.value = formattedValue;
     setCardData(prev => ({ ...prev, [field]: formattedValue }));
   };
+
   const handleCheckout = async () => {
     if (!clientSecret) {
       toast.error("Missing payment information. Please try starting the booking again.");
@@ -75,7 +79,6 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
     let exp_month = "";
     let exp_year_short = "";
     
-    // Clean input: remove spaces
     const cleanExpiry = cardData.expiry.replace(/\s+/g, '');
     
     if (cleanExpiry.includes('/')) {
@@ -90,13 +93,11 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
       return;
     }
     
-    // Convert YY to YYYY if necessary
     const exp_year = exp_year_short.length === 2 ? `20${exp_year_short}` : exp_year_short;
 
     setIsProcessing(true);
 
     try {
-      // Ensure we have the publishable key
       const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
       if (!stripeKey) {
         throw new Error("Stripe configuration is missing.");
@@ -154,10 +155,10 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
       }
 
       if (confirmResult.status === "succeeded" || confirmResult.status === "requires_action") {
-         toast.success("Payment successful!");
-         onNext();
+        toast.success("Payment successful!");
+        onNext();
       } else {
-         throw new Error("Payment failed or requires further action.");
+        throw new Error("Payment failed or requires further action.");
       }
 
     } catch (error: any) {
@@ -171,65 +172,87 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Left Column: Form */}
-      <div className="lg:col-span-8">
+      <div className="lg:col-span-8 space-y-6">
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-[#0265AF] transition-colors mb-4"
+          type="button"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-[#0060AF] transition-colors mb-2 cursor-pointer"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back to Information
+          <ArrowLeft className="size-4" />
+          <span>Back to Placement & Schedule</span>
         </button>
 
-        <div className="bg-white p-8 border border-gray-100 shadow-sm">
-          <h3 className="text-xl font-bold text-[#0c243c] mb-8">Payment Method</h3>
+        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#0060AF]">
+                Step 3
+              </span>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">
+                Secure Credit Card Payment
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Processed with 256-bit SSL encryption via Stripe.
+              </p>
+            </div>
+            <div className="size-10 rounded-xl bg-blue-50 text-[#0060AF] flex items-center justify-center border border-blue-100 shrink-0">
+              <Lock className="size-5" />
+            </div>
+          </div>
           
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Account Holder Name</label>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Name on Card</label>
               <input
                 type="text"
-                placeholder="Enter name"
+                placeholder="Cardholder Full Name"
                 value={cardData.name}
                 onChange={(e) => handleInputChange("name", e)}
-                className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Card Number</label>
-              <input
-                type="text"
-                placeholder="0000 0000 0000 0000"
-                value={cardData.number}
-                onChange={(e) => handleInputChange("number", e)}
-                className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
-              />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Card Number</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="4000 1234 5678 9010"
+                  value={cardData.number}
+                  onChange={(e) => handleInputChange("number", e)}
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono tracking-wider focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
+                />
+                <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-slate-400" />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Expiry Date</label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">Expiration Date</label>
                 <input
                   type="text"
                   placeholder="MM/YY"
                   value={cardData.expiry}
                   onChange={(e) => handleInputChange("expiry", e)}
-                  className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 text-center font-mono focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">CVV</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">Security CVC / CVV</label>
                 <input
                   type="text"
-                  placeholder="****"
+                  placeholder="123"
                   value={cardData.cvc}
                   onChange={(e) => handleInputChange("cvc", e)}
-                  className="w-full px-4 py-3 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 text-center font-mono focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
                 />
               </div>
             </div>
+          </div>
+
+          <div className="mt-6 pt-5 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-500">
+            <ShieldCheck className="size-4 text-emerald-600" />
+            <span>Guaranteed zero unauthorized charges • PCI-DSS Level 1 Certified</span>
           </div>
         </div>
       </div>
@@ -237,8 +260,8 @@ const PaymentStep = ({ onNext, onBack }: PaymentStepProps) => {
       {/* Right Column: Pricing Sidebar */}
       <div className="lg:col-span-4">
         <PricingSidebar 
-           buttonText={isProcessing ? "Processing..." : "Checkout"}
-           onButtonClick={handleCheckout}
+          buttonText={isProcessing ? "Authorizing Payment..." : "Complete Booking"}
+          onButtonClick={handleCheckout}
         />
       </div>
     </div>

@@ -26,52 +26,49 @@ const ServiceSuccessModal = ({
       isOpen={isOpen} 
       onClose={onClose} 
       showCloseButton={false}
-      className="max-w-2xl p-0"
+      className="max-w-xl p-0"
     >
-      <div className="flex flex-col items-center text-center p-8 py-12">
+      <div className="flex flex-col items-center text-center p-6 sm:p-8">
         {/* Success Icon */}
-        <div className="relative mb-8">
-          <div className="size-24 bg-[#22C55E] rounded-full flex items-center justify-center">
-            <Check className="size-12 text-white stroke-[3px]" />
-          </div>
-          <div className="absolute -inset-2 border-2 border-[#22C55E]/20 rounded-full" />
-          <div className="absolute -inset-4 border-2 border-[#22C55E]/10 rounded-full" />
+        <div className="size-14 bg-emerald-50 border border-emerald-200/80 rounded-xs flex items-center justify-center mb-5 text-emerald-600">
+          <Check className="size-7 stroke-[2.5px]" />
         </div>
 
         {/* Text */}
-        <h2 className="text-3xl font-bold text-[#172C41] mb-2">{title}</h2>
-        <p className="text-gray-400 text-sm mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1.5">{title}</h2>
+        <p className="text-slate-500 text-xs sm:text-sm mb-6">
           Confirmation #{confirmationId}. {message}
         </p>
 
         {/* Approval Process Box */}
-        <div className="w-full bg-[#F4FAFF] border border-[#E6F4FF] p-6 mb-8 flex gap-4 text-left">
-          <div className="p-1.5 bg-[#0061AA] rounded-full h-fit mt-0.5">
-            <Info className="size-3 text-white" />
+        <div className="w-full bg-blue-50/60 border border-blue-200/60 rounded-xs p-4 mb-6 flex gap-3 text-left">
+          <div className="size-5 rounded-xs bg-[#0061AA] flex items-center justify-center shrink-0 mt-0.5 text-white">
+            <Info className="size-3" />
           </div>
           <div>
-            <h4 className="text-[#172C41] font-bold text-sm mb-1">Approval Process</h4>
-            <p className="text-gray-500 text-xs leading-relaxed">
-              Changes require admin approval. You will be notified of the decision within 24 hours via email and dashboard alert.
+            <h4 className="text-slate-900 font-bold text-xs mb-0.5">Approval Process</h4>
+            <p className="text-slate-600 text-xs leading-relaxed">
+              Changes require dispatch confirmation. You will be notified within 24 hours via email and dashboard update.
             </p>
           </div>
         </div>
 
         {/* Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
           <Link href="/dashboard/user" className="w-full">
             <Button 
               variant="outline"
-              className="w-full border-gray-100 text-gray-500 py-7 rounded-none font-bold text-sm hover:bg-gray-50 uppercase tracking-wider"
+              className="w-full py-2.5 text-xs font-semibold"
             >
               Back to Dashboard
             </Button>
           </Link>
           <Button 
             onClick={onClose}
-            className="w-full bg-[#0061AA] hover:bg-[#004e89] text-white py-7 rounded-none font-bold text-sm uppercase tracking-wider"
+            variant="primary"
+            className="w-full py-2.5 text-xs font-semibold"
           >
-            View All Service Requests
+            View Service Requests
           </Button>
         </div>
       </div>

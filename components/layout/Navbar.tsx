@@ -2,13 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X, User } from "lucide-react";
+import { ChevronDown, Menu, X, User, LayoutDashboard, LogOut, ArrowRight } from "lucide-react";
+import { DumpTruckIcon } from "@/components/icons/DumpTruckIcon";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { logout } from "@/feature/user/userSlice";
 import { useRouter, usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +23,7 @@ const Navbar = () => {
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
-    if (href.startsWith("/#")) return false; // Handle hash links separately if needed
+    if (href.startsWith("/#")) return false;
     return pathname.startsWith(href);
   };
 
@@ -32,8 +34,8 @@ const Navbar = () => {
       href: "/#services",
       dropdown: [{ name: "Service Areas", href: "/services/service-areas" }],
     },
-    { name: "About us", href: "/about" },
-    { name: "Faq", href: "/faq" },
+    { name: "About Us", href: "/about" },
+    { name: "FAQ", href: "/faq" },
     { name: "Contact", href: "/contact" },
     { name: "Blog", href: "/blog" },
   ];
@@ -56,63 +58,84 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-20">
+    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 transition-all">
+      <div className="container mx-auto">
+        <div className="flex justify-between items-center h-18">
           {/* Logo Area */}
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
             <Image
               src="/LogoHome.png"
-              alt="Logo"
-              width={100}
-              height={100}
-              className=""
+              alt="Bin Route"
+              width={92}
+              height={46}
+              className="object-contain px-2"
+              priority
             />
-          </div>
+            <span className="font-heading text-2xl -ml-2 font-bold tracking-wide uppercase text-slate-900">
+              Bin Route
+            </span>
+          </Link>     
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <div key={link.name} className="relative group">
-                <Link
-                  href={link.href}
-                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${isActive(link.href)
-                    ? "text-[#0056B3]"
-                    : "text-[#4A4A4A] hover:text-[#0056B3]"
-                    }`}
-                >
-                  {link.name}
-                  {link.dropdown && <ChevronDown className="w-4 h-4" />}
-                </Link>
-                {link.dropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                    {link.dropdown.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        href={subItem.href}
-                        className="block px-4 py-2 text-sm text-[#4A4A4A] hover:bg-gray-50 hover:text-[#0056B3]"
-                      >
-                        {subItem.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <nav className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <div key={link.name} className="relative group">
+                  <Link
+                    href={link.href}
+                    className={`relative flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold transition-colors rounded-[2px] ${active
+                        ? "text-[#0060AF]"
+                        : "text-slate-700 hover:text-slate-950 hover:bg-slate-50/70"
+                      }`}
+                  >
+                    <span>{link.name}</span>
+                    {link.dropdown && (
+                      <ChevronDown className="size-3.5 text-slate-400 group-hover:text-slate-600 transition-transform group-hover:rotate-180" />
+                    )}
+                    {/* Animated Active Underline in Primary Color */}
+                    {active && (
+                      <motion.span
+                        layoutId="activeNavUnderline"
+                        className="absolute bottom-0 inset-x-3.5 h-[2.5px] bg-[#0060AF] rounded-full"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                  {link.dropdown && (
+                    <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-[2px] shadow-sm py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                      {link.dropdown.map((subItem) => (
+                        <Link
+                          key={subItem.name}
+                          href={subItem.href}
+                          className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0060AF] transition-colors"
+                        >
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
 
-          {/* Auth Buttons / User Profile */}
-          <div className="hidden lg:flex items-center gap-4">
+          {/* Auth & CTA Buttons */}
+          <div className="hidden lg:flex items-center gap-2.5">
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 focus:outline-none"
+                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-[2px] border border-slate-200 hover:border-slate-300 transition-colors bg-slate-50"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
-                    <User className="text-gray-500 w-5 h-5" />
+                  <div className="size-7 rounded-[2px] bg-[#0060AF] text-white flex items-center justify-center text-xs font-bold">
+                    {user.name ? user.name.charAt(0).toUpperCase() : <User className="size-4 text-white" />}
                   </div>
-                  <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <span className="text-xs font-semibold text-slate-800 max-w-[120px] truncate">{user.name}</span>
+                  <ChevronDown
+                    className={`size-3.5 text-slate-400 transition-transform duration-200 ${isProfileOpen ? "rotate-180" : ""
+                      }`}
+                  />
                 </button>
 
                 {isProfileOpen && (
@@ -121,22 +144,24 @@ const Navbar = () => {
                       className="fixed inset-0 z-40"
                       onClick={() => setIsProfileOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-md shadow-lg py-2 z-50">
-                      <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                        <p className="text-sm font-medium text-gray-800 truncate">{user.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    <div className="absolute right-0 mt-1.5 w-56 bg-white border border-slate-200 rounded-[2px] shadow-sm py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      <div className="px-4 py-2.5 border-b border-slate-100 mb-1">
+                        <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
+                        <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
                       </div>
                       <button
                         onClick={handleDashboardRedirect}
-                        className="block w-full text-left px-4 py-2 text-sm text-[#4A4A4A] hover:bg-gray-50 hover:text-[#0056B3]"
+                        className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0060AF] transition-colors"
                       >
-                        My Dashboard
+                        <LayoutDashboard className="size-3.5 text-slate-400" />
+                        <span>My Dashboard</span>
                       </button>
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100 mt-1"
                       >
-                        Logout
+                        <LogOut className="size-3.5 text-red-500" />
+                        <span>Sign Out</span>
                       </button>
                     </div>
                   </>
@@ -146,15 +171,21 @@ const Navbar = () => {
               <>
                 <Link href="/login">
                   <Button
-                    variant="ghost"
-                    className="text-[#4A4A4A] bg-[#F1F1F1] hover:bg-gray-200 px-8"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs font-semibold px-3.5"
                   >
-                    Log in
+                    Sign In
                   </Button>
                 </Link>
-                <Link href="/signup">
-                  <Button className="bg-[#0056B3] hover:bg-blue-700 px-8">
-                    Sign up
+                <Link href="/services/service-areas">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="gap-1.5 text-xs font-semibold px-4"
+                  >
+                    <DumpTruckIcon className="size-3.5" />
+                    <span>Order Dumpster</span>
                   </Button>
                 </Link>
               </>
@@ -165,37 +196,37 @@ const Navbar = () => {
           <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-500 hover:text-gray-600 focus:outline-none"
+              className="p-2 text-slate-700 hover:text-slate-900 border border-slate-200 rounded-[2px] focus:outline-none"
+              aria-label="Toggle navigation menu"
             >
-              {isOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
+              {isOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Drawer */}
         {isOpen && (
-          <div className="lg:hidden pb-6">
-            <div className="flex flex-col gap-4">
+          <div className="lg:hidden py-4 border-t border-slate-100 animate-in fade-in duration-150">
+            <div className="flex flex-col gap-1">
               {navLinks.map((link) => (
-                <div key={link.name} className="group">
+                <div key={link.name}>
                   <Link
                     href={link.href}
-                    className="block text-base font-medium text-[#4A4A4A] hover:text-[#0056B3]"
+                    className={`block px-3 py-2 text-xs font-semibold rounded-[2px] transition-colors ${isActive(link.href)
+                        ? "text-[#0060AF] bg-blue-50/70"
+                        : "text-slate-800 hover:text-[#0060AF] hover:bg-slate-50"
+                      }`}
                     onClick={() => setIsOpen(false)}
                   >
                     {link.name}
                   </Link>
                   {link.dropdown && (
-                    <div className="mt-2 pl-4 flex flex-col gap-2 border-l border-gray-200">
+                    <div className="mt-1 pl-3 flex flex-col gap-1 border-l-2 border-slate-200 ml-3">
                       {link.dropdown.map((subItem) => (
                         <Link
                           key={subItem.name}
                           href={subItem.href}
-                          className="text-sm text-[#4A4A4A] hover:text-[#0056B3]"
+                          className="px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-[#0060AF]"
                           onClick={() => setIsOpen(false)}
                         >
                           {subItem.name}
@@ -205,53 +236,56 @@ const Navbar = () => {
                   )}
                 </div>
               ))}
-              <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
+
+              <div className="flex flex-col gap-2 pt-3 mt-2 border-t border-slate-100">
                 {user ? (
                   <>
-                    <div className="flex items-center gap-3 mb-2 px-2">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
-                        <User className="text-gray-500 w-5 h-5" />
+                    <div className="flex items-center gap-3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-[2px] mb-1">
+                      <div className="size-7 rounded-[2px] bg-[#0060AF] text-white flex items-center justify-center font-bold text-xs">
+                        {user.name ? user.name.charAt(0).toUpperCase() : <User className="size-4" />}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
+                        <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
                       </div>
                     </div>
                     <Button
                       onClick={handleDashboardRedirect}
                       variant="outline"
-                      className="w-full text-[#0056B3] border-[#0056B3]"
+                      size="sm"
+                      className="w-full text-xs"
                     >
                       My Dashboard
                     </Button>
                     <Button
                       onClick={handleLogout}
                       variant="destructive"
-                      className="w-full"
+                      size="sm"
+                      className="w-full text-xs"
                     >
-                      Logout
+                      Sign Out
                     </Button>
                   </>
                 ) : (
-                  <>
-                    <Link href="/login">
-                      <Button variant="secondary" className="w-full">
-                        Log in
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link href="/login" className="w-full">
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        Sign In
                       </Button>
                     </Link>
-                    <Link href="/signup">
-                      <Button className="w-full bg-[#0056B3] hover:bg-blue-700">
-                        Sign up
+                    <Link href="/services/service-areas" className="w-full">
+                      <Button variant="primary" size="sm" className="w-full text-xs">
+                        Order Dumpster
                       </Button>
                     </Link>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
           </div>
         )}
       </div>
-    </nav>
+    </header>
   );
 };
 

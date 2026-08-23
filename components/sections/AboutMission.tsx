@@ -2,49 +2,49 @@
 
 import React from "react";
 import Image from "next/image";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { CheckCircle2 } from "lucide-react";
 
 const AboutMission = () => {
     return (
-        <section className="py-16 md:py-24 bg-white">
-            <div className="container mx-auto px-4">
+        <section className="py-20 md:py-24 bg-white">
+            <div className="container mx-auto max-w-6xl px-4">
                 {/* Top Badge and Header */}
-                <div className="text-center mb-12 flex flex-col items-center">
-                    <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wider text-[#0061AA] uppercase bg-[#E6F0F7] rounded-sm">
-                        Our Mission
-                    </span>
-                    <h2 className="text-3xl md:text-5xl font-bold text-[#0A2540] max-w-3xl leading-tight">
-                        Solutions That Keep Your Projects Moving
-                    </h2>
-                </div>
+                <SectionHeader
+                    badge="Our Mission"
+                    title="Solutions That Keep Your Projects Moving Forward"
+                    subtitle="We are committed to providing a seamless experience from the moment you request a dumpster to final pickup and disposal."
+                />
 
                 {/* Two Column Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-16">
-                    <div className="space-y-6">
-                        <h3 className="text-2xl md:text-3xl font-bold text-[#0A2540]">
-                            Our Mission
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                    <div className="lg:col-span-6 space-y-4">
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+                            Dedicated to Streamlined Waste Disposal
                         </h3>
-                        <div className="space-y-4 text-gray-600 leading-relaxed md:text-lg">
-                            <p>
-                                Our mission is to deliver reliable, efficient, and
-                                customer-focused waste management solutions that simplify
-                                cleanup and disposal for homeowners, contractors, and
-                                businesses alike. We are committed to providing a seamless
-                                experience from the moment a service is requested to the final
-                                pickup and disposal.
-                            </p>
-                            <p>
-                                We believe that effective waste management is more than just
-                                delivering a container—it's about supporting our customers'
-                                projects, protecting their properties, and helping them stay
-                                organized and productive.
-                            </p>
+                        <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
+                            Our mission is to deliver reliable, efficient, and customer-focused waste management solutions that simplify cleanup and disposal for homeowners, contractors, and businesses alike. We believe that effective waste management is more than just delivering a container—it is about protecting properties, keeping jobsites organized, and honoring schedules.
+                        </p>
+                        <div className="space-y-2 pt-1">
+                            <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-800 font-medium">
+                                <CheckCircle2 className="size-4 text-[#005FA3] shrink-0" />
+                                <span>Punctual morning and afternoon delivery windows</span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-800 font-medium">
+                                <CheckCircle2 className="size-4 text-[#005FA3] shrink-0" />
+                                <span>Driveway protection boards placed on every residential drop</span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-800 font-medium">
+                                <CheckCircle2 className="size-4 text-[#005FA3] shrink-0" />
+                                <span>Transparent pricing with no unexpected disposal surcharges</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="relative h-[350px] md:h-[450px] overflow-hidden shadow-xl">
+                    <div className="lg:col-span-6 relative h-[300px] md:h-[380px] border border-slate-300 rounded-[2px] overflow-hidden shadow-2xs">
                         <Image
                             src="/about/mission_main.png"
-                            alt="Labonte Disposal Mission"
+                            alt="Bin Route  Mission"
                             fill
                             className="object-cover"
                         />

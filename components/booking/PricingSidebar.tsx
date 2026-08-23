@@ -3,9 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { MapPin } from "lucide-react";
+import { MapPin, ShieldCheck, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { GoogleMap, DirectionsRenderer, useJsApiLoader } from "@react-google-maps/api";
 import { useSearchParams } from "next/navigation";
 import { useGetServiceAreaByIdQuery } from "@/redux/api/service-area/serviceAreaApi";
@@ -28,7 +27,7 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
   });
 
   const selectedPlan = areaData?.data?.plans?.find((p: any) => p.id === dumpsterSize);
-  const dumpsterName = selectedPlan?.plan?.dumpsterSize ? `${selectedPlan.plan.dumpsterSize} Dumpster` : (dumpsterSize ? dumpsterSize.replace("-", " ") : "2 Yard Dumpster");
+  const dumpsterName = selectedPlan?.plan?.dumpsterSize ? `${selectedPlan.plan.dumpsterSize} Dumpster` : (dumpsterSize ? dumpsterSize.replace("-", " ") : "Container");
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -39,8 +38,8 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
   const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
 
   const officeLocation = React.useMemo(() => ({
-    lat: Number(process.env.NEXT_PUBLIC_OFFICE_LATITUDE) ,
-    lng: Number(process.env.NEXT_PUBLIC_OFFICE_LONGITUDE) 
+    lat: Number(process.env.NEXT_PUBLIC_OFFICE_LATITUDE) || 42.2173,
+    lng: Number(process.env.NEXT_PUBLIC_OFFICE_LONGITUDE) || -71.6917,
   }), []);
 
   useEffect(() => {
@@ -67,131 +66,145 @@ const PricingSidebar = ({ buttonText, onButtonClick }: PricingSidebarProps) => {
   return (
     <div className="space-y-4 sticky top-24">
       {/* Title Card */}
-      <div className="bg-[#0c243c] p-6 text-white shadow-sm">
-        <h3 className="text-xl font-bold">
-          {isCommercial ? "Transparent Roll og Pricing" : "Transparent Roll-Off Pricing"}
+      <div className="bg-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md border border-slate-800">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 block mb-1">
+          Instant Order Summary
+        </span>
+        <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
+          {isCommercial ? "Commercial Service Pricing" : "Transparent Flat-Rate Pricing"}
         </h3>
-        <p className="text-[10px] text-gray-400 mt-1">Distance-Based Pricing (From 103 Creeper Rd, Grafton, MA)</p>
+        <p className="text-xs text-slate-400 mt-1">
+          Dispatched from Central Hub: Grafton, MA
+        </p>
       </div>
 
-      {/* Map/Distance Card */}
-      <div className="bg-white border border-gray-100 p-1 space-y-4 shadow-sm">
-        <div className="relative h-100 lg:h-70 bg-gray-100 overflow-hidden">
-           {isLoaded ? (
-              <GoogleMap
-                mapContainerStyle={{ width: "100%", height: "100%" }}
-                center={officeLocation}
-                zoom={10}
-                options={{
-                  disableDefaultUI: true,
-                  zoomControl: false,
-                }}
-              >
-                {directionsResponse && (
-                  <DirectionsRenderer
-                    directions={directionsResponse}
-                    options={{
-                      suppressMarkers: false,
-                      polylineOptions: {
-                        strokeColor: "#0265AF",
-                        strokeWeight: 4,
-                      }
-                    }}
-                  />
-                )}
-              </GoogleMap>
-           ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <span className="text-sm text-gray-500">Loading map...</span>
-              </div>
-           )}
+      {/* Map / Distance Card */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="relative h-48 sm:h-56 bg-slate-100 overflow-hidden">
+          {isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={{ width: "100%", height: "100%" }}
+              center={officeLocation}
+              zoom={10}
+              options={{
+                disableDefaultUI: true,
+                zoomControl: false,
+              }}
+            >
+              {directionsResponse && (
+                <DirectionsRenderer
+                  directions={directionsResponse}
+                  options={{
+                    suppressMarkers: false,
+                    polylineOptions: {
+                      strokeColor: "#0060AF",
+                      strokeWeight: 4,
+                    }
+                  }}
+                />
+              )}
+            </GoogleMap>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-100">
+              <span className="text-xs font-semibold text-slate-500">Calculating route...</span>
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-3 p-4">
-            <div className="p-2.5 bg-gray-50 rounded-sm">
-              <MapPin className="w-5 h-5 text-[#0c243c]" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-[#0c243c]">
-                {quoteData?.distanceInMiles !== undefined ? `${quoteData.distanceInMiles} Miles` : (isCommercial ? "42.4 Miles" : "0.0 Miles")}
-              </h4>
-              <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tight">Calculated Distance</p>
-            </div>
+
+        <div className="flex items-center gap-3 p-4 bg-slate-50 border-t border-slate-100">
+          <div className="size-9 rounded-lg bg-blue-50 text-[#0060AF] flex items-center justify-center shrink-0 border border-blue-100">
+            <MapPin className="size-4.5" />
+          </div>
+          <div>
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+              {quoteData?.distanceInMiles !== undefined ? `${quoteData.distanceInMiles} Miles` : (isCommercial ? "Standard Distance" : "Calculated at Drop-off")}
+            </h4>
+            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight">Delivery Route Distance</p>
+          </div>
         </div>
       </div>
 
-      {/* Info Card */}
-      <div className="bg-[#E6F4EA] p-4 text-[#1E7E34] text-[11px] leading-relaxed border border-[#D1E7D6]">
-         Note: Delivery distance charges apply automatically: +$100 for 30-60 miles and +$150 for over 60 miles.
+      {/* Driveway Protection Notice */}
+      <div className="bg-emerald-50 rounded-xl p-3.5 text-emerald-800 text-xs leading-relaxed border border-emerald-200 flex items-start gap-2.5">
+        <ShieldCheck className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+        <div>
+          <span className="font-bold block">Driveway Protection Included:</span>
+          Wood blocking laid under all rollers to protect pavers & asphalt.
+        </div>
       </div>
 
       {/* Details Card */}
-      <div className="bg-white border border-gray-100 p-6 space-y-5 shadow-sm">
-        <div className="flex justify-between items-center pb-2">
-          <span className="text-xs text-gray-500 font-medium">Dumpster Size</span>
-          <span className="text-xs font-bold text-[#0c243c]">{dumpsterName}</span>
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-4 shadow-xs">
+        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+          <span className="text-xs text-slate-500 font-medium">Selected Container</span>
+          <span className="text-xs font-bold text-slate-900">{dumpsterName}</span>
         </div>
 
         {isCommercial && (
-          <div className="flex justify-between items-center pb-2 mt-[-8px]">
-            <span className="text-xs text-gray-500 font-medium">Service Frequency</span>
-            <span className="text-xs font-bold text-[#0c243c]">{serviceFrequency}</span>
+          <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+            <span className="text-xs text-slate-500 font-medium">Service Frequency</span>
+            <span className="text-xs font-bold text-slate-900">{serviceFrequency}</span>
           </div>
         )}
 
         {!isCommercial && (
-          <div className="flex justify-between items-center pb-2 mt-[-8px]">
-            <span className="text-xs text-gray-500 font-medium">Rental Duration</span>
-            <span className="text-xs font-bold text-[#0c243c]">---</span>
+          <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+            <span className="text-xs text-slate-500 font-medium">Standard Rental</span>
+            <span className="text-xs font-bold text-slate-900">7 Days Included</span>
           </div>
         )}
 
-        {/* Separator if needed */}
-        <div className="border-t border-gray-50 pt-3 space-y-3.5">
+        {/* Breakdown */}
+        <div className="space-y-2.5 pt-1">
           {quoteData?.breakdown ? (
             quoteData.breakdown.map((item: any, idx: number) => (
-              <div key={idx} className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">{item.label}</span>
-                <span className="font-bold text-[#0c243c]">
+              <div key={idx} className="flex justify-between text-xs sm:text-sm">
+                <span className="text-slate-500 font-medium">{item.label}</span>
+                <span className="font-bold text-slate-900">
                   {item.amount < 0 ? `-$${Math.abs(item.amount).toFixed(2)}` : `$${item.amount.toFixed(2)}`}
                 </span>
               </div>
             ))
           ) : (
             <>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Subtotal</span>
-                <span className="font-bold text-[#0c243c]">${pricing.subtotal.toFixed(2)}</span>
+              <div className="flex justify-between text-xs sm:text-sm">
+                <span className="text-slate-500 font-medium">Base Container Rental</span>
+                <span className="font-bold text-slate-900">${pricing.subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Environmental Tax (6%)</span>
-                <span className="font-bold text-[#0c243c]">${pricing.tax.toFixed(2)}</span>
+              <div className="flex justify-between text-xs sm:text-sm">
+                <span className="text-slate-500 font-medium">State & Environmental Tax (6%)</span>
+                <span className="font-bold text-slate-900">${pricing.tax.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Service Area Fee</span>
-                <span className="font-bold text-[#0c243c]">${pricing.fee.toFixed(2)}</span>
+              <div className="flex justify-between text-xs sm:text-sm">
+                <span className="text-slate-500 font-medium">Service Area Delivery Fee</span>
+                <span className="font-bold text-slate-900">${pricing.fee.toFixed(2)}</span>
               </div>
             </>
           )}
         </div>
 
-        <div className="pt-4 border-t border-dashed border-gray-200 flex justify-between items-center">
-           <span className="text-lg font-bold text-[#0c243c]">
-             Total amount
-           </span>
-           <span className="text-lg font-bold text-[#0c243c]">
-             ${quoteData ? quoteData.totalPrice.toFixed(2) : pricing.total.toFixed(2)}
-           </span>
+        {/* Total amount */}
+        <div className="pt-4 border-t border-dashed border-slate-200 flex justify-between items-center">
+          <div>
+            <span className="text-sm font-bold text-slate-900 block">Total Due</span>
+            <span className="text-[10px] text-slate-400 font-medium">Transparent flat rate</span>
+          </div>
+          <span className="text-xl sm:text-2xl font-black text-slate-900">
+            ${quoteData ? quoteData.totalPrice.toFixed(2) : pricing.total.toFixed(2)}
+          </span>
         </div>
 
         <Button 
           onClick={onButtonClick}
-          className="w-full bg-[#0265AF] hover:bg-[#004d85] text-white py-7 rounded-none font-bold text-sm"
+          variant="primary"
+          size="lg"
+          className="w-full h-12 text-xs sm:text-sm font-bold rounded-xl shadow-md mt-2"
         >
           {buttonText}
         </Button>
 
-        <p className="text-[10px] text-gray-400 text-center leading-relaxed font-medium">
-          By clicking &quot;{buttonText}&quot;, you agree to our <span className="text-[#0265AF] underline">Terms of Service</span> and Rental Agreement. This rental is non-refundable once dispatched.
+        <p className="text-[10px] text-slate-400 text-center leading-relaxed font-medium">
+          By clicking &quot;{buttonText}&quot;, you agree to our Terms of Service. Payment is authorized securely via Stripe.
         </p>
       </div>
     </div>

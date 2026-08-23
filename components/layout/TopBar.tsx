@@ -3,27 +3,33 @@ import { Clock, Phone, MapPin } from "lucide-react";
 
 const TopBar = () => {
   return (
-    <div className="bg-[#EBEBEB] py-2 text-[10px] md:text-xs lg:text-sm border-b border-gray-200">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          <span>
-            Operating Hours : Monday-Friday 8AM-5PM, Saturday 8AM-12PM
+    <div className="bg-[#0B132B] text-slate-300 py-2 text-xs border-b border-slate-800">
+      <div className="container mx-auto max-w-6xl px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-semibold text-slate-200">
+            Next-Day Roll-Off Delivery Available Across Central MA
           </span>
+          <span className="hidden md:inline text-slate-700">•</span>
+          <div className="hidden md:flex items-center gap-1 text-slate-400 text-[11px]">
+            <Clock className="size-3 text-slate-400" />
+            <span>Mon–Fri 8AM–5PM, Sat 8AM–12PM</span>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 border-r border-gray-400 pr-4 h-full last:border-0 last:pr-0">
-            <Phone className="w-4 h-4" />
+
+        <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-1.5">
+            <Phone className="size-3 text-sky-400" />
             <a
               href="tel:774-622-1884"
-              className="hover:text-blue-600 transition-colors"
+              className="text-slate-200 hover:text-white font-bold transition-colors"
             >
-              774-622-1884
+              (774) 622-1884
             </a>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            <span>Worcester MA</span>
+          <span className="text-slate-700">|</span>
+          <div className="flex items-center gap-1.5 text-slate-300">
+            <MapPin className="size-3 text-sky-400" />
+            <span>Worcester, MA</span>
           </div>
         </div>
       </div>

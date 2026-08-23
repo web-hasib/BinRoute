@@ -4,14 +4,15 @@ import { setCredentials } from "@/feature/user/userSlice";
 import { useLogInMutation } from "@/redux/api/auth/authApi";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
-import { useEffect } from "react";
 import { useGoogleLoginMutation } from "@/redux/api/auth/authApi";
 import Cookies from "js-cookie";
+import { Button } from "@/components/ui/button";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import Link from "next/link";
 
-// Define UserProfile type (shared with userSlice)
 interface UserProfile {
   id: string;
   name: string;
@@ -42,22 +43,20 @@ export default function LoginForm() {
           callback: handleGoogleResponse,
         });
 
-        // This renders the full-page popup button
         (window as any).google.accounts.id.renderButton(
           document.getElementById("googleButtonDiv"),
           {
             theme: "outline",
             size: "large",
-            width: "510", // Approximate width to match your UI
+            width: "100%",
             text: "continue_with",
-            shape: "square",
+            shape: "rectangular",
             logo_alignment: "center"
           }
         );
       }
     };
 
-    // Retry if script is not loaded yet
     const interval = setInterval(() => {
       if ((window as any).google) {
         initializeGoogle();
@@ -69,7 +68,6 @@ export default function LoginForm() {
   }, []);
 
   const handleGoogleResponse = async (response: any) => {
-    console.log(response, "response");
     try {
       const res = await googleLogin(response.credential).unwrap();
       if (res.success) {
@@ -88,8 +86,6 @@ export default function LoginForm() {
 
         if (accessToken && accessToken !== "undefined") {
           Cookies.set("accessToken", accessToken);
-        } else {
-          console.error("Token missing in Google login response:", res);
         }
 
         toast.success("Login successfully with Google");
@@ -97,7 +93,7 @@ export default function LoginForm() {
         if (role?.toUpperCase() === "SUPERADMIN" || role?.toUpperCase() === "SUPER_ADMIN" || role?.toUpperCase() === "ADMIN") {
           router.push("/dashboard");
         } else if (role?.toUpperCase() === "DRIVER") {
-          router.push("/dashboard"); // or wherever drivers should go
+          router.push("/dashboard");
         } else if (role?.toUpperCase() === "USER") {
           router.push("/dashboard/user");
         } else {
@@ -112,8 +108,6 @@ export default function LoginForm() {
     }
   };
 
-  /* No longer need onGoogleClick since we are using renderButton */
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
@@ -127,15 +121,10 @@ export default function LoginForm() {
       const response = await signIn({ email, password }).unwrap();
 
       if (response.success) {
-        // Handle token whether it's in the root or inside the data object
         const accessToken = response.accessToken || response.data?.accessToken;
-        const refreshToken = response.refreshToken || response.data?.refreshToken;
-
-        // Extract user info from data
         const userData = response.data?.user || response.data;
         const { id, fullName, email: userEmail, role } = userData;
 
-        // Map to your UserProfile shape
         const user: UserProfile = {
           id: id || userData.id,
           name: fullName || userData.fullName,
@@ -147,17 +136,14 @@ export default function LoginForm() {
 
         if (accessToken && accessToken !== "undefined") {
           Cookies.set("accessToken", accessToken);
-        } else {
-          console.error("Token missing in login response:", response);
         }
 
         toast.success("Login successfully");
 
-        // Redirect logic
         if (role?.toUpperCase() === "SUPERADMIN" || role?.toUpperCase() === "SUPER_ADMIN" || role?.toUpperCase() === "ADMIN") {
           router.push("/dashboard");
         } else if (role?.toUpperCase() === "DRIVER") {
-          router.push("/dashboard"); // Adjust if drivers have a different path
+          router.push("/dashboard");
         } else if (role?.toUpperCase() === "USER") {
           router.push("/dashboard/user");
         } else {
@@ -166,10 +152,9 @@ export default function LoginForm() {
           router.push(callback);
         }
 
-        router.refresh(); // good practice (same as Google login)
+        router.refresh();
       }
     } catch (error: any) {
-      // This now only catches real API errors, not our own JS bugs
       const errorMessage = error?.data?.message || "Login failed. Please check your credentials.";
       setErrors({ general: errorMessage });
       toast.error(errorMessage);
@@ -177,187 +162,149 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden font-sans">
-      {/* Left: Full bleed image */}
-
-      <div className="flex-1 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
-        <div className="w-full max-w-xl bg-white  rounded-2xl px-10 py-12 flex flex-col items-center">
-          <Image
-            src="/LogoHome.png"
-            alt="Login illustration"
-            width={96}
-            height={56}
-            className="object-cover mb-6"
-          />
-
-          {/* Heading */}
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight text-center">
-            Login to your account
-          </h1>
-          <p className="text-sm text-gray-500 mb-8 text-center max-w-xs leading-relaxed">
-            Please log back into your account or create a new one if you haven&apos;t signed up yet.
-          </p>
-          {/* Google Sign In Button Container */}
-          <div id="googleButtonDiv" className="w-full mb-6 flex justify-center h-[50px]"></div>
-
-          {/* Divider */}
-          <div className="w-full flex items-center mb-6 px-1">
-            <div className="flex-1 border-t border-gray-100"></div>
-            <span className="px-3 text-xs text-gray-400 font-medium">Or</span>
-            <div className="flex-1 border-t border-gray-100"></div>
+    <div className="flex min-h-screen w-full font-sans bg-[#f8fafc]">
+      {/* Left Form Panel */}
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6">
+        <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-xs p-8 sm:p-10 shadow-2xs">
+          <div className="flex flex-col items-center mb-8">
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Bin Route "
+                width={100}
+                height={40}
+              className="h-12 w-auto object-contain mb-4"
+            />
+            </Link>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">
+              Welcome back
+            </h1>
+            <p className="text-xs text-slate-500 text-center">
+              Sign in to manage your dumpster rentals and pickups
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="w-full space-y-5">
-            {/* General Error */}
+          {/* Google Sign In */}
+          <div id="googleButtonDiv" className="w-full mb-5 flex justify-center min-h-[44px]"></div>
+
+          {/* Divider */}
+          <div className="relative flex py-2 items-center mb-5">
+            <div className="grow border-t border-slate-200"></div>
+            <span className="shrink mx-3 text-xs text-slate-400 font-medium">Or continue with email</span>
+            <div className="grow border-t border-slate-200"></div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             {errors.general && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm ">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xs text-red-600 text-xs">
                 {errors.general}
               </div>
             )}
 
             {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
-                Email
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="block text-xs font-semibold text-slate-700">
+                Email Address
               </label>
               <input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Please enter email address"
+                placeholder="name@example.com"
                 required
-                className="w-full px-4 py-3 text-gray-700 bg-gray-100 border-none focus:ring-2 focus:ring-blue-500 outline-none transition text-sm placeholder-gray-400"
+                className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xs text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#0061AA] focus:bg-white transition-colors"
               />
             </div>
 
             {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
-                Password
-              </label>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="block text-xs font-semibold text-slate-700">
+                  Password
+                </label>
+                <a
+                  href="/forgot-password"
+                  className="text-xs font-semibold text-[#0061AA] hover:underline"
+                >
+                  Forgot password?
+                </a>
+              </div>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Please enter password"
+                  placeholder="Enter your password"
                   required
-                  className="w-full px-4 py-3 pr-12 text-gray-700 bg-gray-100 border-none focus:ring-2 focus:ring-blue-500 outline-none transition text-sm placeholder-gray-400 font-sans"
+                  className="w-full px-3.5 py-2.5 pr-10 bg-[#f8fafc] border border-slate-200 rounded-xs text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#0061AA] focus:bg-white transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-300 hover:text-gray-500 transition"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition"
                 >
-                  {showPassword ? (
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.8}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.8}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.8}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me + Forgot Password */}
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
-                />
-                <span className="text-sm text-gray-500">Remember me</span>
+            {/* Remember Me */}
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="size-3.5 rounded-xs border-slate-300 text-[#0061AA] focus:ring-0 cursor-pointer accent-[#0061AA]"
+              />
+              <label htmlFor="rememberMe" className="text-xs text-slate-600 cursor-pointer select-none">
+                Remember me on this device
               </label>
-              <a
-                href="/forgot-password"
-                className="text-sm font-semibold text-gray-500 transition"
-              >
-                Forgot Password?
-              </a>
             </div>
 
-            {/* Sign In Button */}
-            <button
+            {/* Submit */}
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full text-white font-semibold py-3.5 px-4  cursor-pointer transition disabled:opacity-70 disabled:cursor-not-allowed text-sm"
-              style={{
-                background: "#0061AA",
-                boxShadow: "0 4px 14px 0 rgba(37,99,235,0.35)",
-              }}
+              variant="primary"
+              className="w-full py-2.5 mt-2"
             >
-              {isLoading ? "Logging in..." : "Log in"}
-            </button>
+              {isLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+              <span>{isLoading ? "Signing in..." : "Sign in"}</span>
+            </Button>
           </form>
 
-          {/* Divider line */}
-          <div className="w-full h-px bg-gray-100 my-6" />
-
-          {/* Sign Up */}
-          <p className="text-sm text-gray-400">
-            Don&apos;t have an account?{" "}
-            <a
-              href="/signup"
-              className="text-blue-700 font-semibold hover:text-blue-700 transition"
-            >
-              Sign up
+          {/* Sign Up Footer */}
+          <p className="text-center text-xs text-slate-500 mt-6 pt-6 border-t border-slate-100">
+            Do not have an account?{" "}
+            <a href="/signup" className="text-[#0061AA] font-semibold hover:underline">
+              Create account
             </a>
           </p>
         </div>
       </div>
-      {/* Right: Illustration with Overlay */}
-      <div className="hidden md:block relative w-1/2 flex-shrink-0">
+
+      {/* Right Hero Visual */}
+      <div className="hidden lg:block relative w-1/2 bg-slate-950">
         <Image
           src="/hero.png"
-          alt="Sign up illustration"
+          alt="Bin Route  Fleet"
           fill
           priority
-          className=""
+          className="object-cover opacity-40 filter brightness-90"
         />
-        {/* Dark Branded Overlay */}
-        <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
-          <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
-          <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
-            Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
+        <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent" />
+        <div className="absolute bottom-12 left-12 right-12 text-white">
+          <span className="block text-xs font-bold uppercase tracking-wider text-sky-400 mb-2">
+            Customer Portal
+          </span>
+          <h2 className="text-2xl font-bold mb-2 text-white leading-snug">
+            Manage Dumpster Rentals with Clarity
+          </h2>
+          <p className="text-xs text-slate-300 leading-relaxed max-w-md">
+            Schedule deliveries, track container swap-outs, download invoices, and manage service areas seamlessly in one dashboard.
           </p>
         </div>
       </div>

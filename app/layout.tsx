@@ -1,24 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Oswald } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "@/redux/ReduxProvider";
+import { Toaster } from "sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const oswald = Oswald({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-heading",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Labonte Disposal",
-  description: "Labonte Disposal Services",
+  title: "Bin Route  | Dumpster Rentals Across Greater Worcester, MA",
+  description: "Dependable roll-off dumpster rentals and commercial waste management solutions in Central Massachusetts.",
 };
-
-import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -26,17 +29,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${plusJakartaSans.variable} ${oswald.variable}`} suppressHydrationWarning>
       <head>
         <script src="https://accounts.google.com/gsi/client" async defer></script>
       </head>
       <body
-        className={`inter antialiased bg-[#F6F6F6]`}
+        className="font-sans antialiased bg-white text-slate-900"
         suppressHydrationWarning
       >
-      {/* <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F6F6F6]`}
-      > */}
         <ReduxProvider>{children}</ReduxProvider>
         <Toaster position="top-right" richColors />
       </body>

@@ -11,6 +11,9 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useVerifyOtpMutation, useEmailVerifyOtpMutation } from "@/redux/api/auth/authApi";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 export default function VerifyOtpPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -60,7 +63,7 @@ export default function VerifyOtpPage() {
   const handleSubmit = async () => {
     const otpString = otp.join("");
     if (otpString.length !== 6) {
-      toast.error("Please enter a complete 6-digit OTP");
+      toast.error("Please enter a complete 6-digit verification code");
       return;
     }
 
@@ -78,44 +81,46 @@ export default function VerifyOtpPage() {
           otpCode: otpString,
         }).unwrap();
         const accessToken = response.data?.accessToken;
-        toast.success(response.message || "OTP verified successfully!");
+        toast.success(response.message || "Code verified successfully!");
         router.push(
           "/reset-password?accessToken=" + encodeURIComponent(accessToken || ""),
         );
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      toast.error(err.data?.message || "Invalid OTP. Please try again.");
+      toast.error(err.data?.message || "Invalid code. Please try again.");
     }
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden font-sans">
-      {/* Right: Form Panel */}
-      <div className="flex-1 border border-blue-200 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
-        <div className="w-full max-w-xl bg-white border border-blue-300 rounded-2xl px-10 py-12 flex flex-col items-center">
-          <Image
-            src="/LogoHome.png"
-            alt="Login illustration"
-            width={96}
-            height={56}
-            className="object-cover mb-6"
-          />
-          {/* Heading */}
-          <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
-            Verify OTP
-          </h2>
-          <p className="text-sm text-gray-400 mb-1 text-center leading-relaxed">
-            Please enter the 6-digit verification code
-          </p>
+    <div className="flex min-h-screen w-full font-sans bg-[#f8fafc]">
+      {/* Left: Form Panel */}
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6">
+        <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-xs p-8 sm:p-10 shadow-2xs">
+          <div className="flex flex-col items-center mb-8">
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Bin Route "
+                width={100}
+                height={40}
+                className="h-12 w-auto object-contain mb-4"
+              />
+            </Link>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">
+              Verify Security Code
+            </h1>
+            <p className="text-xs text-slate-500 text-center max-w-xs">
+              Enter the 6-digit security code sent to your registered email address.
+            </p>
+          </div>
 
-          <div className="w-full space-y-6">
+          <div className="space-y-6">
             {/* OTP Inputs */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-4">
-                OTP Code
+              <label className="block text-xs font-semibold text-slate-700 mb-3 text-center">
+                6-Digit Verification Code
               </label>
-              <div className="flex gap-3 justify-between">
+              <div className="flex gap-2 justify-center">
                 {otp.map((digit, index) => (
                   <input
                     key={index}
@@ -129,83 +134,59 @@ export default function VerifyOtpPage() {
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={handlePaste}
-                    className="w-8 h-8 md:w-12 md:h-12 text-center text-gray-800 text-sm md:text-xl font-bold border border-gray-200 rounded-xl outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500 bg-white"
-                    style={
-                      digit
-                        ? { borderColor: "#2563eb", background: "#eff6ff" }
-                        : {}
-                    }
+                    className={`size-11 sm:size-12 text-center text-slate-900 text-lg font-bold border rounded-xs outline-none transition-colors ${digit
+                      ? "border-[#0061AA] bg-blue-50/40"
+                      : "border-slate-200 bg-[#f8fafc] focus:border-[#0061AA] focus:bg-white"
+                      }`}
                   />
                 ))}
               </div>
             </div>
 
             {/* Verify Button */}
-            <button
+            <Button
               onClick={handleSubmit}
               disabled={isLoading || otp.join("").length !== 6}
-              className="w-full text-white font-semibold py-3.5 px-4 rounded-xl cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
-              style={{
-                background: "#2563eb",
-                boxShadow: "0 4px 14px 0 rgba(37,99,235,0.35)",
-              }}
+              variant="primary"
+              className="w-full py-2.5"
             >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Verifying...
-                </>
-              ) : (
-                "Verify OTP"
-              )}
-            </button>
+              {isLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+              <span>{isLoading ? "Verifying..." : "Verify Code"}</span>
+            </Button>
           </div>
 
-          {/* Divider */}
-          <div className="w-full h-px bg-gray-100 my-6" />
-
           {/* Back to Login */}
-          <p className="text-sm text-gray-400">
-            Remember your password?{" "}
+          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
             <a
               href="/login"
-              className="text-blue-600 font-semibold hover:text-blue-700 transition"
+              className="inline-flex items-center gap-1.5 text-xs text-[#0061AA] font-semibold hover:underline"
             >
-              Back to Login
+              <ArrowLeft className="size-3" />
+              <span>Back to Login</span>
             </a>
-          </p>
+          </div>
         </div>
       </div>
 
-      {/* Left: Full bleed image */}
-      <div className="hidden md:block relative w-1/2 flex-shrink-0">
+      {/* Right Hero Visual */}
+      <div className="hidden lg:block relative w-1/2 bg-slate-950">
         <Image
-          src="/login-image.png"
-          alt="Sign up illustration"
+          src="/hero.png"
+          alt="Bin Route  Fleet"
           fill
           priority
-          className="object-cover"
+          className="object-cover opacity-40 filter brightness-90"
         />
-        {/* Dark Branded Overlay */}
-        <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
-          <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
-          <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
-            Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
+        <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent" />
+        <div className="absolute bottom-12 left-12 right-12 text-white">
+          <span className="block text-xs font-bold uppercase tracking-wider text-sky-400 mb-2">
+            Two-Step Verification
+          </span>
+          <h2 className="text-2xl font-bold mb-2 text-white leading-snug">
+            Protected Account Operations
+          </h2>
+          <p className="text-xs text-slate-300 leading-relaxed max-w-md">
+            We use verified authentication to protect your booking records, billing methods, and jobsite deliveries.
           </p>
         </div>
       </div>

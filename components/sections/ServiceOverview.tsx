@@ -9,12 +9,14 @@ import {
   MapPin,
   CalendarDays,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
 import ServiceCard from "./ServiceCard";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { useDispatch } from "react-redux";
 import { setServiceType } from "@/feature/user/bookingSlice";
+import { motion } from "framer-motion";
 
 const ServiceOverview = () => {
   const dispatch = useDispatch();
@@ -22,69 +24,84 @@ const ServiceOverview = () => {
   const handleBookNow = (type: "roll-off" | "commercial") => {
     dispatch(setServiceType(type));
   };
+
   const commercialServices = [
     {
       icon: ShoppingCart,
-      title: "Flexible Ordering",
+      title: "Scheduled Business Dumpsters",
       description:
-        "With our flexible ordering system, your business has full control over waste management. You can request extra pickups whenever needed, swap dumpster sizes or service types without any hassle",
+        "Permanent 2 to 8-yard commercial dumpsters with recurring weekly or bi-weekly pickup schedules for restaurants, retail, and offices.",
     },
     {
       icon: Clock,
-      title: "Real-Time Updates",
+      title: "On-Demand Container Swaps",
       description:
-        "Our real-time update system keeps your business fully informed about every dumpster service. Track deliveries and pickups live, receive instant notifications about any delays or completed services",
+        "Direct dispatch notifications for quick bin empties and swaps without disrupting ongoing commercial operations.",
     },
     {
       icon: MapPin,
-      title: "Multi-Location Support",
+      title: "Multi-Jobsite Logistics",
       description:
-        "Our multi-location support lets your business seamlessly handle dumpsters across multiple branches or sites. You can view the status of each container, track ongoing services",
+        "Centralized billing and coordinated roll-off container swaps across multiple active job sites in Central Massachusetts.",
     },
   ];
 
   const rollServices = [
     {
       icon: CalendarDays,
-      title: "Easy Scheduling & Pickup",
+      title: "Same / Next-Day Delivery",
       description:
-        "We understand that home projects don't always follow a strict schedule. That's why our residential services allow you to easily book deliveries and request pickups online whenever you're ready.",
+        "Prompt container drop-offs placed safely on your driveway with wood blocking protection boards included free.",
     },
     {
       icon: Clock,
-      title: "One-Time Dumpster Rental",
+      title: "Standard 7-Day Rental Included",
       description:
-        "Whether you're renovating your kitchen, cleaning out your garage, or handling a landscaping project, our one-time dumpster rental makes waste removal simple and stress-free.",
+        "Keep your container for a full week to complete cleanouts, roofing, or remodeling at your own pace with easy extension options.",
     },
     {
       icon: ShieldCheck,
-      title: "Reliable & Transparent Service",
+      title: "Flat-Rate Transparent Pricing",
       description:
-        "Our residential dumpster services are built around simplicity and trust. You'll receive clear pricing upfront with no hidden fees, along with reliable delivery and pickup times you can count on.",
+        "Includes drop-off, pickup, specified tonnage weight allowance, and state-certified disposal with zero hidden fuel surcharges.",
     },
   ];
 
   return (
-    <section id="services" className="py-24 bg-white overflow-hidden">
-      <div className="container">
+    <section id="services" className="py-20 md:py-24 bg-white overflow-hidden">
+      <div className="container mx-auto max-w-6xl px-4">
         {/* Main Header */}
-        <SectionHeader
-          badge="Our Service"
-          title={
-            <>
-              Flexible Dumpster Services, <br /> Anytime You Need
-            </>
-          }
-          className="mb-24"
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <SectionHeader
+            badge="Disposal Services"
+            title="Roll-Off & Commercial Waste Solutions"
+            subtitle="Direct local dispatch for residential homeowners, roofing contractors, and Central Massachusetts commercial businesses."
+          />
+        </motion.div>
 
-        {/* Subsection 1: Commercial Services (Text Left, Image Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start mb-32">
-          <div className="lg:col-span-6 order-2 lg:order-1">
-            <h3 className="text-[2rem] font-bold text-[#0c243c] mb-10">
-              Commercial Services
-            </h3>
-            <div className="space-y-4 mb-10">
+        {/* Subsection 1: Commercial Services */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-20 pb-16 border-b border-slate-200">
+          <motion.div 
+            className="lg:col-span-6 order-2 lg:order-1 space-y-5"
+            initial={{ opacity: 0, x: -25 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <div>
+              <span className="block text-xs font-bold uppercase text-[#0060AF] mb-1.5">
+                Commercial & Business Waste
+              </span>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">
+                Scheduled Commercial Dumpsters
+              </h3>
+            </div>
+            <div className="space-y-2.5">
               {commercialServices.map((service, index) => (
                 <ServiceCard
                   key={index}
@@ -94,40 +111,69 @@ const ServiceOverview = () => {
                 />
               ))}
             </div>
-            <Link href="/services/service-areas">
-              <Button 
-                variant={"primary"}
-                onClick={() => handleBookNow("commercial")}
-              >
-                Book Now
-              </Button>
-            </Link>
-          </div>
-          <div className="lg:col-span-6 relative h-[450px] md:h-[650px] order-1 lg:order-2">
+            <div className="pt-2">
+              <Link href="/services/service-areas">
+                <Button 
+                  variant="primary"
+                  onClick={() => handleBookNow("commercial")}
+                  className="px-6 text-xs sm:text-sm font-bold rounded-md shadow-sm"
+                >
+                  <span>Book Commercial Service</span>
+                  <ArrowRight className="size-4" />
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="lg:col-span-6 relative h-[340px] md:h-[440px] order-1 lg:order-2 border border-slate-200 rounded-xl overflow-hidden shadow-xs"
+            initial={{ opacity: 0, x: 25 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <Image
               src="/dummy.png"
               alt="Commercial Waste Management"
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 hover:scale-102"
             />
-          </div>
+          </motion.div>
         </div>
 
-        {/* Subsection 2: Roll of Dumpster Services (Image Left, Text Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          <div className="lg:col-span-6 relative h-[450px] md:h-[650px]">
+        {/* Subsection 2: Roll-Off Dumpster Services */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <motion.div 
+            className="lg:col-span-6 relative h-[340px] md:h-[440px] border border-slate-200 rounded-xl overflow-hidden shadow-xs"
+            initial={{ opacity: 0, x: -25 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <Image
               src="/home-1.png"
-              alt="Residential Waste Management"
+              alt="Residential Roll-Off Dumpsters"
               fill
-              className="object-cover shadow-none"
+              className="object-cover transition-transform duration-500 hover:scale-102"
             />
-          </div>
-          <div className="lg:col-span-6">
-            <h3 className="text-[2rem] font-bold text-[#0c243c] mb-10">
-              Roll of Dumpster Services
-            </h3>
-            <div className="space-y-4 mb-10">
+          </motion.div>
+
+          <motion.div 
+            className="lg:col-span-6 space-y-5"
+            initial={{ opacity: 0, x: 25 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <div>
+              <span className="block text-xs font-bold uppercase text-[#0060AF] mb-1.5">
+                Residential & Construction
+              </span>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">
+                Roll-Off Dumpsters for Cleanouts
+              </h3>
+            </div>
+            <div className="space-y-2.5">
               {rollServices.map((service, index) => (
                 <ServiceCard
                   key={index}
@@ -137,17 +183,19 @@ const ServiceOverview = () => {
                 />
               ))}
             </div>
-            <div className="flex justify-end">
+            <div className="pt-2">
               <Link href="/services/service-areas">
                 <Button 
-                  variant={"primary"}
+                  variant="primary"
                   onClick={() => handleBookNow("roll-off")}
+                  className="px-6 text-xs sm:text-sm font-bold rounded-md shadow-sm"
                 >
-                  Book Now
+                  <span>Check Roll-Off Availability</span>
+                  <ArrowRight className="size-4" />
                 </Button>
               </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
