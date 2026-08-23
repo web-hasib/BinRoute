@@ -25,42 +25,53 @@ const BlogCard: React.FC<BlogCardProps> = ({
     image,
 }) => {
     return (
-        <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-            {/* Image with Category Badge */}
-            <div className="relative aspect-video w-full overflow-hidden">
-                <Image src={image} alt={title} fill className="object-cover" />
-                <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 text-xs font-bold text-[#0061AA] uppercase tracking-wider">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-slate-300 transition-all duration-150 flex flex-col group shadow-xs">
+            {/* Image with Category Tag */}
+            <div className="relative aspect-16/10 w-full overflow-hidden bg-slate-100 border-b border-slate-100">
+                <Image
+                    src={image || "/blog/hero_bg.png"}
+                    alt={title}
+                    fill
+                    unoptimized
+                    className="object-cover transition-transform duration-300 group-hover:scale-102"
+                />
+                <span className="absolute top-2.5 right-2.5 bg-white/95 px-2.5 py-0.5 text-[11px] font-bold text-[#0060AF] rounded-md border border-slate-200 shadow-2xs">
                     {category}
                 </span>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-4">
-                <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
-                    <div className="flex items-center gap-1.5">
-                        <Calendar className="size-3.5" />
-                        {date}
+            <div className="p-4 sm:p-5 flex flex-col grow justify-between space-y-3">
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2.5 text-[11px] font-medium text-slate-500">
+                        <div className="flex items-center gap-1">
+                            <Calendar className="size-3 text-[#0060AF]" />
+                            <span>{date}</span>
+                        </div>
+                        <span>•</span>
+                        <div className="flex items-center gap-1">
+                            <Clock className="size-3 text-slate-400" />
+                            <span>{readTime}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                        <Clock className="size-3.5" />
-                        {readTime}
-                    </div>
+
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-[#0060AF] transition-colors">
+                        {title}
+                    </h3>
+                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                        {excerpt}
+                    </p>
                 </div>
 
-                <h3 className="text-xl font-bold text-[#0A2540] line-clamp-2 min-h-[3.5rem]">
-                    {title}
-                </h3>
-                <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
-                    {excerpt}
-                </p>
-
-                <Link
-                    href={`/blog/${id}`}
-                    className="inline-flex items-center gap-2 text-sm font-bold text-[#0061AA] hover:text-[#004e89] transition-colors"
-                >
-                    Read more
-                    <ArrowRight className="size-4" />
-                </Link>
+                <div className="pt-2 border-t border-slate-100">
+                    <Link
+                        href={`/blog/${id}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-[#0060AF] hover:underline"
+                    >
+                        <span>Read Full Guide</span>
+                        <ArrowRight className="size-3" />
+                    </Link>
+                </div>
             </div>
         </div>
     );

@@ -1,8 +1,9 @@
 "use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
-import { MapPin, Calendar, ChevronDown, Search, Loader2, LocateFixed } from "lucide-react";
+import { MapPin, Calendar, ChevronDown, Search, Loader2, LocateFixed, ArrowLeft, Building2, User, Phone, Mail, FileText, CheckCircle } from "lucide-react";
 import { updateBookingData, updateContactInfo, setSubscriptionData, setQuoteData } from "@/feature/user/bookingSlice";
 import PricingSidebar from "./PricingSidebar";
 import { cn } from "@/lib/utils";
@@ -12,23 +13,13 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useJsApiLoader } from "@react-google-maps/api";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
 
 const LIBRARIES: ("places")[] = ["places"];
 
 interface GoogleAutocompleteSuggestion {
   description: string;
   place_id: string;
-}
-
-interface GooglePlaceDetails {
-  place_id: string;
-  formatted_address: string;
-  geometry: {
-    location: {
-      lat: () => number;
-      lng: () => number;
-    }
-  };
 }
 
 interface InformationStepProps {
@@ -90,7 +81,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
   const [createSubscription, { isLoading: isSubscribing }] = useCreateSubscriptionMutation();
   const [getQuote, { isLoading: isGettingQuote }] = useGetQuoteMutation();
   
-  const { data: areaData, isLoading: isLoadingArea } = useGetServiceAreaByIdQuery(areaId || "", {
+  const { data: areaData } = useGetServiceAreaByIdQuery(areaId || "", {
     skip: !areaId
   });
 
@@ -99,70 +90,70 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY || "",
     libraries: LIBRARIES
-  })
+  });
 
-  const [addressInput, setAddressInput] = useState(booking.dropOffAddress || "")
-  const [suggestions, setSuggestions] = useState<GoogleAutocompleteSuggestion[]>([])
-  const [showDropdown, setShowDropdown] = useState(false)
-  const [isSearching, setIsSearching] = useState(false)
-  const [shouldSearch, setShouldSearch] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null)
-  const placesService = useRef<google.maps.places.PlacesService | null>(null)
+  const [addressInput, setAddressInput] = useState(booking.dropOffAddress || "");
+  const [suggestions, setSuggestions] = useState<GoogleAutocompleteSuggestion[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [shouldSearch, setShouldSearch] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
+  const placesService = useRef<google.maps.places.PlacesService | null>(null);
 
   // Sync initial address
   useEffect(() => {
     if (booking.dropOffAddress && !addressInput) {
-      setAddressInput(booking.dropOffAddress)
+      setAddressInput(booking.dropOffAddress);
     }
-  }, [booking.dropOffAddress])
+  }, [booking.dropOffAddress, addressInput]);
 
   // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false)
+        setShowDropdown(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Google Search Logic
   useEffect(() => {
     if (!isLoaded || addressInput.length < 3 || !shouldSearch) {
       if (!shouldSearch) setShowDropdown(false);
-      setSuggestions([])
-      return
+      setSuggestions([]);
+      return;
     }
 
     if (!autocompleteService.current) {
-      autocompleteService.current = new window.google.maps.places.AutocompleteService()
+      autocompleteService.current = new window.google.maps.places.AutocompleteService();
     }
 
     const delayDebounce = setTimeout(() => {
-      setIsSearching(true)
+      setIsSearching(true);
       autocompleteService.current?.getPlacePredictions(
         { input: addressInput },
         (predictions, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-            setSuggestions(predictions.slice(0, 5))
-            setShowDropdown(true)
+            setSuggestions(predictions.slice(0, 5));
+            setShowDropdown(true);
           } else {
-            setSuggestions([])
+            setSuggestions([]);
           }
-          setIsSearching(false)
+          setIsSearching(false);
         }
-      )
-    }, 600)
+      );
+    }, 600);
 
-    return () => clearTimeout(delayDebounce)
-  }, [addressInput, isLoaded, shouldSearch])
+    return () => clearTimeout(delayDebounce);
+  }, [addressInput, isLoaded, shouldSearch]);
 
   const handleSuggestionClick = (suggestion: GoogleAutocompleteSuggestion) => {
     if (!placesService.current) {
-      const mapDiv = document.createElement('div')
-      placesService.current = new window.google.maps.places.PlacesService(mapDiv)
+      const mapDiv = document.createElement('div');
+      placesService.current = new window.google.maps.places.PlacesService(mapDiv);
     }
 
     placesService.current.getDetails(
@@ -184,10 +175,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
             const areaState = areaData?.data?.locationInfo?.state;
 
             const isCityMatch = Boolean(areaCity && placeCity && areaCity.toLowerCase() === placeCity.toLowerCase() && (!areaState || !placeState || areaState.toLowerCase() === placeState.toLowerCase()));
-
             const serviceAreaDisplay = areaCity ? `${areaCity}${areaState ? `, ${areaState}` : ""}` : areaName;
 
-            // Validation: Ensure the selected address is within the service area's allowed postal codes or the city/state matches
             if (allowedPostalCodes.length > 0 && !isCityMatch) {
               if (!finalPostalCode || !allowedPostalCodes.includes(finalPostalCode)) {
                 toast.error(
@@ -210,14 +199,12 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
           };
 
           if (!postalCode) {
-            // Fallback 1: Try to extract from text
             const addressText = place.formatted_address || suggestion.description;
             const zipMatch = addressText.match(/\b\d{5}\b/);
             
             if (zipMatch) {
               checkAndSetAddress(zipMatch[0]);
             } else {
-              // Fallback 2: Reverse Geocode to find missing zip
               const geocoder = new window.google.maps.Geocoder();
               geocoder.geocode({ location: { lat, lng } }, (results, geoStatus) => {
                 let foundZip = postalCode;
@@ -238,8 +225,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
           }
         }
       }
-    )
-  }
+    );
+  };
 
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -279,7 +266,6 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
             const areaState = areaData?.data?.locationInfo?.state;
 
             const isCityMatch = Boolean(areaCity && placeCity && areaCity.toLowerCase() === placeCity.toLowerCase() && (!areaState || !placeState || areaState.toLowerCase() === placeState.toLowerCase()));
-
             const serviceAreaDisplay = areaCity ? `${areaCity}${areaState ? `, ${areaState}` : ""}` : areaName;
 
             if (allowedPostalCodes.length > 0 && !isCityMatch) {
@@ -306,7 +292,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
           }
         });
       },
-      (error) => {
+      () => {
         setIsSearching(false);
         toast.error("Failed to get your location. Please check browser permissions.");
       }
@@ -340,12 +326,11 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
     }
   };
 
-  // Clear service days if frequency changes
   useEffect(() => {
     if (isCommercial) {
       handleInputChange("serviceDays", []);
     }
-  }, [booking.serviceFrequency]);
+  }, [booking.serviceFrequency, isCommercial]);
 
   const handleContactChange = (field: string, value: string) => {
     dispatch(updateContactInfo({ [field]: value }));
@@ -353,7 +338,6 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
 
   const handleConfirmBooking = async () => {
     try {
-      // Find the actual planId from area data
       const selectedPlan = areaData?.data?.plans?.find((p: any) => p.id === dumpsterSize);
       const planId = selectedPlan?.planId;
 
@@ -362,7 +346,6 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         return;
       }
 
-      // Basic validation
       if (!contactInfo.firstName || !contactInfo.email || !contactInfo.phone || !contactInfo.companyName || !booking.dropOffAddress) {
         toast.error("Please fill in all required contact and schedule information.");
         return;
@@ -375,7 +358,6 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
 
       const validDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-      // If quoteData is missing, user needs to get a quote first
       if (!booking.quoteData) {
         toast.error("Please calculate your quote first.");
         return;
@@ -385,8 +367,8 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         planId,
         dropoffAddress: booking.dropOffAddress,
         dropoffDate: new Date(booking.dropOffDate || Date.now()).toISOString(),
-        dropoffLatitude: booking.dropoffLatitude || 23.8,
-        dropoffLongitude: booking.dropoffLongitude || 90.42,
+        dropoffLatitude: booking.dropoffLatitude || 42.2626,
+        dropoffLongitude: booking.dropoffLongitude || -71.8023,
         businessType: booking.businessType || "other",
         wasteType: booking.wasteType || "trash",
         firstName: contactInfo.firstName,
@@ -400,16 +382,14 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
       if (isCommercial) {
         payload.serviceFrequency = booking.serviceFrequency || "1x/week";
         payload.contractDuration = booking.contractDuration || "1 year";
-        // Filter out any short names (like "Mon") and only send full day names
-        payload.serviceDays = (booking.serviceDays || [])
-          .filter(day => validDays.includes(day));
+        payload.serviceDays = (booking.serviceDays || []).filter(day => validDays.includes(day));
         
         if (payload.serviceDays.length === 0) {
-          payload.serviceDays = ["Monday"]; // Fallback to at least one day
+          payload.serviceDays = ["Monday"];
         }
       } else {
         payload.pickupDate = new Date(booking.pickUpDate).toISOString();
-        payload.rentalDuration = "0"; // As per roll-off example
+        payload.rentalDuration = "0";
       }
 
       const response = await createSubscription(payload).unwrap();
@@ -439,7 +419,6 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
 
   const handleGetQuote = async () => {
     try {
-      // Find the actual planId from area data
       const selectedPlan = areaData?.data?.plans?.find((p: any) => p.id === dumpsterSize);
       const planId = selectedPlan?.planId;
 
@@ -472,7 +451,7 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
         payload.serviceDays = (booking.serviceDays || []).filter(day => validDays.includes(day));
         
         if (payload.serviceDays.length === 0) {
-          payload.serviceDays = ["Monday"]; // Fallback
+          payload.serviceDays = ["Monday"];
         }
       } else {
         payload.dropoffDate = new Date(booking.dropOffDate).toISOString();
@@ -493,78 +472,91 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* Left Column: Forms */}
+      {/* Left Column: Form Cards */}
       <div className={cn("space-y-6 transition-all duration-300", booking.quoteData ? "lg:col-span-8" : "lg:col-span-12")}>
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-[#0265AF] transition-colors mb-4"
+          type="button"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-[#0060AF] transition-colors mb-2 cursor-pointer"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back to Service Selection
+          <ArrowLeft className="size-4" />
+          <span>Back to Service & Container Selection</span>
         </button>
 
-        {/* Schedule Details */}
-        <div className="bg-white p-8 border border-gray-100 shadow-sm">
-          <h3 className="text-xl font-bold text-[#0c243c] mb-8">Schedule Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-            {/* Drop-off Address */}
-            <div className="md:col-span-2 space-y-2 relative" ref={dropdownRef}>
-              <label className="text-sm font-semibold text-[#0c243c]">Dumpster Drop-off Address</label>
+        {/* Schedule & Placement Card */}
+        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs">
+          <div className="mb-6">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0060AF]">
+              Step 2.1
+            </span>
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">
+              Placement Address & Schedule Details
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Specify your exact drop-off address in Worcester County and delivery dates.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Drop-off Address Input */}
+            <div className="md:col-span-2 space-y-1.5 relative" ref={dropdownRef}>
+              <label className="text-xs font-bold text-slate-800">
+                Dumpster Drop-off Address <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-[#0060AF]" />
                 <input
                   type="text"
-                  placeholder={isCommercial ? "150 Cambridge St Boston, MA 02114" : "Enter full address..."}
+                  placeholder={isCommercial ? "Enter commercial facility address..." : "Enter street address, town, and zip code..."}
                   value={addressInput}
                   onChange={(e) => {
-                    setAddressInput(e.target.value)
-                    setShouldSearch(true)
+                    setAddressInput(e.target.value);
+                    setShouldSearch(true);
                   }}
                   onFocus={() => {
-                    if (suggestions.length > 0) setShowDropdown(true)
+                    if (suggestions.length > 0) setShowDropdown(true);
                   }}
-                  className="w-full pl-12 pr-20 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                  className="w-full pl-11 pr-24 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                   <button 
                     type="button"
                     onClick={handleGetCurrentLocation}
-                    className="text-[#0265AF] hover:text-[#1a3857] transition-colors p-1.5 bg-white rounded-md shadow-sm border border-gray-200 flex items-center justify-center group"
+                    className="text-[#0060AF] hover:text-blue-900 p-1.5 bg-white rounded-lg shadow-xs border border-slate-200 flex items-center justify-center transition-all cursor-pointer"
                     title="Use current location"
                   >
-                    <LocateFixed className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <LocateFixed className="size-4" />
                   </button>
                   {isSearching ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    <Loader2 className="size-4 animate-spin text-slate-400 mr-1" />
                   ) : (
-                    <Search className="w-4 h-4 text-gray-400" />
+                    <Search className="size-4 text-slate-400 mr-1" />
                   )}
                 </div>
               </div>
 
-              {/* Suggestions Dropdown */}
+              {/* Autocomplete Dropdown */}
               {showDropdown && suggestions.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg rounded-md overflow-hidden">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden text-left animate-in fade-in duration-100">
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion.place_id}
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-start gap-3 transition-colors border-b last:border-none border-gray-100"
+                      type="button"
+                      className="w-full px-4 py-3 text-left text-xs sm:text-sm hover:bg-blue-50/70 flex items-start gap-2.5 transition-colors border-b last:border-none border-slate-100 text-slate-800 font-medium cursor-pointer"
                     >
-                      <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700 line-clamp-1">{suggestion.description}</span>
+                      <MapPin className="size-4 text-[#0060AF] mt-0.5 shrink-0" />
+                      <span className="line-clamp-1">{suggestion.description}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Dates */}
-            <div className={cn("space-y-2", isCommercial && "md:col-span-2")}>
-              <label className="text-sm font-semibold text-[#0c243c]">
-                Dumpster Drop-off Date
+            {/* Drop-off Date */}
+            <div className={cn("space-y-1.5", isCommercial && "md:col-span-2")}>
+              <label className="text-xs font-bold text-slate-800">
+                Drop-off Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -572,83 +564,82 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
                   min={new Date().toISOString().split("T")[0]}
                   value={booking.dropOffDate}
                   onChange={(e) => handleInputChange("dropOffDate", e.target.value)}
-                  className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
                 />
-                {!booking.dropOffDate && (
-                  <Calendar className="absolute hidden right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                )}
               </div>
             </div>
 
+            {/* Pick-up Date for Roll-Off */}
             {!isCommercial && (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-[#0c243c]">Dempster Pick-up Date</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">
+                  Pick-up Date <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     type="date"
                     min={booking.dropOffDate || new Date().toISOString().split("T")[0]}
                     value={booking.pickUpDate}
                     onChange={(e) => handleInputChange("pickUpDate", e.target.value)}
-                    className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
                   />
-                  {!booking.pickUpDate && (
-                    <Calendar className="absolute hidden right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  )}
                 </div>
               </div>
             )}
 
-            {/* Business & Waste Type */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">Business Type</label>
+            {/* Business Type */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Business / Project Type</label>
               <div className="relative">
                 <select
                   value={booking.businessType}
                   onChange={(e) => handleInputChange("businessType", e.target.value)}
-                  className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none appearance-none"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none appearance-none transition-all"
                 >
-                  <option value="">Select Business Type</option>
+                  <option value="">Select Project Type</option>
                   {businessTypeEnum.options.map((type) => (
                     <option key={type} value={type}>{formatLabel(type)}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">Waste Type</label>
+            {/* Waste Type */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Material / Debris Type</label>
               <div className="relative">
                 <select
                   value={booking.wasteType}
                   onChange={(e) => handleInputChange("wasteType", e.target.value)}
-                  className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none appearance-none"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none appearance-none transition-all"
                 >
-                  <option value="">Select Waste Type</option>
+                  <option value="">Select Debris Type</option>
                   {wasteTypeEnum.options.map((type) => (
                     <option key={type} value={type}>{formatLabel(type)}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
           </div>
 
-          {/* Commercial Specific Sections */}
+          {/* Commercial Specific Options */}
           {isCommercial && (
-            <div className="mt-8 space-y-8">
-              <div className="space-y-4">
-                <label className="text-sm font-semibold text-[#0c243c]">Service Frequency</label>
-                <div className="grid grid-cols-3 gap-3">
+            <div className="mt-8 pt-6 border-t border-slate-100 space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-800">Pickup Frequency</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {serviceFrequencies.map((freq) => (
                     <button
                       key={freq}
+                      type="button"
                       onClick={() => handleInputChange("serviceFrequency", freq)}
                       className={cn(
-                        "py-3 px-4 text-xs font-medium border-2 transition-all",
+                        "py-2.5 px-3 text-xs font-bold rounded-lg border transition-all cursor-pointer",
                         booking.serviceFrequency === freq
-                          ? "border-[#0265AF] text-[#0265AF] shadow-sm bg-white"
-                          : "border-gray-100 text-gray-500 hover:border-gray-200"
+                          ? "bg-blue-50 text-[#0060AF] border-[#0060AF] shadow-xs"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
                       )}
                     >
                       {freq}
@@ -657,24 +648,19 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
                 </div>
               </div>
 
-              <div className="bg-[#E6F4EA] p-4 border border-[#D1E7D6]">
-                <p className="text-[11px] text-[#1E7E34] leading-relaxed">
-                  <span className="font-bold">Note:</span> Pricing depends on container size and pickup frequency. Additional charges may apply for weight, materials, or extended service areas.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="text-sm font-bold text-[#0c243c]">Select Contract Duration</h4>
-                <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-800">Contract Duration</label>
+                <div className="grid grid-cols-3 gap-2.5">
                   {contractDurations.map((duration) => (
                     <button
                       key={duration}
+                      type="button"
                       onClick={() => handleInputChange("contractDuration", duration)}
                       className={cn(
-                        "py-3 px-4 text-xs font-medium border-2 transition-all",
+                        "py-2.5 px-3 text-xs font-bold rounded-lg border transition-all cursor-pointer",
                         booking.contractDuration === duration
-                          ? "border-[#0265AF] text-[#0265AF] shadow-sm bg-white"
-                          : "border-gray-100 text-gray-500 hover:border-gray-200"
+                          ? "bg-blue-50 text-[#0060AF] border-[#0060AF] shadow-xs"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
                       )}
                     >
                       {duration}
@@ -683,18 +669,19 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <h4 className="text-sm font-bold text-[#0c243c]">Select New Service Days</h4>
-                <div className="grid grid-cols-7 gap-2">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-800">Preferred Pickup Days</label>
+                <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                   {serviceDays.map((day) => (
                     <button
                       key={day}
+                      type="button"
                       onClick={() => handleDayToggle(day)}
                       className={cn(
-                        "py-3 px-1 text-[10px] font-medium border transition-all text-center",
+                        "py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer text-center",
                         booking.serviceDays?.includes(day)
-                          ? "border-[#0265AF] text-[#0265AF] bg-[#EBF6FF]"
-                          : "border-gray-100 text-gray-400 hover:border-gray-200"
+                          ? "bg-[#0060AF] text-white border-[#0060AF]"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
                       )}
                     >
                       {day.substring(0, 3)}
@@ -706,96 +693,112 @@ const InformationStep = ({ onNext, onBack }: InformationStepProps) => {
           )}
         </div>
 
-        {/* Contact Info */}
-        <div className="bg-white p-8 border border-gray-100 shadow-sm">
-          <h3 className="text-xl font-bold text-[#0c243c] mb-8">Contact Info</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">First Name</label>
+        {/* Contact Information Card */}
+        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs">
+          <div className="mb-6">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0060AF]">
+              Step 2.2
+            </span>
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">
+              Contact & Delivery Verification
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Our driver will call 30 minutes prior to drop-off to confirm driveway placement.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">First Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
-                placeholder={isCommercial ? "Miller" : "Cooper"}
+                placeholder="John"
                 value={contactInfo.firstName}
                 onChange={(e) => handleContactChange("firstName", e.target.value)}
-                className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">Last name</label>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Last Name</label>
               <input
                 type="text"
-                placeholder={isCommercial ? "Robert" : "Warren"}
+                placeholder="Doe"
                 value={contactInfo.lastName}
                 onChange={(e) => handleContactChange("lastName", e.target.value)}
-                className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">Email Address</label>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Email Address <span className="text-red-500">*</span></label>
               <input
                 type="email"
-                placeholder={isCommercial ? "robert@example.com" : "nevaeh.simmons@example.com"}
+                placeholder="john@example.com"
                 value={contactInfo.email}
                 onChange={(e) => handleContactChange("email", e.target.value)}
-                className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">Phone Number</label>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Phone Number <span className="text-red-500">*</span></label>
               <input
-                type="text"
-                required
-                placeholder={isCommercial ? "(555) 123-4567" : "703 123 214"}
+                type="tel"
+                placeholder="(508) 555-0123"
                 value={contactInfo.phone}
                 onChange={(e) => handleContactChange("phone", e.target.value)}
-                className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
               />
             </div>
-            <div className="md:col-span-2 space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">Company Name</label>
+
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">Company / Job Site Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
-                required
-                placeholder={isCommercial ? "Miller Construction LLC" : "Enter your company name..."}
+                placeholder="Residential Cleanout or Company Name"
                 value={contactInfo.companyName}
                 onChange={(e) => handleContactChange("companyName", e.target.value)}
-                className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none"
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all"
               />
             </div>
-            <div className="md:col-span-2 space-y-2">
-              <label className="text-sm font-semibold text-[#0c243c]">
-                {isCommercial ? "Note (Optional)" : "Delivery Instructions"}
+
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-xs font-bold text-slate-800">
+                Driveway Placement Instructions (Optional)
               </label>
               <textarea
-                placeholder={isCommercial ? "Enter any special requests or instructions here." : "Enter any special requests or instructions here..."}
-                rows={4}
+                placeholder="e.g. Place on the right side of the driveway near the garage door. Wood boards under wheels requested."
+                rows={3}
                 value={contactInfo.deliveryInstructions}
                 onChange={(e) => handleContactChange("deliveryInstructions", e.target.value)}
-                className="w-full px-4 py-4 bg-gray-50 border-none text-sm focus:ring-1 focus:ring-[#0265AF] outline-none resize-none"
+                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#0060AF]/20 focus:border-[#0060AF] outline-none transition-all resize-none"
               />
             </div>
           </div>
         </div>
 
-        {/* Get Quote Button */}
-        <div className="pt-4 flex justify-end">
-          <button
+        {/* Calculate Quote Action Button */}
+        <div className="flex justify-end pt-2">
+          <Button
             onClick={handleGetQuote}
             disabled={isGettingQuote}
-            className="bg-[#0c243c] text-white px-8 py-3 rounded-none font-bold text-sm hover:bg-[#1a3857] transition-colors flex items-center gap-2 disabled:opacity-70"
+            variant="primary"
+            size="lg"
+            className="h-12 px-8 text-xs sm:text-sm font-bold gap-2 rounded-xl shadow-md"
           >
-            {isGettingQuote && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isGettingQuote ? "Calculating..." : "Get Quote"}
-          </button>
+            {isGettingQuote && <Loader2 className="size-4 animate-spin" />}
+            <span>{isGettingQuote ? "Calculating Route & Quote..." : "Calculate Final Quote"}</span>
+          </Button>
         </div>
       </div>
 
-      {/* Right Column: Pricing Sidebar */}
+      {/* Right Column: Dynamic Pricing Sidebar */}
       {booking.quoteData && (
         <div className="lg:col-span-4">
           <PricingSidebar 
-             buttonText={isSubscribing ? "Processing..." : (isCommercial ? "Continue Booking" : "Confirm Booking")}
-             onButtonClick={handleConfirmBooking}
+            buttonText={isSubscribing ? "Processing..." : (isCommercial ? "Continue to Payment" : "Confirm & Proceed to Payment")}
+            onButtonClick={handleConfirmBooking}
           />
         </div>
       )}

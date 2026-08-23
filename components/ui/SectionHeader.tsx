@@ -2,8 +2,9 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 interface SectionHeaderProps {
-  badge: string;
+  badge?: string;
   title: string | React.ReactNode;
+  subtitle?: string | React.ReactNode;
   className?: string;
   badgeClassName?: string;
   titleClassName?: string;
@@ -13,30 +14,38 @@ interface SectionHeaderProps {
 const SectionHeader = ({
   badge,
   title,
+  subtitle,
   className,
   badgeClassName,
   titleClassName,
-  maxWidth = "max-w-4xl",
+  maxWidth = "max-w-3xl",
 }: SectionHeaderProps) => {
   return (
-    <div className={cn("text-center mb-16 md:mb-20", className)}>
-      <span
-        className={cn(
-          "inline-block px-4 py-1.5 text-[#4a607d] text-[0.7rem] font-bold uppercase tracking-widest border border-[#E5E9EB] rounded-none mb-6",
-          badgeClassName,
-        )}
-      >
-        {badge}
-      </span>
+    <div className={cn("text-center mb-12 md:mb-16", className)}>
+      {badge && (
+        <span
+          className={cn(
+            "block text-xs font-bold uppercase text-[#0060AF] mb-2",
+            badgeClassName
+          )}
+        >
+          {badge}
+        </span>
+      )}
       <h2
         className={cn(
-          "text-4xl md:text-[3rem] font-bold text-[#172c41e9] tracking-tight leading-[1.1] mx-auto",
+          "text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 leading-[1.18] mx-auto",
           maxWidth,
           titleClassName,
         )}
       >
         {title}
       </h2>
+      {subtitle && (
+        <p className="mt-3 text-xs sm:text-sm md:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          {subtitle}
+        </p>
+      )}
     </div>
   );
 };

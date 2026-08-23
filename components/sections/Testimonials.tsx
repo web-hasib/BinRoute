@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Star, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { motion } from "framer-motion";
 
-// Google multicolor G SVG (small badge)
 const GoogleG = ({ size = 14 }: { size?: number }) => (
   <svg
     width={size}
@@ -47,53 +48,53 @@ const TestimonialCard = ({
   rating,
   text,
 }: Testimonial) => (
-  <div className="bg-white p-5 flex flex-col w-[270px] md:w-[310px] shrink-0 self-stretch">
+  <div className="bg-white p-5 rounded-xl border border-slate-200 flex flex-col w-[280px] md:w-[320px] shrink-0 self-stretch shadow-xs">
     {/* Avatar + meta */}
     <div className="flex items-start gap-3 mb-3">
-      {/* Avatar with Google badge */}
       <div className="relative shrink-0">
         <div
-          className={`size-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${bgColor}`}
+          className={`size-8.5 rounded-lg flex items-center justify-center text-white font-bold text-xs ${bgColor}`}
         >
           {initials}
         </div>
-        {/* Google G badge */}
-        <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
-          <GoogleG size={12} />
+        <div className="absolute -bottom-1 -right-1 bg-white rounded-md p-0.5 shadow-2xs border border-slate-100">
+          <GoogleG size={10} />
         </div>
       </div>
 
-      {/* Name / time */}
       <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-1">
-          <span className="font-bold text-[#0c243c] text-sm leading-tight truncate">
+          <span className="font-bold text-slate-900 text-xs sm:text-sm leading-tight truncate">
             {name}
           </span>
-          <CheckCircle2 className="size-3.5 text-blue-500 fill-blue-500 shrink-0" />
+          <CheckCircle2 className="size-3 text-blue-600 fill-blue-600 shrink-0" />
         </div>
-        <span className="text-gray-400 text-xs">{time}</span>
+        <span className="text-slate-400 text-[11px]">{time}</span>
       </div>
     </div>
 
     {/* Stars */}
-    <div className="flex gap-0.5 mb-3">
+    <div className="flex gap-0.5 mb-2.5">
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
-          className={`size-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`}
+          className={`size-3.5 ${i < rating
+              ? "fill-amber-400 text-amber-400"
+              : "fill-slate-200 text-slate-200"
+            }`}
         />
       ))}
     </div>
 
     {/* Review text */}
-    <p className="text-[#5a6b7d] text-sm leading-relaxed grow">
-      {text.length > 130 ? <>{text.slice(0, 130)}...</> : text}
+    <p className="text-slate-600 text-xs leading-relaxed grow">
+      {text.length > 140 ? <>{text.slice(0, 140)}...</> : text}
     </p>
 
-    {/* Read more */}
-    <button className="text-blue-600 font-semibold text-sm mt-3 text-left hover:underline w-fit">
-      Read more
-    </button>
+    <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+      <span>Verified Google Review</span>
+      <span className="text-[#0060AF] font-bold">Worcester County, MA</span>
+    </div>
   </div>
 );
 
@@ -101,62 +102,60 @@ const testimonials: Testimonial[] = [
   {
     name: "Chris Casello",
     initials: "CC",
-    bgColor: "bg-purple-600",
+    bgColor: "bg-[#005FA3]",
     time: "1 month ago",
     rating: 5,
-    text: "Timely, professional, and extremely affordable. Highly recommend.",
+    text: "Timely, professional, and extremely affordable. The driver was super careful placing the dumpster on our driveway with boards. Highly recommend!",
   },
   {
     name: "Samuel Isham",
     initials: "SI",
-    bgColor: "bg-teal-600",
+    bgColor: "bg-emerald-700",
     time: "2 months ago",
     rating: 5,
-    text: "Labonte Disposal was great during our renovation project. They were easy to schedule, communicative and efficient.",
+    text: "Bin Route  was great during our renovation project. They were easy to schedule, communicative and efficient.",
   },
   {
     name: "Savannah Dols",
     initials: "SD",
-    bgColor: "bg-violet-600",
+    bgColor: "bg-slate-800",
     time: "2 months ago",
     rating: 5,
-    text: "Rented a 20 yd dumpster from Labonte Disposal and I have nothing but great things to say.",
+    text: "Rented a 20 yd dumpster from Bin Route  and I have nothing but great things to say. Clear pricing and fast haul away.",
   },
   {
     name: "Chris Casello",
     initials: "CC",
-    bgColor: "bg-pink-600",
+    bgColor: "bg-slate-700",
     time: "2 months ago",
     rating: 5,
-    text: "Agradecemos pelo excelente serviço no aluguel da caçamba. Tudo ocorreu conforme o combinado.",
+    text: "Agradecemos pelo excelente serviço no aluguel da caçamba. Tudo ocorreu conforme o combinado e com pontualidade.",
   },
   {
     name: "Maria Johnson",
     initials: "MJ",
-    bgColor: "bg-orange-600",
+    bgColor: "bg-[#00487C]",
     time: "3 months ago",
     rating: 5,
-    text: "Excellent service! The dumpster was delivered and picked up on time. Highly recommend for any project.",
+    text: "Excellent service! The dumpster was delivered and picked up on time. Highly recommend for any home project in Worcester.",
   },
   {
     name: "James Walker",
     initials: "JW",
-    bgColor: "bg-blue-600",
+    bgColor: "bg-slate-900",
     time: "3 months ago",
     rating: 5,
-    text: "Best dumpster rental experience I've had. Fair pricing and the team was very professional throughout.",
+    text: "Best dumpster rental experience I've had. Fair pricing, no hidden drop fees, and the team was very professional throughout.",
   },
 ];
 
-// Card width (px) + gap-4 (16px)
-const CARD_PX = 310;
+const CARD_PX = 320;
 const GAP_PX = 16;
 const STEP = CARD_PX + GAP_PX;
 const LEN = testimonials.length;
 
-// Triple-clone for seamless infinite loop
 const cloned = [...testimonials, ...testimonials, ...testimonials];
-const START = LEN; // start in the middle set
+const START = LEN;
 
 const Testimonials = () => {
   const [idx, setIdx] = useState(START);
@@ -164,7 +163,6 @@ const Testimonials = () => {
   const busy = useRef(false);
   const paused = useRef(false);
 
-  // Re-enable transition one frame after a silent jump
   useEffect(() => {
     if (!anim) {
       const id = requestAnimationFrame(() => setAnim(true));
@@ -179,11 +177,10 @@ const Testimonials = () => {
     setIdx((p) => p + dir);
   };
 
-  // Autoplay: advance one card every 4 s, pause on hover
   useEffect(() => {
     const timer = setInterval(() => {
       if (!paused.current) go(1);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(timer);
   }, []);
 
@@ -203,57 +200,76 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="py-24 bg-[#002C4C]">
-      <div className="container">
+    <section className="py-20 md:py-24 bg-[#F8FAFC] text-slate-900 border-y border-slate-200 overflow-hidden">
+      <div className="container mx-auto max-w-6xl px-4">
         {/* Heading */}
-        <div className="text-center mb-12">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">
-            Testimonial
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
-            What Our Customers Say
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <span className="inline-block text-xs font-bold uppercase text-[#0060AF] bg-blue-100/70 border border-blue-200 px-3 py-1 rounded-md mb-2">
+            Verified Customer Feedback
+          </span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">
+            Trusted Across Worcester County
           </h2>
-        </div>
+          <p className="text-slate-600 text-xs sm:text-sm max-w-lg mx-auto">
+            Real reviews from local homeowners, general contractors, and commercial builders.
+          </p>
+        </motion.div>
 
-        {/* Google Reviews block */}
-        <div className="bg-white border border-gray-200 mx-auto px-6 py-5 mb-10">
-          {/* Top row: Google logo + label */}
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <GoogleG size={20} />
-            <span className="font-bold text-gray-800 text-base">Google</span>
-            <span className="text-gray-500 text-sm">reviews</span>
-          </div>
-          <p className="text-gray-400 text-xs mb-3">1 month ago</p>
-
-          {/* Rating row */}
+        {/* Google Reviews Summary */}
+        <motion.div
+          className="bg-white border border-slate-200 shadow-xs rounded-xl max-w-xs mx-auto px-4 py-2.5 mb-10 flex items-center justify-between"
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        >
           <div className="flex items-center gap-2">
-            <span className="font-bold text-gray-900 text-lg">5.0</span>
+            <GoogleG size={18} />
+            <div>
+              <span className="font-bold text-slate-900 text-xs mr-1">Google</span>
+              <span className="text-slate-500 text-[11px]">Rating</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-900 text-sm">5.0</span>
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className="size-4 fill-yellow-400 text-yellow-400"
+                  className="size-3 fill-amber-400 text-amber-400"
                 />
               ))}
             </div>
-            <span className="text-gray-400 text-xs">(151)</span>
+            <span className="text-slate-500 text-[11px] font-medium">(151+)</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Carousel */}
-        <div className="relative">
-          {/* Left arrow — sits outside the card track */}
+        {/* Carousel Container */}
+        <motion.div
+          className="relative"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+        >
+          {/* Left Arrow */}
           <button
             onClick={() => go(-1)}
-            aria-label="Previous"
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-10 size-9 bg-blue-600 rounded-full hidden md:flex items-center justify-center text-white shadow-lg hover:bg-blue-700 active:scale-90 transition-all duration-150"
+            aria-label="Previous review"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 lg:-translate-x-4 z-20 size-10 rounded-xl bg-white border border-slate-200 shadow-md hidden md:flex items-center justify-center text-slate-700 hover:text-[#0060AF] hover:border-[#0060AF] transition-all cursor-pointer"
           >
-            <ChevronLeft className="size-5" />
+            <ChevronLeft className="size-4.5" />
           </button>
 
-          {/* Mask — pause autoplay on hover */}
+          {/* Mask */}
           <div
-            className="overflow-hidden"
+            className="overflow-hidden py-1"
             onMouseEnter={() => {
               paused.current = true;
             }}
@@ -261,13 +277,12 @@ const Testimonials = () => {
               paused.current = false;
             }}
           >
-            {/* Track */}
             <div
               className="flex items-stretch gap-4 pb-2"
               style={{
                 transform: `translateX(-${idx * STEP}px)`,
                 transition: anim
-                  ? "transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)"
+                  ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
                   : "none",
                 willChange: "transform",
               }}
@@ -279,15 +294,15 @@ const Testimonials = () => {
             </div>
           </div>
 
-          {/* Right arrow */}
+          {/* Right Arrow */}
           <button
             onClick={() => go(1)}
-            aria-label="Next"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-10 size-9 bg-blue-600 rounded-full hidden md:flex items-center justify-center text-white shadow-lg hover:bg-blue-700 active:scale-90 transition-all duration-150"
+            aria-label="Next review"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 lg:translate-x-4 z-20 size-10 rounded-xl bg-white border border-slate-200 shadow-md hidden md:flex items-center justify-center text-slate-700 hover:text-[#0060AF] hover:border-[#0060AF] transition-all cursor-pointer"
           >
-            <ChevronRight className="size-5" />
+            <ChevronRight className="size-4.5" />
           </button>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -5,7 +5,9 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useForgotPasswordMutation } from "@/redux/api/auth/authApi";
-
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
+import Link from "next/link";
 
 export default function ForgetPasswordPage() {
   const [email, setEmail] = useState("");
@@ -19,125 +21,97 @@ export default function ForgetPasswordPage() {
     try {
       const response = await sendOtp({ email }).unwrap();
       const userId = response.data?.id;
-      console.log("Received userId from forgotPassword response:", userId);
-      toast.success(response.message || "OTP sent! Check your email.");
+      toast.success(response.message || "Verification code sent! Check your email.");
       router.push(`/verify-otp?userId=${encodeURIComponent(userId)}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      toast.error(err.data?.message || "Failed to send OTP");
+      toast.error(err.data?.message || "Failed to send verification code");
     }
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden font-sans">
-      {/* Left: Full bleed image */}
+    <div className="flex min-h-screen w-full font-sans bg-[#f8fafc]">
+      {/* Left: Form Panel */}
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6">
+        <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-xs p-8 sm:p-10 shadow-2xs">
+          <div className="flex flex-col items-center mb-8">
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Bin Route "
+                width={100}
+                height={40}
+                className="h-12 w-auto object-contain mb-4"
+              />
+            </Link>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">
+              Reset Password
+            </h1>
+            <p className="text-xs text-slate-500 text-center max-w-xs">
+              Enter your registered email address to receive a 6-digit verification code.
+            </p>
+          </div>
 
-
-
-      <div className="flex-1 flex items-center justify-center bg-white overflow-y-auto py-10 px-6">
-        <div className="w-full max-w-xl bg-white rounded-2xl px-10 py-12 flex flex-col items-center">
-          <Image
-            src="/LogoHome.png"
-            alt="Logo"
-            width={96}
-            height={56}
-            className="object-cover mb-6"
-          />
-
-          {/* Heading */}
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight text-center">
-            Forget Password
-          </h1>
-          <p className="text-sm text-gray-500 mb-8 text-center max-w-xs leading-relaxed">
-            Please enter the email address that you used when creating your account
-          </p>
-
-          <form onSubmit={handleSubmit} className="w-full space-y-5">
-            {/* Email */}
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
               <label
                 htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 mb-2"
+                className="block text-xs font-semibold text-slate-700"
               >
-                Email
+                Email Address
               </label>
               <input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Please enter email address"
+                placeholder="name@example.com"
                 required
-                className="w-full px-4 py-3 text-gray-700 bg-gray-100 border-none focus:ring-2 focus:ring-blue-500 outline-none transition text-sm placeholder-gray-400"
+                className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xs text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#0061AA] focus:bg-white transition-colors"
               />
             </div>
 
-            {/* Submit Button */}
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full text-white font-semibold py-3.5 px-4 cursor-pointer transition disabled:opacity-70 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
-              style={{
-                background: "#0061AA",
-                boxShadow: "0 4px 14px 0 rgba(37,99,235,0.35)",
-              }}
+              variant="primary"
+              className="w-full py-2.5 mt-2"
             >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Sending...
-                </>
-              ) : (
-                "Submit"
-              )}
-            </button>
+              {isLoading && <Loader2 className="size-4 animate-spin mr-2" />}
+              <span>{isLoading ? "Sending Code..." : "Send Verification Code"}</span>
+            </Button>
           </form>
 
-          {/* Divider */}
-          <div className="w-full h-px bg-gray-100 my-6" />
-
-          {/* Back to Login */}
-          <p className="text-sm text-gray-500">
-            Remember your password?{" "}
+          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
             <a
               href="/login"
-              className="text-blue-700 font-semibold hover:text-blue-700 transition"
+              className="inline-flex items-center gap-1.5 text-xs text-[#0061AA] font-semibold hover:underline"
             >
-              Back to Login
+              <ArrowLeft className="size-3" />
+              <span>Back to Login</span>
             </a>
-          </p>
+          </div>
         </div>
       </div>
 
-      {/* Right: Illustration with Overlay */}
-      <div className="hidden md:block relative w-1/2 flex-shrink-0">
+      {/* Right Hero Visual */}
+      <div className="hidden lg:block relative w-1/2 bg-slate-950">
         <Image
           src="/hero.png"
-          alt="Login illustration"
+          alt="Bin Route  Fleet"
           fill
           priority
-          className="object-cover"
+          className="object-cover opacity-40 filter brightness-90"
         />
-        {/* Dark Branded Overlay */}
-        <div className="absolute bottom-10 left-10 right-10 bg-[#001D3D]/60 backdrop-blur-md p-8 text-white border border-white/10">
-          <h2 className="text-3xl font-bold mb-3 tracking-tight">Manage Your Waste Services with Ease</h2>
-          <p className="text-sm text-gray-200 leading-relaxed max-w-lg">
-            Professional logistics and dumpster rental services for construction, commercial, and industrial projects.
+        <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent" />
+        <div className="absolute bottom-12 left-12 right-12 text-white">
+          <span className="block text-xs font-bold uppercase tracking-wider text-sky-400 mb-2">
+            Account Recovery
+          </span>
+          <h2 className="text-2xl font-bold mb-2 text-white leading-snug">
+            Secure & Fast Access
+          </h2>
+          <p className="text-xs text-slate-300 leading-relaxed max-w-md">
+            Easily reset your login credentials and regain full control over your active dumpster rentals.
           </p>
         </div>
       </div>
