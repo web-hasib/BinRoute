@@ -24,7 +24,7 @@ const Footer = () => {
                 src="/logo.png"
                 className="brightness-200 contrast-125 opacity-95 hover:opacity-100 transition-opacity"
                 alt="Bin Route "
-                width={85}
+width={285}
                 height={42}
               />
             </Link>
