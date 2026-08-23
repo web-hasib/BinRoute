@@ -14,7 +14,7 @@ interface FeatureCardProps {
 }
 
 const WhyChooseUsCard = ({ icon: Icon, title, description, index }: FeatureCardProps) => (
-  <motion.div 
+  <motion.div
     className="bg-[#F8FAFC] p-5 sm:p-6 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-white transition-all duration-200 group flex flex-col justify-between hover:shadow-sm"
     initial={{ opacity: 0, y: 15 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -54,7 +54,7 @@ const WhyChooseUs = () => {
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <SectionHeader
-            badge="Why Labonte Disposal"
+            badge="Why Bin Route "
             title="Direct Local Logistics. Zero Hidden Fees."
             subtitle="We combine local responsiveness, modern equipment, and honest flat rates to keep your cleanup running on schedule."
           />
@@ -62,7 +62,7 @@ const WhyChooseUs = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-12">
           {/* Left Column: Image */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-5 relative min-h-[340px] md:min-h-[420px] border border-slate-200 rounded-xl overflow-hidden shadow-xs"
             initial={{ opacity: 0, x: -25 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -71,7 +71,7 @@ const WhyChooseUs = () => {
           >
             <Image
               src="/home-2.png"
-              alt="Why Choose Labonte Disposal"
+              alt="Why Choose Bin Route "
               fill
               className="object-cover transition-transform duration-500 hover:scale-102"
             />
@@ -113,7 +113,7 @@ const WhyChooseUs = () => {
         </div>
 
         {/* Live Trust Metrics Grid */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 pt-8 border-t border-slate-200"
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}

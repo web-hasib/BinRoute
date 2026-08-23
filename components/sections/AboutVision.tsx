@@ -10,7 +10,7 @@ const AboutVision = () => {
             <div className="container mx-auto max-w-6xl px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                     {/* Left Column: Image with Overlay */}
-                    <motion.div 
+                    <motion.div
                         className="lg:col-span-6 relative h-[320px] md:h-[400px] border border-slate-200 rounded-xl overflow-hidden shadow-xs group"
                         initial={{ opacity: 0, x: -25 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -19,7 +19,7 @@ const AboutVision = () => {
                     >
                         <Image
                             src="/about/vision_overlay.png"
-                            alt="Labonte Disposal Vision"
+                            alt="Bin Route  Vision"
                             fill
                             className="object-cover transition-transform duration-500 hover:scale-102"
                         />
@@ -34,7 +34,7 @@ const AboutVision = () => {
                     </motion.div>
 
                     {/* Right Column: Text Content */}
-                    <motion.div 
+                    <motion.div
                         className="lg:col-span-6 space-y-4"
                         initial={{ opacity: 0, x: 25 }}
                         whileInView={{ opacity: 1, x: 0 }}

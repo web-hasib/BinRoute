@@ -65,13 +65,16 @@ const Navbar = () => {
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <Image
               src="/LogoHome.png"
-              alt="Labonte Disposal"
+              alt="Bin Route"
               width={92}
               height={46}
-              className="object-contain"
+              className="object-contain px-2"
               priority
             />
-          </Link>
+            <span className="font-heading text-2xl -ml-2 font-bold tracking-wide uppercase text-slate-900">
+              Bin Route
+            </span>
+          </Link>     
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
@@ -81,11 +84,10 @@ const Navbar = () => {
                 <div key={link.name} className="relative group">
                   <Link
                     href={link.href}
-                    className={`relative flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold transition-colors rounded-[2px] ${
-                      active
+                    className={`relative flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold transition-colors rounded-[2px] ${active
                         ? "text-[#0060AF]"
                         : "text-slate-700 hover:text-slate-950 hover:bg-slate-50/70"
-                    }`}
+                      }`}
                   >
                     <span>{link.name}</span>
                     {link.dropdown && (
@@ -131,9 +133,8 @@ const Navbar = () => {
                   </div>
                   <span className="text-xs font-semibold text-slate-800 max-w-[120px] truncate">{user.name}</span>
                   <ChevronDown
-                    className={`size-3.5 text-slate-400 transition-transform duration-200 ${
-                      isProfileOpen ? "rotate-180" : ""
-                    }`}
+                    className={`size-3.5 text-slate-400 transition-transform duration-200 ${isProfileOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
@@ -211,11 +212,10 @@ const Navbar = () => {
                 <div key={link.name}>
                   <Link
                     href={link.href}
-                    className={`block px-3 py-2 text-xs font-semibold rounded-[2px] transition-colors ${
-                      isActive(link.href)
+                    className={`block px-3 py-2 text-xs font-semibold rounded-[2px] transition-colors ${isActive(link.href)
                         ? "text-[#0060AF] bg-blue-50/70"
                         : "text-slate-800 hover:text-[#0060AF] hover:bg-slate-50"
-                    }`}
+                      }`}
                     onClick={() => setIsOpen(false)}
                   >
                     {link.name}

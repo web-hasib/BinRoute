@@ -78,11 +78,10 @@ const TestimonialCard = ({
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
-          className={`size-3.5 ${
-            i < rating
+          className={`size-3.5 ${i < rating
               ? "fill-amber-400 text-amber-400"
               : "fill-slate-200 text-slate-200"
-          }`}
+            }`}
         />
       ))}
     </div>
@@ -114,7 +113,7 @@ const testimonials: Testimonial[] = [
     bgColor: "bg-emerald-700",
     time: "2 months ago",
     rating: 5,
-    text: "Labonte Disposal was great during our renovation project. They were easy to schedule, communicative and efficient.",
+    text: "Bin Route  was great during our renovation project. They were easy to schedule, communicative and efficient.",
   },
   {
     name: "Savannah Dols",
@@ -122,7 +121,7 @@ const testimonials: Testimonial[] = [
     bgColor: "bg-slate-800",
     time: "2 months ago",
     rating: 5,
-    text: "Rented a 20 yd dumpster from Labonte Disposal and I have nothing but great things to say. Clear pricing and fast haul away.",
+    text: "Rented a 20 yd dumpster from Bin Route  and I have nothing but great things to say. Clear pricing and fast haul away.",
   },
   {
     name: "Chris Casello",
@@ -204,7 +203,7 @@ const Testimonials = () => {
     <section className="py-20 md:py-24 bg-[#F8FAFC] text-slate-900 border-y border-slate-200 overflow-hidden">
       <div className="container mx-auto max-w-6xl px-4">
         {/* Heading */}
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -223,7 +222,7 @@ const Testimonials = () => {
         </motion.div>
 
         {/* Google Reviews Summary */}
-        <motion.div 
+        <motion.div
           className="bg-white border border-slate-200 shadow-xs rounded-xl max-w-xs mx-auto px-4 py-2.5 mb-10 flex items-center justify-between"
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -252,7 +251,7 @@ const Testimonials = () => {
         </motion.div>
 
         {/* Carousel Container */}
-        <motion.div 
+        <motion.div
           className="relative"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

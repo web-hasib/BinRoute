@@ -23,7 +23,7 @@ const Footer = () => {
               <Image
                 src="/logo.png"
                 className="brightness-200 contrast-125 opacity-95 hover:opacity-100 transition-opacity"
-                alt="Labonte Disposal"
+                alt="Bin Route "
                 width={85}
                 height={42}
               />
@@ -149,7 +149,7 @@ const Footer = () => {
             </Link>
           </div>
           <p className="text-center sm:text-left text-[11px]">
-            © {new Date().getFullYear()} Labonte Disposal. All rights reserved.
+            © {new Date().getFullYear()} Bin Route . All rights reserved.
           </p>
           <div className="flex items-center gap-2.5">
             <span className="text-slate-500 text-[11px]">Connect:</span>

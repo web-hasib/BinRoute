@@ -23,7 +23,7 @@ const AboutPartner = () => {
                         </h3>
                         <div className="space-y-3 text-slate-600 leading-relaxed text-xs sm:text-sm">
                             <p>
-                                At Labonte Disposal, we are committed to delivering dependable and efficient waste management solutions for both residential and commercial customers. With a strong focus on reliability and clear communication, our team works diligently to ensure every service request is handled with professionalism and care.
+                                At Bin Route , we are committed to delivering dependable and efficient waste management solutions for both residential and commercial customers. With a strong focus on reliability and clear communication, our team works diligently to ensure every service request is handled with professionalism and care.
                             </p>
                             <p>
                                 We understand that effective waste removal plays a critical role in keeping home cleanouts organized and construction projects running smoothly. That is why we prioritize on-time delivery, transparent flat-rate pricing, and dedicated local support every step of the way.

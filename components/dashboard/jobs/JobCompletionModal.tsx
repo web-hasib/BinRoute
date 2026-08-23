@@ -20,16 +20,16 @@ const JobCompletionModal = ({ isOpen, onClose, job }: JobCompletionModalProps) =
 
   const handleComplete = async () => {
     if (!job?.jobId) {
-        toast.error("Job ID not found");
-        return;
+      toast.error("Job ID not found");
+      return;
     }
 
     try {
-        await completeJob(job.jobId).unwrap();
-        toast.success("Job marked as completed");
-        onClose();
+      await completeJob(job.jobId).unwrap();
+      toast.success("Job marked as completed");
+      onClose();
     } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to complete job");
+      toast.error(error?.data?.message || "Failed to complete job");
     }
   };
 
@@ -38,9 +38,9 @@ const JobCompletionModal = ({ isOpen, onClose, job }: JobCompletionModalProps) =
   const displayId = job.jobId ? `#${job.jobId.slice(-6).toUpperCase()}` : "N/A";
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
       title=""
       className="max-w-2xl p-0 overflow-hidden rounded-none border-none"
       showCloseButton={false}
@@ -97,10 +97,10 @@ const JobCompletionModal = ({ isOpen, onClose, job }: JobCompletionModalProps) =
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-[#172C41]">Proof of Service photo</h3>
               <div className="aspect-video relative bg-gray-100 border border-gray-200 overflow-hidden">
-                <Image 
-                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80" 
-                  alt="Proof of service" 
-                  fill 
+                <Image
+                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80"
+                  alt="Proof of service"
+                  fill
                   className="object-cover"
                 />
               </div>
@@ -117,7 +117,7 @@ const JobCompletionModal = ({ isOpen, onClose, job }: JobCompletionModalProps) =
 
           {/* Action */}
           <div className="space-y-6 pt-4">
-            <Button 
+            <Button
               onClick={handleComplete}
               disabled={isCompleting || job.status === "COMPLETED"}
               className="w-full py-7 text-lg font-bold rounded-none shadow-lg transition-transform active:scale-[0.98]"
@@ -125,9 +125,9 @@ const JobCompletionModal = ({ isOpen, onClose, job }: JobCompletionModalProps) =
             >
               {isCompleting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Mark as Complete"}
             </Button>
-            
+
             <p className="text-sm text-gray-400 text-center leading-relaxed max-w-sm mx-auto font-medium">
-              The driver will receive an automated notification via the <span className="font-bold">Labonte Disposal</span> mobile app.
+              The driver will receive an automated notification via the <span className="font-bold">Bin Route </span> mobile app.
             </p>
           </div>
         </div>

@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
           <div className="flex flex-col items-center mb-8">
             <Image
               src="/LogoHome.png"
-              alt="Labonte Disposal"
+              alt="Bin Route "
               width={100}
               height={40}
               className="h-8 w-auto object-contain mb-4"
@@ -175,7 +175,7 @@ export default function ResetPasswordPage() {
       <div className="hidden lg:block relative w-1/2 bg-slate-950">
         <Image
           src="/hero.png"
-          alt="Labonte Disposal Fleet"
+          alt="Bin Route  Fleet"
           fill
           priority
           className="object-cover opacity-40 filter brightness-90"

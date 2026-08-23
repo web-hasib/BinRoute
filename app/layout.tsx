@@ -19,7 +19,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Labonte Disposal | Dumpster Rentals Across Greater Worcester, MA",
+  title: "Bin Route  | Dumpster Rentals Across Greater Worcester, MA",
   description: "Dependable roll-off dumpster rentals and commercial waste management solutions in Central Massachusetts.",
 };
 
