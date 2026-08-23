@@ -1,0 +1,57 @@
+# dependencies
+
+node_modules
+
+.pnpm-store
+ 
+# Next.js build output 
+
+.next
+
+out
+ 
+# Logs
+
+npm-debug.log*
+
+pnpm-debug.log*
+
+yarn-debug.log*
+
+yarn-error.log*
+ 
+# Env files (security)
+
+# .env
+# .env.*
+# !.env.example
+ 
+# VCS
+
+.git
+
+.gitignore
+ 
+# OS / Editor
+
+.DS_Store
+
+Thumbs.db
+
+.vscode
+
+.idea
+ 
+# Docker files
+
+docker-compose.yml
+
+Dockerfile
+ 
+# Tests / misc
+
+coverage
+
+*.md
+
+ 
