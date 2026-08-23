@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { useResetPasswordMutation } from "@/redux/api/auth/authApi";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -64,13 +65,15 @@ export default function ResetPasswordPage() {
       <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6">
         <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-xs p-8 sm:p-10 shadow-2xs">
           <div className="flex flex-col items-center mb-8">
-            <Image
-              src="/LogoHome.png"
-              alt="Bin Route "
-              width={100}
-              height={40}
-              className="h-8 w-auto object-contain mb-4"
-            />
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Bin Route "
+                width={100}
+                height={40}
+                className="h-12 w-auto object-contain mb-4"
+              />
+            </Link>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">
               Create New Password
             </h1>

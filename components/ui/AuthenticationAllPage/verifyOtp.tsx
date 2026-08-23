@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useVerifyOtpMutation, useEmailVerifyOtpMutation } from "@/redux/api/auth/authApi";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 export default function VerifyOtpPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -96,13 +97,15 @@ export default function VerifyOtpPage() {
       <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6">
         <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-xs p-8 sm:p-10 shadow-2xs">
           <div className="flex flex-col items-center mb-8">
-            <Image
-              src="/LogoHome.png"
-              alt="Bin Route "
-              width={100}
-              height={40}
-              className="h-8 w-auto object-contain mb-4"
-            />
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Bin Route "
+                width={100}
+                height={40}
+                className="h-12 w-auto object-contain mb-4"
+              />
+            </Link>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">
               Verify Security Code
             </h1>
@@ -132,8 +135,8 @@ export default function VerifyOtpPage() {
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={handlePaste}
                     className={`size-11 sm:size-12 text-center text-slate-900 text-lg font-bold border rounded-xs outline-none transition-colors ${digit
-                        ? "border-[#0061AA] bg-blue-50/40"
-                        : "border-slate-200 bg-[#f8fafc] focus:border-[#0061AA] focus:bg-white"
+                      ? "border-[#0061AA] bg-blue-50/40"
+                      : "border-slate-200 bg-[#f8fafc] focus:border-[#0061AA] focus:bg-white"
                       }`}
                   />
                 ))}
