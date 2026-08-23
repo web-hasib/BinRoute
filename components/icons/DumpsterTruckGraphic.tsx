@@ -35,8 +35,9 @@ export const DumpsterTruckGraphic: React.FC<DumpsterTruckGraphicProps> = ({
         </linearGradient>
 
         <linearGradient id="truckCabGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="100%" stopColor="#E2E8F0" />
+          <stop offset="0%" stopColor="#FBBF24" />
+          <stop offset="50%" stopColor="#F59E0B" />
+          <stop offset="100%" stopColor="#D97706" />
         </linearGradient>
 
         <radialGradient id="truckWheelGrad" cx="50%" cy="50%" r="50%">
@@ -86,20 +87,33 @@ export const DumpsterTruckGraphic: React.FC<DumpsterTruckGraphicProps> = ({
         <circle cx="17" cy="77" r="1" fill="#475569" />
       </g>
 
-      {/* Truck Cab */}
+      {/* Truck Cab (Vibrant Heavy Duty Gold / Amber Yellow) */}
       <g filter="url(#truckShadow)">
-        <path d="M78 52 L94 52 C98 52 101 55 103 59 L109 68 C110.5 70.5 111 72.5 111 75 L111 82 C111 83.5 110 84.5 108.5 84.5 L78 84.5 Z" fill="url(#truckCabGrad)" />
+        <path d="M78 52 L94 52 C98 52 101 55 103 59 L109 68 C110.5 70.5 111 72.5 111 75 L111 82 C111 83.5 110 84.5 108.5 84.5 L78 84.5 Z" fill="url(#truckCabGrad)" stroke="#B45309" strokeWidth="0.8" />
+        
+        {/* Front Bumper */}
         <rect x="106" y="80" width="7" height="4.5" rx="1.5" fill="#334155" />
-        <rect x="109" y="81" width="3.5" height="2" rx="0.5" fill="#E2E8F0" />
-        <path d="M109 75.5 L111 75.5 L111 78.5 L108.5 78.5 Z" fill="#FACC15" />
+        <rect x="109" y="81" width="3.5" height="2" rx="0.5" fill="#CBD5E1" />
+
+        {/* Headlight */}
+        <path d="M109 75.5 L111 75.5 L111 78.5 L108.5 78.5 Z" fill="#FFFFFF" />
         <circle cx="109.5" cy="77" r="1" fill="#FEF08A" />
-        <path d="M82 56 L94 56 C96.5 56 98.5 58 100 61 L104 68 L82 68 Z" fill="#0284C7" opacity="0.85" />
-        <path d="M84 58 L93 58 L98 66 L84 66 Z" fill="#38BDF8" opacity="0.4" />
-        <line x1="82" y1="69" x2="82" y2="82" stroke="#94A3B8" strokeWidth="1.2" />
-        <line x1="97" y1="69" x2="97" y2="82" stroke="#94A3B8" strokeWidth="1.2" />
-        <rect x="85" y="72" width="3.5" height="1.2" rx="0.6" fill="#475569" />
+
+        {/* Windshield & Side Window */}
+        <path d="M82 56 L94 56 C96.5 56 98.5 58 100 61 L104 68 L82 68 Z" fill="#0284C7" opacity="0.95" />
+        <path d="M84 58 L93 58 L98 66 L84 66 Z" fill="#BAE6FD" opacity="0.5" />
+
+        {/* Door Line & Silver Handle */}
+        <line x1="82" y1="69" x2="82" y2="82" stroke="#B45309" strokeWidth="1.2" />
+        <line x1="97" y1="69" x2="97" y2="82" stroke="#B45309" strokeWidth="1.2" />
+        <rect x="85" y="72" width="3.5" height="1.2" rx="0.6" fill="#FFFFFF" />
+
+        {/* Side View Mirror */}
         <rect x="100.5" y="62" width="2" height="6" rx="0.8" fill="#1E293B" />
-        <rect x="80" y="82" width="16" height="2" fill="#64748B" />
+        <line x1="99" y1="64" x2="100.5" y2="64" stroke="#475569" strokeWidth="1" />
+
+        {/* Cab Steps */}
+        <rect x="80" y="82" width="16" height="2" fill="#475569" />
       </g>
 
       {/* Wheels */}

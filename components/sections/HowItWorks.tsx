@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Layers, ShieldCheck, Clock, ArrowRight, Check } from "lucide-react";
-import { DumpTruckIcon } from "@/components/icons/DumpTruckIcon";
+import { DumpTruckIcon, DumpsterTruckGraphic } from "@/components/icons";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -171,9 +171,9 @@ const HowItWorks = () => {
                     <circle
                       cx={node.cx}
                       cy={node.cy}
-                      r={isSelected ? "11" : isPassed ? "9" : "8"}
+                      r={isSelected ? "0" : isPassed ? "9" : "8"}
                       fill={isPassed ? "#3569caca" : "#3a430781"}
-                      stroke={isSelected ? "#384046ff" : isPassed ? "#5288f4b7" : "#ececee5d"}
+                      stroke={isSelected ? "#f1f4f611" : isPassed ? "#5288f4b7" : "#ececee5d"}
                       strokeWidth={isSelected ? "3" : "2"}
                       className="transition-all duration-300"
                     />
@@ -194,7 +194,7 @@ const HowItWorks = () => {
             {/* Draggable & Animated Step Indicator - Perfectly tracks 12.5%, 37.5%, 62.5%, 87.5% */}
             <div className="absolute inset-0 pointer-events-none">
               <motion.div
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-12 rounded-full bg-linear-to-r from-[#0060AF]/90 to-[#0284C7]/90 text-white shadow-lg shadow-blue-900/25 border-2 border-white flex items-center justify-center pointer-events-auto cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-20"
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-auto cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-20 select-none filter drop-shadow-lg"
                 animate={{
                   left: `${12.5 + (activeStep - 1) * 25}%`,
                 }}
@@ -211,7 +211,7 @@ const HowItWorks = () => {
                 }}
                 title="Drag or click steps"
               >
-                <DumpTruckIcon className="size-9.5" />
+                <DumpsterTruckGraphic className="w-14 h-14 sm:w-16 sm:h-16" />
               </motion.div>
             </div>
           </div>

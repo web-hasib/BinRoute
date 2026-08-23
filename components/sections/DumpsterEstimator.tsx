@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Check, Ruler, Weight, ArrowRight, ShieldCheck, SlidersHorizontal, Box, Layers } from "lucide-react";
-import { DumpTruckIcon } from "@/components/icons/DumpTruckIcon";
+import { DumpTruckIcon, DumpsterTruckGraphic } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { useDispatch } from "react-redux";
@@ -181,11 +181,11 @@ const DumpsterEstimator = () => {
                 </span>
               </div>
 
-              {/* Interactive Range Slider with Custom Truck Icon Thumb */}
-              <div className="relative pt-2 pb-2">
-                <div className="relative h-10 flex items-center">
+              {/* Interactive Range Slider with Custom Dumpster Truck SVG Graphic */}
+              <div className="relative pt-6 pb-2">
+                <div className="relative h-12 flex items-center">
                   {/* Track Bar Background */}
-                  <div className="w-full h-2.5 bg-slate-200 rounded-full relative overflow-hidden">
+                  <div className="w-full h-2.5 sm:h-3 bg-slate-200 rounded-full relative overflow-hidden">
                     {/* Active Track Progress Fill */}
                     <div
                       className="h-full bg-linear-to-r from-[#0060AF] to-[#0284C7] rounded-full transition-all duration-150"
@@ -193,12 +193,12 @@ const DumpsterEstimator = () => {
                     />
                   </div>
 
-                  {/* Custom Dump Truck Thumb Icon */}
+                  {/* Custom Dumpster Truck SVG Driving on Track */}
                   <motion.div
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-9 sm:size-10 rounded-full bg-linear-to-r from-[#0060AF] to-[#0284C7] text-white shadow-md shadow-blue-900/30 border-2 border-white flex items-center justify-center pointer-events-none z-10"
+                    className="absolute -top-7 sm:-top-8 -translate-x-1/2 pointer-events-none z-10 filter drop-shadow-md select-none"
                     style={{ left: `${((truckLoadSlider - 1) / 11) * 100}%` }}
                   >
-                    <DumpTruckIcon className="size-5.5 text-white" />
+                    <DumpsterTruckGraphic className="w-14 h-14 sm:w-16 sm:h-16" />
                   </motion.div>
 
                   {/* Invisible Interactive Range Input */}
@@ -215,7 +215,7 @@ const DumpsterEstimator = () => {
                 </div>
 
                 {/* Milestone Step Labels */}
-                <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-1 px-1">
+                <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-2 px-1">
                   <span>1 Load (Small)</span>
                   <span>4 Loads (10 Yd)</span>
                   <span>6 Loads (15 Yd)</span>
@@ -225,25 +225,32 @@ const DumpsterEstimator = () => {
               </div>
 
               {/* Live Truck Icons Visualization */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                {Array.from({ length: 12 }).map((_, idx) => (
-                  <motion.div
-                    key={idx}
-                    animate={{
-                      scale: idx < truckLoadSlider ? 1.05 : 0.9,
-                      opacity: idx < truckLoadSlider ? 1 : 0.25,
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className={`size-7 rounded-md flex items-center justify-center text-xs ${
-                      idx < truckLoadSlider
-                        ? "bg-[#0060AF] text-white shadow-2xs"
-                        : "bg-slate-100 text-slate-400"
-                    }`}
-                    title={`Truck Load ${idx + 1}`}
-                  >
-                    <DumpTruckIcon className="size-3.5" />
-                  </motion.div>
-                ))}
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap pt-1">
+                {Array.from({ length: 12 }).map((_, idx) => {
+                  const isActive = idx < truckLoadSlider;
+                  return (
+                    <motion.button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleSliderChange(idx + 1)}
+                      animate={{
+                        scale: isActive ? 1.05 : 0.95,
+                        opacity: isActive ? 1 : 0.35,
+                      }}
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                      className={`size-8 sm:size-8.5 rounded-full flex items-center justify-center cursor-pointer transition-all ${
+                        isActive
+                          ? "bg-linear-to-r from-[#0060AF] to-[#0284C7] text-white border-2 border-white shadow-sm shadow-blue-900/25 ring-1 ring-[#0060AF]/30"
+                          : "bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200"
+                      }`}
+                      title={`Select ${idx + 1} Truck Load${idx > 0 ? "s" : ""}`}
+                    >
+                      <DumpTruckIcon className="size-4.5" />
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
 
