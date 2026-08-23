@@ -10,6 +10,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import { logout } from "@/feature/user/userSlice";
 import { useRouter, usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,7 +58,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 transition-all">
+    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 transition-all">
       <div className="container mx-auto">
         <div className="flex justify-between items-center h-18">
           {/* Logo Area */}
@@ -74,36 +75,47 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <div key={link.name} className="relative group">
-                <Link
-                  href={link.href}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold transition-all rounded-[2px] ${
-                    isActive(link.href)
-                      ? "text-[#0060AF] bg-blue-50/70"
-                      : "text-slate-700 hover:text-slate-950 hover:bg-slate-50"
-                  }`}
-                >
-                  <span>{link.name}</span>
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <div key={link.name} className="relative group">
+                  <Link
+                    href={link.href}
+                    className={`relative flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold transition-colors rounded-[2px] ${
+                      active
+                        ? "text-[#0060AF]"
+                        : "text-slate-700 hover:text-slate-950 hover:bg-slate-50/70"
+                    }`}
+                  >
+                    <span>{link.name}</span>
+                    {link.dropdown && (
+                      <ChevronDown className="size-3.5 text-slate-400 group-hover:text-slate-600 transition-transform group-hover:rotate-180" />
+                    )}
+                    {/* Animated Active Underline in Primary Color */}
+                    {active && (
+                      <motion.span
+                        layoutId="activeNavUnderline"
+                        className="absolute bottom-0 inset-x-3.5 h-[2.5px] bg-[#0060AF] rounded-full"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </Link>
                   {link.dropdown && (
-                    <ChevronDown className="size-3.5 text-slate-400 group-hover:text-slate-600 transition-transform group-hover:rotate-180" />
+                    <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-[2px] shadow-sm py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                      {link.dropdown.map((subItem) => (
+                        <Link
+                          key={subItem.name}
+                          href={subItem.href}
+                          className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0060AF] transition-colors"
+                        >
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
                   )}
-                </Link>
-                {link.dropdown && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-[2px] shadow-sm py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                    {link.dropdown.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        href={subItem.href}
-                        className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#0060AF] transition-colors"
-                      >
-                        {subItem.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </nav>
 
           {/* Auth & CTA Buttons */}

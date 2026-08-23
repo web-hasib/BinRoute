@@ -159,31 +159,31 @@ const Hero = () => {
       </motion.div>
 
       {/* Content */}
-      <div className="container relative z-20 text-center max-w-5xl mx-auto px-4">
+      <div className="container relative z-20 text-center max-w-5xl lg:max-w-6xl mx-auto px-4">
         {/* Authentic Badge */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-200 bg-slate-900/80 border border-slate-700/80 px-3.5 py-1.5 rounded-full mb-4 shadow-sm backdrop-blur-sm">
+          <span className="inline-flex items-center gap-1.5 text-xs lg:text-sm font-semibold text-slate-100 bg-white/5 border border-slate-700/60 px-3.5 lg:px-4 py-1.5 lg:py-2 rounded-sm mb-4 lg:mb-6 shadow-sm backdrop-blur-sm">
             Central Massachusetts Waste Removal
           </span>
         </motion.div>
 
         {/* Main Headline */}
         <motion.h1
-          className="text-3xl sm:text-5xl md:text-6xl font-black mb-4 leading-[1.12] text-white tracking-tight"
+          className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-thin mb-4 lg:mb-6 leading-[1.08] text-white"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
           Roll-Off Dumpsters Delivered Across <br className="hidden sm:inline" />
-          <span className="text-sky-400">Greater Worcester, MA</span>
+          <span className="text-[70%] font-thin tracking-tighter   text-sky-400/80">Greater Worcester, MA</span>
         </motion.h1>
 
         <motion.p
-          className="text-xs sm:text-sm md:text-base font-normal mb-8 max-w-2xl mx-auto text-slate-200 leading-relaxed"
+          className="text-xs sm:text-sm md:text-base lg:text-lg font-normal mb-8 lg:mb-12 max-w-2xl lg:max-w-3xl mx-auto text-slate-200 leading-relaxed"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
@@ -193,7 +193,7 @@ const Hero = () => {
 
         {/* Search Bar with Autocomplete */}
         <motion.div
-          className="relative max-w-xl mx-auto mb-4"
+          className="relative max-w-xl lg:max-w-2xl mx-auto mb-4 lg:mb-6"
           ref={dropdownRef}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -201,10 +201,10 @@ const Hero = () => {
         >
           <form
             onSubmit={handleSearch}
-            className="flex flex-col sm:flex-row bg-white rounded-xl p-1.5 border border-slate-200 shadow-2xl shadow-black/50"
+            className="flex flex-col sm:flex-row bg-white rounded-xl lg:rounded-2xl p-1.5 lg:p-2 border border-slate-200 shadow-2xl shadow-black/50"
           >
-            <div className="flex items-center flex-1 px-3.5 py-2.5 sm:py-0 relative">
-              <MapPin className="text-[#0060AF] size-5 mr-2.5 shrink-0" />
+            <div className="flex items-center flex-1 px-3.5 lg:px-4 py-2.5 sm:py-0 relative">
+              <MapPin className="text-[#0060AF] size-5 lg:size-5.5 mr-2.5 lg:mr-3 shrink-0" />
               <input
                 type="text"
                 value={searchValue}
@@ -216,11 +216,11 @@ const Hero = () => {
                   if (suggestions.length > 0) setShowDropdown(true);
                 }}
                 placeholder="Enter street or town (e.g. Worcester, Shrewsbury, Auburn)..."
-                className="w-full bg-transparent border-none outline-none text-slate-900 placeholder:text-slate-400 font-medium text-xs sm:text-sm"
+                className="w-full bg-transparent border-none outline-none text-slate-900 placeholder:text-slate-400 font-medium text-xs sm:text-sm lg:text-base"
               />
               {isSearching && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                  <Loader2 className="h-4 w-4 lg:h-5 lg:w-5 animate-spin text-slate-400" />
                 </div>
               )}
             </div>
@@ -228,11 +228,11 @@ const Hero = () => {
               type="submit"
               variant="primary"
               size="lg"
-              className="h-11 px-6 text-xs sm:text-sm font-bold shrink-0 rounded-lg shadow-sm"
+              className="h-11 lg:h-12 px-6 lg:px-8 text-xs sm:text-sm lg:text-base font-bold shrink-0 rounded-lg lg:rounded-xl shadow-sm"
               disabled={isSearching}
             >
               <span>Check Rates</span>
-              <ArrowRight className="size-4 ml-1" />
+              <ArrowRight className="size-4 lg:size-4.5 ml-1" />
             </Button>
           </form>
 
@@ -244,7 +244,7 @@ const Hero = () => {
                   key={suggestion.place_id}
                   onClick={() => handleSuggestionClick(suggestion)}
                   type="button"
-                  className="w-full px-4 py-3 text-left text-xs sm:text-sm hover:bg-blue-50/70 flex items-start gap-2.5 transition-colors border-b last:border-none border-slate-100 text-slate-800 font-medium cursor-pointer"
+                  className="w-full px-4 py-3 text-left text-xs sm:text-sm lg:text-base hover:bg-blue-50/70 flex items-start gap-2.5 transition-colors border-b last:border-none border-slate-100 text-slate-800 font-medium cursor-pointer"
                 >
                   <MapPin className="size-4 text-[#0060AF] mt-0.5 shrink-0" />
                   <span className="line-clamp-1">{suggestion.description}</span>
@@ -256,7 +256,7 @@ const Hero = () => {
 
         {/* Dispatch Phone Callout */}
         <motion.p
-          className="text-xs text-slate-300 mb-8 font-medium"
+          className="text-xs lg:text-sm text-slate-300 mb-8 lg:mb-12 font-medium"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -269,27 +269,27 @@ const Hero = () => {
 
         {/* Clean Inline Trust Metrics (No Cards) */}
         <motion.div
-          className="flex flex-wrap items-center justify-center gap-y-3 gap-x-6 sm:gap-x-8 max-w-4xl mx-auto pt-6 border-t border-slate-800/80 text-xs sm:text-sm font-medium text-slate-300"
+          className="flex flex-wrap items-center justify-center gap-y-3 lg:gap-y-4 gap-x-6 sm:gap-x-8 lg:gap-x-12 max-w-4xl lg:max-w-5xl mx-auto pt-6 lg:pt-10 border-t border-slate-800/80 text-xs sm:text-sm lg:text-base font-medium text-slate-300"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.45, ease: "easeOut" }}
         >
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="size-4.5 text-sky-400 shrink-0" />
+          <div className="flex items-center gap-2 lg:gap-2.5">
+            <ShieldCheck className="size-4.5 lg:size-5 text-sky-400 shrink-0" />
             <span>Driveway Protection Included</span>
           </div>
 
           <span className="hidden sm:inline-block text-slate-600 select-none">•</span>
 
-          <div className="flex items-center gap-2">
-            <Clock className="size-4.5 text-sky-400 shrink-0" />
+          <div className="flex items-center gap-2 lg:gap-2.5">
+            <Clock className="size-4.5 lg:size-5 text-sky-400 shrink-0" />
             <span>Guaranteed Next-Day Delivery</span>
           </div>
 
           <span className="hidden sm:inline-block text-slate-600 select-none">•</span>
 
-          <div className="flex items-center gap-2">
-            <Star className="size-4.5 text-amber-400 fill-amber-400 shrink-0" />
+          <div className="flex items-center gap-2 lg:gap-2.5">
+            <Star className="size-4.5 lg:size-5 text-amber-400 fill-amber-400 shrink-0" />
             <span>5.0 Star Worcester Rated</span>
           </div>
         </motion.div>
