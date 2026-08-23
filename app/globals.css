@@ -162,3 +162,14 @@
     max-width: 1360px;
   }
 }
+
+/* Custom Vector Graphic Cursor System */
+@media (pointer: fine) {
+  html, body {
+    cursor: url('/cursor/default.svg') 3 3, auto !important;
+  }
+
+  a, button, input, select, textarea, [role="button"], label, .cursor-pointer {
+    cursor: url('/cursor/pointer.svg') 10 2, pointer !important;
+  }
+}
