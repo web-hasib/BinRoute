@@ -71,7 +71,7 @@ Start the development server:
 npm run dev
 ```
 
-Open [http://localhost:3737](http://localhost:3737) in your browser to view the application.
+Open [http://localhost:3738](http://localhost:3738) in your browser to view the application.
 
 ---
 

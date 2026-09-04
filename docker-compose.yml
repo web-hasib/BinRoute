@@ -1,13 +1,13 @@
 services:
   frontend:
-    image: tlabonte-frontend:latest
-    container_name: tlabonte-frontend
+    image: BinRoute-frontend:latest
+    container_name: BinRoute-frontend
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "3737:3737"
+      - "3738:3738"
     env_file:
       - .env
     environment:

@@ -37,6 +37,6 @@ RUN pnpm install --prod --frozen-lockfile
 # Security (optional but good)
 USER nextjs
 
-EXPOSE 3737
+EXPOSE 3738
 
 CMD ["pnpm", "start"]
