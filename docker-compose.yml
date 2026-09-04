@@ -1,7 +1,7 @@
 services:
   frontend:
-    image: BinRoute-frontend:latest
-    container_name: BinRoute-frontend
+    image: binroute-frontend:latest
+    container_name: binroute-frontend
     build:
       context: .
       dockerfile: Dockerfile
