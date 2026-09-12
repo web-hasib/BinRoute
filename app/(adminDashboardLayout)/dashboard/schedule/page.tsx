@@ -129,7 +129,9 @@ const SchedulePage = () => {
     page: currentPage,
     limit: rowsPerPage,
     searchTerm: debouncedSearchTerm,
-    category: activeService
+    category: activeService,
+    sortBy: "scheduledDate",
+    // sortOrder: "asc"
   });
 
   const schedules = scheduleData?.data?.data || [];
@@ -168,6 +170,14 @@ const SchedulePage = () => {
     {
       header: "Size",
       accessorKey: "size",
+    },
+    {
+      header: "Schedule Date",
+      cell: (job) => (
+        <span className="px-3 py-1.5 bg-[#F8FAFC] text-gray-500 font-bold tracking-tight rounded-none border border-gray-100/50">
+          {format(new Date(job.scheduledDate), "MM/dd/yyyy")}
+        </span>
+      ),
     },
     {
       header: "Status",

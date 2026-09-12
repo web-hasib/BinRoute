@@ -31,7 +31,7 @@ interface ScheduleCalendarProps {
 
 const ScheduleCalendar = ({ category }: ScheduleCalendarProps) => {
     // Defaulting to June 2026 to match API data
-    const [currentDate, setCurrentDate] = useState(new Date(2026, 5, 1));
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDateEvents, setSelectedDateEvents] = useState<{ date: string, events: any[] } | null>(null);
 
     const year = currentDate.getFullYear();
