@@ -1,7 +1,7 @@
 services:
   frontend:
-    image: tlabonte-frontend:latest
-    container_name: tlabonte-frontend
+    image: binroute-frontend:latest
+    container_name: binroute-frontend
     build:
       context: .
       dockerfile: Dockerfile

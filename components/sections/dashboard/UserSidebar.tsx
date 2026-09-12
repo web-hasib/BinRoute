@@ -16,9 +16,14 @@ const navItems = [
 
 
 import { usePathname } from "next/navigation";
+import { useGetMeQuery } from "@/redux/api/auth/authApi";
 
 const UserSidebar = () => {
     const pathname = usePathname();
+    const { data: userResponse } = useGetMeQuery(undefined);
+    const userName = userResponse?.data?.fullName || userResponse?.data?.name || "User";
+    const userEmail = userResponse?.data?.email || "";
+    const avatarUrl = userResponse?.data?.profileImage || userResponse?.data?.image || "/dummy.png";
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-[300px]">
@@ -26,14 +31,14 @@ const UserSidebar = () => {
             <div className="bg-white p-8 rounded-none shadow-sm flex flex-col items-center text-center">
                 <div className="relative w-24 h-24 mb-4">
                     <Image
-                        src="/dummy.png" // Using existing dummy image
-                        alt="Tomas Diko"
+                        src={avatarUrl}
+                        alt={userName}
                         fill
                         className="rounded-full object-cover"
                     />
                 </div>
-                <h2 className="text-xl font-bold text-[#172C41]">Tomas Diko</h2>
-                <p className="text-gray-500 text-sm mb-6">@tomasdiko</p>
+                <h2 className="text-xl font-bold text-[#172C41]">{userName}</h2>
+                {userEmail && <p className="text-gray-500 text-sm mb-6 truncate max-w-[200px]">{userEmail}</p>}
                 <Button variant="outline" className="w-full rounded-none border-gray-200 text-gray-600 font-medium hover:bg-gray-50">
                     Edit Profile
                 </Button>

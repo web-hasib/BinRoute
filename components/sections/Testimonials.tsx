@@ -112,7 +112,7 @@ const testimonials: Testimonial[] = [
     bgColor: "bg-teal-600",
     time: "2 months ago",
     rating: 5,
-    text: "Labonte Disposal was great during our renovation project. They were easy to schedule, communicative and efficient.",
+    text: "Bin Route was great during our renovation project. They were easy to schedule, communicative and efficient.",
   },
   {
     name: "Savannah Dols",
@@ -120,7 +120,7 @@ const testimonials: Testimonial[] = [
     bgColor: "bg-violet-600",
     time: "2 months ago",
     rating: 5,
-    text: "Rented a 20 yd dumpster from Labonte Disposal and I have nothing but great things to say.",
+    text: "Rented a 20 yd dumpster from Bin Route and I have nothing but great things to say.",
   },
   {
     name: "Chris Casello",

@@ -9,11 +9,15 @@ import { BookingStatistics } from "@/components/dashboard/BookingStatistics";
 import { DriverStatus } from "@/components/dashboard/DriverStatus";
 import { RecentBookingTable } from "@/components/dashboard/RecentBookingTable";
 import { useGetDashboardStatsQuery } from "@/redux/api/adminDashboard/analysisApi";
+import { useGetMeQuery } from "@/redux/api/auth/authApi";
 import { cn } from "@/lib/utils";
 
 export default function DashboardOverview() {
   const [period, setPeriod] = useState<"weekly" | "monthly" | "yearly">("weekly");
   const { data: statsData, isLoading } = useGetDashboardStatsQuery({ period });
+  const { data: userData } = useGetMeQuery(undefined);
+
+  const adminName = userData?.data?.fullName || userData?.data?.name || "Admin";
 
   const stats = statsData?.data || {
     totalRevenue: 0,
@@ -41,7 +45,7 @@ export default function DashboardOverview() {
     <Container>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-1">Welcome back, Tomas Diko 👋</h1>
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-1">Welcome back, {adminName} 👋</h1>
           <p className="text-sm text-[#666666]">Manage your roll-off dumpster services, track waste operations, and handle</p>
         </div>
         <div className="flex items-center bg-gray-50 border border-gray-100 p-1 rounded-none">

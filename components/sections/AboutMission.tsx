@@ -44,7 +44,7 @@ const AboutMission = () => {
                     <div className="relative h-[350px] md:h-[450px] overflow-hidden shadow-xl">
                         <Image
                             src="/about/mission_main.png"
-                            alt="Labonte Disposal Mission"
+                            alt="Bin Route Mission"
                             fill
                             className="object-cover"
                         />

@@ -173,7 +173,7 @@ const ContactSection = () => {
                 <div className="flex items-center gap-4 text-[#0A2540]">
                   <Mail className="size-6 text-[#0061AA]" />
                   <span className="text-lg font-semibold">
-                    labontedisposal@gmail.com
+                    binroutedisposal@gmail.com
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-[#0A2540]">

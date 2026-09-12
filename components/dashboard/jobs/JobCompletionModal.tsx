@@ -3,11 +3,12 @@
 import React from "react";
 import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import { Loader2, X } from "lucide-react";
-import { useCompleteJobMutation } from "@/redux/api/adminDashboard/jobApi";
+import { Loader2, X, Camera, FileText } from "lucide-react";
+import { useCompleteJobMutation, useGetSingleJobQuery } from "@/redux/api/adminDashboard/jobApi";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface JobCompletionModalProps {
   isOpen: boolean;
@@ -15,122 +16,272 @@ interface JobCompletionModalProps {
   job: any | null;
 }
 
+const getStatusBadge = (status: string) => {
+  switch (status?.toUpperCase()) {
+    case "COMPLETED":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    case "IN_PROGRESS":
+      return "bg-blue-50 text-blue-700 border-blue-200";
+    case "DRIVER_SUBMITTED":
+      return "bg-purple-50 text-purple-700 border-purple-200";
+    case "PENDING":
+      return "bg-amber-50 text-amber-700 border-amber-200";
+    case "IN_COMPLETED":
+    case "CANCELLED":
+      return "bg-rose-50 text-rose-700 border-rose-200";
+    default:
+      return "bg-gray-50 text-gray-600 border-gray-200";
+  }
+};
+
 const JobCompletionModal = ({ isOpen, onClose, job }: JobCompletionModalProps) => {
   const [completeJob, { isLoading: isCompleting }] = useCompleteJobMutation();
 
+  const jobId = job?.jobId || job?.id;
+  const { data: detailData, isLoading: isDetailLoading } = useGetSingleJobQuery(jobId, {
+    skip: !isOpen || !jobId,
+  });
+
+  const detailedJob = detailData?.data || job;
+
   const handleComplete = async () => {
-    if (!job?.jobId) {
-        toast.error("Job ID not found");
-        return;
+    if (!jobId) {
+      toast.error("Job ID not found");
+      return;
     }
 
     try {
-        await completeJob(job.jobId).unwrap();
-        toast.success("Job marked as completed");
-        onClose();
+      await completeJob(jobId).unwrap();
+      toast.success("Job marked as completed");
+      onClose();
     } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to complete job");
+      toast.error(error?.data?.message || "Failed to complete job");
     }
   };
 
   if (!job) return null;
 
-  const displayId = job.jobId ? `#${job.jobId.slice(-6).toUpperCase()}` : "N/A";
+  const displayId = detailedJob?.jobCode || (jobId ? `#${jobId.slice(-6).toUpperCase()}` : "N/A");
+  const status = detailedJob?.status || "PENDING";
+  const isCompleted = status === "COMPLETED";
+
+  const scheduledDate = detailedJob?.scheduledDate || detailedJob?.jobStartTime;
+  const createdDate = detailedJob?.createdAt;
+
+  const proofPhotos: string[] = Array.isArray(detailedJob?.proofOfService)
+    ? detailedJob.proofOfService
+    : typeof detailedJob?.proofOfService === "string" && detailedJob.proofOfService
+    ? [detailedJob.proofOfService]
+    : [];
+
+  const weightSlipPhotos: string[] = Array.isArray(detailedJob?.weightSlipPhoto)
+    ? detailedJob.weightSlipPhoto
+    : typeof detailedJob?.weightSlipPhoto === "string" && detailedJob.weightSlipPhoto
+    ? [detailedJob.weightSlipPhoto]
+    : [];
+
+  const notesText = detailedJob?.notes || detailedJob?.instructions;
+  const weightText = detailedJob?.landfillWeight
+    ? `${detailedJob.landfillWeight} ton${detailedJob.landfillWeight > 1 ? "s" : ""}`
+    : detailedJob?.size || detailedJob?.subscription?.plan?.dumpsterSize || "Standard (1 ton)";
+
+  const customerName = detailedJob?.customerName || detailedJob?.subscription?.user?.fullName || "N/A";
+  const customerEmail = detailedJob?.subscription?.user?.email || "N/A";
+  const customerPhone = detailedJob?.subscription?.user?.phone || "N/A";
+  const driverName = detailedJob?.driverName || detailedJob?.driver?.fullName || "Unassigned";
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
       title=""
-      className="max-w-2xl p-0 overflow-hidden rounded-none border-none"
+      className="max-w-2xl p-0 overflow-hidden rounded-none border-none max-h-[90vh] overflow-y-auto"
       showCloseButton={false}
     >
       <div className="relative bg-white">
         {/* Header */}
-        <div className="p-8 flex justify-between items-center border-b border-gray-50">
-          <h2 className="text-2xl font-bold text-[#172C41]">The driver just wrapped up the job!</h2>
+        <div className="p-6 md:p-8 flex justify-between items-center border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div>
+            <h2 className="text-2xl font-bold text-[#172C41]">
+              {isCompleted
+                ? `Job Details (${displayId})`
+                : status === "DRIVER_SUBMITTED"
+                ? "The driver just wrapped up the job!"
+                : `Job Details (${displayId})`}
+            </h2>
+            <p className="text-xs text-gray-400 mt-0.5">View and manage service job information</p>
+          </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 transition-colors rounded-full">
             <X className="w-6 h-6 text-gray-400" />
           </button>
         </div>
 
-        <div className="p-8 space-y-8">
-          {/* Job Summary Table */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-[#172C41]">Job Summary ({displayId})</h3>
-            <div className="border border-gray-100 rounded-none overflow-hidden">
-              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                <span className="text-gray-500 font-medium">Location</span>
-                <span className="text-right font-bold text-[#172C41] truncate">{job.location || "N/A"}</span>
-              </div>
-              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                <span className="text-gray-500 font-medium">Service Name</span>
-                <span className="text-right font-bold text-[#172C41]">{job.serviceType || "N/A"}</span>
-              </div>
-              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                <span className="text-gray-500 font-medium">Job Type</span>
-                <div className="flex justify-end">
-                  <span className="px-3 py-1 bg-[#FFF4E5] text-[#FF630B] text-xs font-bold rounded-none uppercase">
-                    {job.jobType?.replace(/_/g, " ") || "N/A"}
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                <span className="text-gray-500 font-medium">Dumpster Size</span>
-                <span className="text-right font-bold text-[#172C41]">{job.size || job.subscription?.plan?.dumpsterSize || "N/A"}</span>
-              </div>
-              <div className="grid grid-cols-2 p-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                <span className="text-gray-500 font-medium">Included Weight</span>
-                <span className="text-right font-bold text-[#172C41]">1 ton</span>
-              </div>
-              <div className="grid grid-cols-2 p-4 hover:bg-gray-50/50 transition-colors">
-                <span className="text-gray-500 font-medium">Date</span>
-                <span className="text-right font-bold text-[#172C41]">
-                  {job.scheduledDate ? format(new Date(job.scheduledDate), "dd MMMM yyyy") : "N/A"}
+        {isDetailLoading ? (
+          <div className="p-12 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-[#0265AF]" />
+            <p className="text-sm text-gray-500 font-medium">Loading job details...</p>
+          </div>
+        ) : (
+          <div className="p-6 md:p-8 space-y-6">
+            {/* Job Summary Table */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-[#172C41]">Job Summary ({displayId})</h3>
+                <span
+                  className={cn(
+                    "px-3 py-1 text-xs font-bold uppercase rounded-none border",
+                    getStatusBadge(status)
+                  )}
+                >
+                  {status.replace(/_/g, " ")}
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Proof of Service & Notes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-[#172C41]">Proof of Service photo</h3>
-              <div className="aspect-video relative bg-gray-100 border border-gray-200 overflow-hidden">
-                <Image 
-                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80" 
-                  alt="Proof of service" 
-                  fill 
-                  className="object-cover"
-                />
+              <div className="border border-gray-100 rounded-none overflow-hidden">
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Customer</span>
+                  <div className="text-right">
+                    <span className="font-bold text-[#172C41] block text-sm">{customerName}</span>
+                    <span className="text-xs text-gray-400">{customerEmail} • {customerPhone}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Assigned Driver</span>
+                  <span className="text-right font-bold text-[#172C41] text-sm">{driverName}</span>
+                </div>
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Location</span>
+                  <span className="text-right font-bold text-[#172C41] truncate text-sm">
+                    {detailedJob?.location || detailedJob?.subscription?.dropoffAddress || "N/A"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Service Name</span>
+                  <span className="text-right font-bold text-[#172C41] text-sm">
+                    {detailedJob?.serviceType || (detailedJob?.subscription?.plan?.category === "COMMERCIAL" ? "Commercial Service" : "Roll-off Service")}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Job Type</span>
+                  <div className="flex justify-end">
+                    <span className="px-2.5 py-0.5 bg-[#FFF4E5] text-[#FF630B] text-xs font-bold rounded-none uppercase">
+                      {detailedJob?.jobType?.replace(/_/g, " ") || detailedJob?.type?.replace(/_/g, " ") || "N/A"}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Dumpster Size</span>
+                  <span className="text-right font-bold text-[#172C41] text-sm">
+                    {detailedJob?.size || detailedJob?.subscription?.plan?.dumpsterSize || "N/A"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Weight</span>
+                  <span className="text-right font-bold text-[#172C41] text-sm">{weightText}</span>
+                </div>
+                <div className="grid grid-cols-2 p-3.5 border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <span className="text-gray-500 font-medium text-sm">Schedule Date</span>
+                  <span className="text-right font-bold text-[#172C41] text-sm">
+                    {scheduledDate ? format(new Date(scheduledDate), "dd MMMM yyyy, hh:mm a") : "N/A"}
+                  </span>
+                </div>
+                {createdDate && (
+                  <div className="grid grid-cols-2 p-3.5 hover:bg-gray-50/50 transition-colors">
+                    <span className="text-gray-500 font-medium text-sm">Created Date</span>
+                    <span className="text-right font-bold text-gray-600 text-sm">
+                      {format(new Date(createdDate), "dd MMMM yyyy")}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-[#172C41]">Job Notes</h3>
-              <div className="p-6 bg-gray-50/50 border border-gray-100 min-h-[140px]">
-                <p className="text-sm text-gray-600 leading-relaxed italic">
-                  "Gate code is 4492. Container must be placed on the left side of the loading dock. Avoid blocking the fire hydrant. Driver must wear high-vis vest at all times."
-                </p>
+
+            {/* Proof of Service & Notes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="text-base font-bold text-[#172C41] flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-gray-500" />
+                  Proof of Service Photo
+                </h3>
+                {proofPhotos.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-2">
+                    {proofPhotos.map((photo, index) => (
+                      <div key={index} className="aspect-video relative bg-gray-100 border border-gray-200 overflow-hidden">
+                        <Image
+                          src={photo}
+                          alt={`Proof of service ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="aspect-video relative bg-gray-50 border border-gray-200 flex flex-col items-center justify-center p-4 text-center">
+                    <Camera className="w-8 h-8 text-gray-300 mb-1" />
+                    <p className="text-xs text-gray-400 font-medium">No proof of service photo uploaded yet</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base font-bold text-[#172C41] flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-gray-500" />
+                  Job Notes & Instructions
+                </h3>
+                <div className="p-4 bg-gray-50/50 border border-gray-100 min-h-[140px] flex items-center">
+                  {notesText ? (
+                    <p className="text-sm text-gray-600 leading-relaxed italic">
+                      "{notesText}"
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">No notes provided for this job.</p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Action */}
-          <div className="space-y-6 pt-4">
-            <Button 
-              onClick={handleComplete}
-              disabled={isCompleting || job.status === "COMPLETED"}
-              className="w-full py-7 text-lg font-bold rounded-none shadow-lg transition-transform active:scale-[0.98]"
-              variant={"primary"}
-            >
-              {isCompleting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Mark as Complete"}
-            </Button>
-            
-            <p className="text-sm text-gray-400 text-center leading-relaxed max-w-sm mx-auto font-medium">
-              The driver will receive an automated notification via the <span className="font-bold">Labonte Disposal</span> mobile app.
-            </p>
+            {/* Weight Slip Photos if any */}
+            {weightSlipPhotos.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-base font-bold text-[#172C41]">Weight Slip Photos</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {weightSlipPhotos.map((photo, index) => (
+                    <div key={index} className="aspect-video relative bg-gray-100 border border-gray-200 overflow-hidden">
+                      <Image
+                        src={photo}
+                        alt={`Weight slip ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action */}
+            <div className="space-y-4 pt-2">
+              {isCompleted ? (
+                <div className="w-full py-4 text-center bg-[#F0FDF4] text-[#22C55E] text-base font-bold rounded-none border border-[#DCFCE7]">
+                  Job Completed
+                </div>
+              ) : (
+                <Button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className="w-full py-6 text-base font-bold rounded-none shadow-md transition-transform active:scale-[0.98]"
+                  variant={"primary"}
+                >
+                  {isCompleting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Mark as Complete"}
+                </Button>
+              )}
+
+              <p className="text-xs text-gray-400 text-center leading-relaxed max-w-sm mx-auto font-medium">
+                The driver will receive an automated notification via the <span className="font-bold text-gray-600">Bin Route</span> mobile app.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Modal>
   );

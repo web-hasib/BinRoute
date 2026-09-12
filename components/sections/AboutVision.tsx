@@ -12,7 +12,7 @@ const AboutVision = () => {
                     <div className="relative h-[300px] md:h-[400px] overflow-hidden shadow-xl group">
                         <Image
                             src="/about/vision_overlay.png"
-                            alt="Labonte Disposal Vision"
+                            alt="Bin Route Vision"
                             fill
                             className="object-cover"
                         />

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Labonte Disposal",
-  description: "Labonte Disposal Services",
+  title: "Bin Route",
+  description: "Bin Route Disposal Services",
 };
 
 import { Toaster } from "sonner";

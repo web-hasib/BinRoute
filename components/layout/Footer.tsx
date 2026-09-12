@@ -134,10 +134,10 @@ const Footer = () => {
               <li className="flex items-center gap-3 text-wrap overflow-hidden">
                 <Mail className="w-4 h-4 text-gray-400 shrink-0" />
                 <a
-                  href="mailto:LabonteDisposal@gmail.com"
+                  href="mailto:binroutedisposal@gmail.com"
                   className="hover:text-blue-400 transition-colors truncate"
                 >
-                  LabonteDisposal@gmail.com
+                  binroutedisposal@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
@@ -164,7 +164,7 @@ const Footer = () => {
             </Link>
           </div>
           <p className="text-gray-400 text-xs">
-            © 2024 <span className="italic">Labonte Disposal</span> Dumpster
+            © 2024 <span className="italic">Bin Route</span> Dumpster
             Rentals. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-gray-500">
@@ -190,7 +190,7 @@ const Footer = () => {
       {/* Decorative Large Text */}
       <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-full text-center select-none pointer-events-none opacity-10">
         <h1 className="text-[12vw] font-bold leading-none tracking-tighter text-white whitespace-nowrap">
-          Labonte Disposal
+          Bin Route
         </h1>
       </div>
     </footer>

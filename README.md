@@ -1,6 +1,6 @@
-# 🚀 Tlabonte Frontend Dashboard
+# 🚀 Bin Route Frontend Dashboard
 
-Welcome to the **Tlabonte Frontend** project, a professional-grade Next.js dashboard built for efficiency, reusability, and maintainability. This project leverages a robust tech stack including:
+Welcome to the **Bin Route Frontend** project, a professional-grade Next.js dashboard built for efficiency, reusability, and maintainability. This project leverages a robust tech stack including:
 
 *   **Framework**: Next.js 16 (App Router)
 *   **Styling**: Tailwind CSS 4 & Shadcn/UI

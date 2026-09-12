@@ -9,109 +9,6 @@ import { CustomPagination } from "@/components/ui/CustomPagination";
 import { Button } from "@/components/ui/button";
 import DriverAssignmentModal from "@/components/dashboard/schedule/DriverAssignmentModal";
 
-interface Job {
-  id: string;
-  customer: { name: string; email: string };
-  serviceType: string;
-  location: string;
-  size: string;
-  status: string;
-  isAssigned: boolean;
-}
-
-const mockJobs: Job[] = [
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-Off",
-    isAssigned: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-Off",
-    isAssigned: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-Off",
-    isAssigned: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Pickup",
-    isAssigned: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Pickup",
-    isAssigned: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Pickup",
-    isAssigned: false,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-Off",
-    isAssigned: true,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-Off",
-    isAssigned: true,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-Off",
-    isAssigned: true,
-  },
-  {
-    id: "Job #LD-8829",
-    customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-    serviceType: "Roll of Service",
-    location: "123 Industrial Way, Suite B",
-    size: "20 Yard",
-    status: "Dumpster Drop-Off",
-    isAssigned: true,
-  },
-];
-
 import { useGetAllSchedulesQuery, ISchedule } from "@/redux/api/adminDashboard/jobApi";
 import { format } from "date-fns";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -123,6 +20,7 @@ const SchedulePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const { data: scheduleData, isLoading } = useGetAllSchedulesQuery({
@@ -131,7 +29,7 @@ const SchedulePage = () => {
     searchTerm: debouncedSearchTerm,
     category: activeService,
     sortBy: "scheduledDate",
-    // sortOrder: "asc"
+    sortOrder: sortOrder,
   });
 
   const schedules = scheduleData?.data?.data || [];
@@ -216,15 +114,26 @@ const SchedulePage = () => {
       <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
         {/* Filters and Tabs */}
         <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-gray-100">
-          <div className="relative w-full md:w-[350px]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border-none rounded-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0265AF]"
-            />
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <div className="relative w-full md:w-[320px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by Job ID, customer, address..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-gray-100 rounded-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0265AF]"
+              />
+            </div>
+
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+              className="w-full sm:w-auto px-4 py-3 bg-[#F8FAFC] border border-gray-100 text-sm font-semibold text-gray-700 rounded-none focus:outline-none focus:ring-1 focus:ring-[#0265AF]"
+            >
+              <option value="asc">Upcoming Date First</option>
+              <option value="desc">Furthest Date First</option>
+            </select>
           </div>
 
           <div className="flex items-center p-1 bg-[#F8FAFC] border border-gray-100 gap-1">

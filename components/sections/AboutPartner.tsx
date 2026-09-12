@@ -21,11 +21,11 @@ const AboutPartner = () => {
                     {/* Left Column: Text Content */}
                     <div className="space-y-8">
                         <h3 className="text-2xl md:text-3xl font-bold text-[#0A2540]">
-                            About Labonte Disposal
+                            About Bin Route
                         </h3>
                         <div className="space-y-6 text-gray-600 leading-relaxed md:text-lg">
                             <p>
-                                At Labonte Disposal, we are committed to delivering dependable
+                                At Bin Route, we are committed to delivering dependable
                                 and efficient waste management solutions for both residential
                                 and commercial customers. With a strong focus on reliability
                                 and customer satisfaction, our team works diligently to ensure

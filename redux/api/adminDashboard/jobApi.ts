@@ -90,6 +90,12 @@ const jobApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Booking", "Driver"],
         }),
+        getSingleJob: builder.query<any, string>({
+            query: (id) => ({
+                url: `/jobs/${id}`,
+            }),
+            providesTags: ["Booking", "Driver"],
+        }),
     }),
 });
 
@@ -98,6 +104,7 @@ export const {
     useAssignJobMutation,
     useGetAllJobsQuery,
     useCompleteJobMutation,
+    useGetSingleJobQuery,
 } = jobApi;
 
 export default jobApi;

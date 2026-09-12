@@ -137,7 +137,7 @@ const DriverAssignmentModal = ({ isOpen, onClose, job }: DriverAssignmentModalPr
         </div>
 
         <p className="text-[10px] text-gray-400 text-center leading-relaxed font-medium">
-          The driver will receive an automated notification <br /> via the <span className="font-bold">Labonte Disposal</span> mobile app.
+          The driver will receive an automated notification <br /> via the <span className="font-bold">Bin Route</span> mobile app.
         </p>
       </div>
     </Modal>

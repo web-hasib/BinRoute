@@ -25,14 +25,6 @@ interface Booking {
   status: string;
 }
 
-const bookings: Booking[] = Array(10).fill({
-  id: "INV-88321",
-  customer: { name: "Tomas Diko", email: "@tomasdiko.com" },
-  service: "Commercial Service",
-  amount: "$245.00",
-  date: "01 march 2026",
-  status: "Paid",
-});
 
 const columns: ColumnDef<Booking>[] = [
   {
